@@ -572,68 +572,10 @@ function renderResults(data) {
         }
     }
 
-    // Render Rich Table Cards
-    const catContainer = document.getElementById("catalog-tables-container");
-    catContainer.innerHTML = "";
-    data.catalog_match.selected_tables.forEach(tbl => {
-        const card = document.createElement("div");
-        card.className = "p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3.5 hover:border-blue-300 transition";
-
-        // Generate column pills with tags
-        const colPills = tbl.columns.slice(0, 8).map(c => {
-            const isPii = c.is_pii || (c.tags && c.tags.includes("PII")) || c.name.toLowerCase().includes("npwp");
-            const isPk = c.tags && c.tags.includes("PK");
-            const isFk = c.tags && c.tags.includes("FK");
-            
-            let tagBadge = "";
-            if (isPk) tagBadge = `<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1 rounded">PK</span>`;
-            else if (isFk) tagBadge = `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1 rounded">FK</span>`;
-            else if (isPii) tagBadge = `<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1 rounded">PII</span>`;
-
-            return `<span class="inline-flex items-center space-x-1 bg-slate-100 border border-slate-200 text-slate-700 text-[11px] px-2 py-0.5 rounded-md font-mono">${c.name} ${tagBadge}</span>`;
-        }).join(" ");
-
-        card.innerHTML = `
-            <div class="flex items-start justify-between gap-3">
-                <div class="space-y-1">
-                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <span class="text-[11px] font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-bold">${tbl.fqn}</span>
-                        <span class="text-[10px] bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full font-semibold">${tbl.tier || 'Tier 1'}</span>
-                    </div>
-                    <h4 class="text-sm font-bold text-slate-900">${tbl.table_name}</h4>
-                </div>
-                <div class="text-right flex-shrink-0">
-                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200 flex items-center space-x-1">
-                        <i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i>
-                        <span>Kecocokan: ${Math.round(tbl.match_score * 100)}%</span>
-                    </span>
-                </div>
-            </div>
-
-            <p class="text-xs text-slate-600 leading-relaxed">${tbl.description}</p>
-
-            ${tbl.match_rationale ? `
-            <div class="p-2.5 rounded-xl bg-blue-50/60 border border-blue-200/80 text-[11px] text-blue-900 flex items-start space-x-2">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-600 mt-0.5 flex-shrink-0"></i>
-                <div>
-                    <span class="font-bold">Alasan Pencocokan AI:</span> ${tbl.match_rationale}
-                </div>
-            </div>
-            ` : ''}
-
-            <div class="pt-3 border-t border-slate-100 space-y-2">
-                <div class="flex items-center justify-between text-[11px] text-slate-500">
-                    <span><strong class="text-slate-700">Data Owner:</strong> ${tbl.owner || 'Subdit Pengelolaan Data'}</span>
-                    <span><strong class="text-slate-700">Total Atribut:</strong> ${tbl.columns.length} kolom</span>
-                </div>
-                <div class="flex flex-wrap gap-1.5 pt-1">
-                    ${colPills}
-                    ${tbl.columns.length > 8 ? `<span class="text-[11px] text-slate-400 font-mono self-center pl-1">+${tbl.columns.length - 8} lainnya</span>` : ''}
-                </div>
-            </div>
-        `;
-        catContainer.appendChild(card);
-    });
+    // Render Rich Table Cards with real-time search & filter
+    tab2SelectedTablesCache = data.catalog_match.selected_tables || [];
+    initTab2CatalogSearch();
+    renderTab2CatalogTables();
 
     // TAB 3: SQL Studio
     originalGeneratedSqlQuery = data.generated_sql.query;
@@ -2037,24 +1979,303 @@ function copySql() {
     });
 }
 
+// --- Tab 2: Catalog Grounding Search & Drawer System ---
+let tab2SelectedTablesCache = [];
+let tab2CatalogSearchInited = false;
+
+function initTab2CatalogSearch() {
+    if (tab2CatalogSearchInited) return;
+    tab2CatalogSearchInited = true;
+
+    const searchInput = document.getElementById("input-tab2-catalog-search");
+    const clearBtn = document.getElementById("btn-clear-tab2-catalog-search");
+
+    if (searchInput) {
+        ['input', 'keyup', 'search', 'paste', 'change'].forEach(evt => {
+            searchInput.addEventListener(evt, () => {
+                const val = searchInput.value.trim();
+                if (clearBtn) clearBtn.classList.toggle("hidden", !val);
+                renderTab2CatalogTables();
+            });
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+            if (searchInput) {
+                searchInput.value = "";
+                searchInput.focus();
+            }
+            clearBtn.classList.add("hidden");
+            renderTab2CatalogTables();
+        });
+    }
+}
+
+function renderTab2CatalogTables() {
+    const catContainer = document.getElementById("catalog-tables-container");
+    if (!catContainer) return;
+    catContainer.innerHTML = "";
+
+    const searchInput = document.getElementById("input-tab2-catalog-search");
+    const rawQuery = searchInput ? searchInput.value.trim() : "";
+    const tokens = rawQuery ? rawQuery.toLowerCase().split(/\s+/).filter(Boolean) : [];
+
+    const tablesToRender = tab2SelectedTablesCache.filter(tbl => {
+        if (tokens.length === 0) {
+            tbl._matchedColumns = [];
+            tbl._hasAttrMatch = false;
+            return true;
+        }
+
+        const matchedCols = (tbl.columns || []).filter(c => {
+            const cName = (c.name || "").toLowerCase();
+            const cDesc = (c.description || "").toLowerCase();
+            const cType = (c.data_type || "").toLowerCase();
+            const cTags = Array.isArray(c.tags) ? c.tags.join(" ").toLowerCase() : "";
+            return tokens.some(t => cName.includes(t) || cDesc.includes(t) || cType.includes(t) || cTags.includes(t));
+        });
+
+        tbl._matchedColumns = matchedCols;
+        tbl._hasAttrMatch = matchedCols.length > 0;
+
+        const tblBaseText = `${tbl.fqn} ${tbl.table_name} ${tbl.description || ''} ${tbl.owner || ''}`.toLowerCase();
+        return tokens.every(t => {
+            if (tblBaseText.includes(t)) return true;
+            return (tbl.columns || []).some(c => {
+                const cName = (c.name || "").toLowerCase();
+                const cDesc = (c.description || "").toLowerCase();
+                const cType = (c.data_type || "").toLowerCase();
+                const cTags = Array.isArray(c.tags) ? c.tags.join(" ").toLowerCase() : "";
+                return cName.includes(t) || cDesc.includes(t) || cType.includes(t) || cTags.includes(t);
+            });
+        });
+    });
+
+    if (!tablesToRender || tablesToRender.length === 0) {
+        catContainer.innerHTML = `
+            <div class="col-span-full p-10 text-center rounded-2xl border border-dashed border-slate-300 bg-white space-y-2">
+                <i data-lucide="search-x" class="w-7 h-7 text-slate-300 mx-auto"></i>
+                <p class="text-xs font-bold text-slate-700">Tidak ada tabel atau atribut yang cocok dengan "${rawQuery}"</p>
+                <p class="text-[11px] text-slate-400">Coba gunakan kata kunci atribut lain atau kosongkan kolom pencarian.</p>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+    }
+
+    tablesToRender.forEach((tbl, idx) => {
+        const card = document.createElement("div");
+        card.className = "p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3.5 hover:border-blue-300 transition";
+
+        const matchedColSet = new Set((tbl._matchedColumns || []).map(mc => mc.name));
+        const sortedCols = [...tbl.columns].sort((a, b) => {
+            const aMatched = matchedColSet.has(a.name);
+            const bMatched = matchedColSet.has(b.name);
+            if (aMatched && !bMatched) return -1;
+            if (!aMatched && bMatched) return 1;
+            return 0;
+        });
+
+        const colPills = sortedCols.slice(0, 10).map(c => {
+            const isPii = c.is_pii || (c.tags && c.tags.includes("PII")) || c.name.toLowerCase().includes("npwp");
+            const isPk = c.tags && c.tags.includes("PK");
+            const isFk = c.tags && c.tags.includes("FK");
+            const isMatched = matchedColSet.has(c.name);
+            
+            let tagBadge = "";
+            if (isPk) tagBadge = `<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1 rounded">PK</span>`;
+            else if (isFk) tagBadge = `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1 rounded">FK</span>`;
+            else if (isPii) tagBadge = `<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1 rounded">PII</span>`;
+
+            if (isMatched) {
+                return `<span class="inline-flex items-center space-x-1 bg-amber-100 border border-amber-300 text-amber-950 font-bold text-[11px] px-2 py-0.5 rounded-md font-mono shadow-2xs">${highlightMatchText(c.name, tokens)} ${tagBadge}</span>`;
+            }
+
+            return `<span class="inline-flex items-center space-x-1 bg-slate-100 border border-slate-200 text-slate-700 text-[11px] px-2 py-0.5 rounded-md font-mono">${highlightMatchText(c.name, tokens)} ${tagBadge}</span>`;
+        }).join(" ");
+
+        const drawerId = `tab2-catalog-drawer-${idx}`;
+        const isAutoExpanded = Boolean(tokens.length > 0 && tbl._hasAttrMatch);
+
+        // Schema Table rows for drawer
+        const schemaRows = tbl.columns.map(c => {
+            const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
+            const isPk = c.tags && c.tags.includes("PK");
+            const isFk = c.tags && c.tags.includes("FK");
+            const isColMatched = matchedColSet.has(c.name);
+
+            let tagBadges = [];
+            if (isPk) tagBadges.push(`<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1.5 py-0.5 rounded">PK</span>`);
+            if (isFk) tagBadges.push(`<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1.5 py-0.5 rounded">FK</span>`);
+            if (isPii) tagBadges.push(`<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.5 rounded">PII</span>`);
+            if (c.tags) {
+                c.tags.filter(t => !["PK", "FK", "PII"].includes(t)).forEach(t => {
+                    tagBadges.push(`<span class="bg-slate-100 text-slate-600 text-[9px] px-1.5 py-0.5 rounded">${t}</span>`);
+                });
+            }
+
+            const rowBg = isColMatched ? "bg-amber-50/90 border-l-4 border-amber-500 font-medium" : "hover:bg-slate-50/70";
+
+            return `
+                <tr class="border-b border-slate-100 ${rowBg} transition">
+                    <td class="py-2 px-3 font-mono text-xs ${isColMatched ? 'font-bold text-amber-950' : 'font-bold text-slate-900'}">${highlightMatchText(c.name, tokens)}</td>
+                    <td class="py-2 px-3 font-mono text-[11px] text-blue-700 font-semibold">${c.data_type || 'VARCHAR'}</td>
+                    <td class="py-2 px-3 text-xs text-slate-600">${highlightMatchText(c.description || '-', tokens)}</td>
+                    <td class="py-2 px-3 flex flex-wrap gap-1 items-center">${tagBadges.join(" ")}</td>
+                </tr>
+            `;
+        }).join("");
+
+        card.innerHTML = `
+            <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                        <span class="text-[11px] font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-bold">${highlightMatchText(tbl.fqn, tokens)}</span>
+                        <span class="text-[10px] bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full font-semibold">${tbl.tier || 'Tier 1'}</span>
+                    </div>
+                    <h4 class="text-sm font-bold text-slate-900">${highlightMatchText(tbl.table_name, tokens)}</h4>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200 flex items-center space-x-1">
+                        <i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i>
+                        <span>Kecocokan: ${Math.round(tbl.match_score * 100)}%</span>
+                    </span>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed">${highlightMatchText(tbl.description, tokens)}</p>
+
+            ${tbl._hasAttrMatch ? `
+            <div class="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
+                <div class="flex items-center space-x-1.5 font-medium">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-amber-600 flex-shrink-0"></i>
+                    <span>Ditemukan <strong>${tbl._matchedColumns.length} atribut</strong> yang cocok dengan filter "${rawQuery}".</span>
+                </div>
+                <span class="text-[10px] font-mono text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded font-semibold">Glosarium terbuka</span>
+            </div>
+            ` : ''}
+
+            ${tbl.match_rationale ? `
+            <div class="p-2.5 rounded-xl bg-blue-50/60 border border-blue-200/80 text-[11px] text-blue-900 flex items-start space-x-2">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-600 mt-0.5 flex-shrink-0"></i>
+                <div>
+                    <span class="font-bold">Alasan Pencocokan AI:</span> ${tbl.match_rationale}
+                </div>
+            </div>
+            ` : ''}
+
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+                <div class="flex items-center justify-between text-[11px] text-slate-500">
+                    <span><strong class="text-slate-700">Data Owner:</strong> ${tbl.owner || 'Subdit Pengelolaan Data'}</span>
+                    <button class="btn-toggle-tab2-drawer text-blue-600 hover:text-blue-800 font-semibold flex items-center space-x-1" data-drawer="${drawerId}">
+                        <span>${isAutoExpanded ? 'Tutup Atribut' : `Lihat Glosarium (${tbl.columns.length})`}</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200 ${isAutoExpanded ? 'rotate-180' : ''}" id="icon-${drawerId}"></i>
+                    </button>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                    ${colPills}
+                    ${tbl.columns.length > 10 ? `<span class="text-[11px] text-slate-400 font-mono self-center pl-1">+${tbl.columns.length - 10} lainnya</span>` : ''}
+                </div>
+
+                <!-- Expandable Full Schema Drawer in Tab 2 -->
+                <div id="${drawerId}" class="${isAutoExpanded ? '' : 'hidden'} pt-3 border-t border-slate-200">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-[11px]">
+                                <tr>
+                                    <th class="py-2 px-3">Nama Kolom</th>
+                                    <th class="py-2 px-3">Tipe Data</th>
+                                    <th class="py-2 px-3">Deskripsi Glosarium Bisnis</th>
+                                    <th class="py-2 px-3">Tag Tata Kelola</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${schemaRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        catContainer.appendChild(card);
+    });
+
+    // Wire drawer toggle buttons for Tab 2
+    document.querySelectorAll(".btn-toggle-tab2-drawer").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const drawerId = btn.getAttribute("data-drawer");
+            const drawer = document.getElementById(drawerId);
+            const icon = document.getElementById(`icon-${drawerId}`);
+            if (!drawer) return;
+
+            if (drawer.classList.contains("hidden")) {
+                drawer.classList.remove("hidden");
+                btn.querySelector("span").innerText = "Tutup Atribut";
+                if (icon) icon.classList.add("rotate-180");
+            } else {
+                drawer.classList.add("hidden");
+                btn.querySelector("span").innerText = `Lihat Glosarium`;
+                if (icon) icon.classList.remove("rotate-180");
+            }
+        });
+    });
+
+    lucide.createIcons();
+}
+
 // 13. Catalog Modal (Search & Filter Enhanced + Schema Detail & Lineage)
 let allCatalogTablesCache = [];
 let activeCatalogSchemaFilter = "all";
 let activeCatalogTierFilter = "all";
+
+// Helper for highlighting search tokens safely
+function highlightMatchText(text, tokens) {
+    if (!text || !tokens || tokens.length === 0) return text || "";
+    let str = String(text);
+    tokens.forEach(token => {
+        if (!token) return;
+        const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escaped})`, 'gi');
+        str = str.replace(regex, '<mark class="bg-amber-200 text-amber-950 font-bold px-0.5 rounded">$1</mark>');
+    });
+    return str;
+}
 
 function setupCatalogModal() {
     const modal = document.getElementById("catalog-modal");
     const openBtn = document.getElementById("btn-browse-catalog");
     const closeBtn = document.getElementById("btn-close-modal");
     const searchInput = document.getElementById("input-catalog-modal-search");
+    const clearSearchBtn = document.getElementById("btn-clear-catalog-modal-search");
     const tierSelect = document.getElementById("select-catalog-tier-filter");
     const schemaFilterBtns = document.querySelectorAll(".catalog-filter-btn");
     const badgeTotal = document.getElementById("catalog-badge-total");
 
+    // Pre-fetch catalog data early in the background
+    async function fetchCatalogData() {
+        if (allCatalogTablesCache && allCatalogTablesCache.length > 0) return;
+        try {
+            const res = await fetch("/api/catalog");
+            const data = await res.json();
+            allCatalogTablesCache = data.tables || [];
+        } catch (err) {
+            console.error("Gagal prefetch katalog:", err);
+        }
+    }
+    fetchCatalogData();
+
     function getFilteredTables() {
-        const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+        const rawQuery = searchInput ? searchInput.value.trim().toLowerCase() : "";
+        const tokens = rawQuery ? rawQuery.split(/\s+/).filter(Boolean) : [];
+
+        // Toggle clear search button visibility
+        if (clearSearchBtn) {
+            clearSearchBtn.classList.toggle("hidden", !rawQuery);
+        }
+
         return allCatalogTablesCache.filter(tbl => {
-            // Schema filter
+            // 1. Schema filter
             if (activeCatalogSchemaFilter !== "all") {
                 const schema = (tbl.schema_name || "").toLowerCase();
                 const fqn = (tbl.fqn || "").toLowerCase();
@@ -2065,26 +2286,48 @@ function setupCatalogModal() {
                 }
             }
 
-            // Tier filter
+            // 2. Tier filter
             if (activeCatalogTierFilter !== "all") {
                 const tier = (tbl.tier || "").toLowerCase();
-                if (activeCatalogTierFilter === "tier1" && !tier.includes("tier 1")) return false;
-                if (activeCatalogTierFilter === "tier2" && !tier.includes("tier 2")) return false;
+                if (activeCatalogTierFilter === "tier1" && !tier.includes("tier 1") && !tier.includes("1")) return false;
+                if (activeCatalogTierFilter === "tier2" && !tier.includes("tier 2") && !tier.includes("2")) return false;
             }
 
-            // Text search
-            if (query) {
-                const nameMatch = tbl.fqn.toLowerCase().includes(query) || tbl.table_name.toLowerCase().includes(query);
-                const descMatch = (tbl.description || "").toLowerCase().includes(query);
-                const colMatch = (tbl.columns || []).some(c => 
-                    c.name.toLowerCase().includes(query) || 
-                    (c.description || "").toLowerCase().includes(query) ||
-                    (c.data_type || "").toLowerCase().includes(query)
-                );
-                return nameMatch || descMatch || colMatch;
+            // 3. Search query filter
+            if (tokens.length === 0) {
+                tbl._matchedColumns = [];
+                tbl._hasAttrMatch = false;
+                tbl._searchTokens = [];
+                return true;
             }
 
-            return true;
+            // Identify columns matching any token
+            const matchedCols = (tbl.columns || []).filter(c => {
+                const cName = (c.name || "").toLowerCase();
+                const cDesc = (c.description || "").toLowerCase();
+                const cType = (c.data_type || "").toLowerCase();
+                const cTags = Array.isArray(c.tags) ? c.tags.join(" ").toLowerCase() : "";
+                return tokens.some(t => cName.includes(t) || cDesc.includes(t) || cType.includes(t) || cTags.includes(t));
+            });
+
+            tbl._matchedColumns = matchedCols;
+            tbl._hasAttrMatch = matchedCols.length > 0;
+            tbl._searchTokens = tokens;
+
+            // Multi-token: Every token must match table metadata OR at least one of its columns
+            const tblBaseText = `${tbl.fqn} ${tbl.table_name} ${tbl.description || ''} ${tbl.owner || ''} ${tbl.schema_name || ''}`.toLowerCase();
+            const allTokensMatch = tokens.every(t => {
+                if (tblBaseText.includes(t)) return true;
+                return (tbl.columns || []).some(c => {
+                    const cName = (c.name || "").toLowerCase();
+                    const cDesc = (c.description || "").toLowerCase();
+                    const cType = (c.data_type || "").toLowerCase();
+                    const cTags = Array.isArray(c.tags) ? c.tags.join(" ").toLowerCase() : "";
+                    return cName.includes(t) || cDesc.includes(t) || cType.includes(t) || cTags.includes(t);
+                });
+            });
+
+            return allTokensMatch;
         });
     }
 
@@ -2092,17 +2335,24 @@ function setupCatalogModal() {
         const content = document.getElementById("modal-catalog-content");
         content.innerHTML = "";
 
+        const rawQuery = searchInput ? searchInput.value.trim() : "";
+        const tokens = rawQuery ? rawQuery.toLowerCase().split(/\s+/).filter(Boolean) : [];
         const tablesToRender = getFilteredTables();
+
         if (badgeTotal) {
-            badgeTotal.innerText = `${tablesToRender.length} dari ${allCatalogTablesCache.length} Tabel`;
+            if (rawQuery) {
+                badgeTotal.innerText = `${tablesToRender.length} dari ${allCatalogTablesCache.length} Tabel (Filter: "${rawQuery}")`;
+            } else {
+                badgeTotal.innerText = `${tablesToRender.length} dari ${allCatalogTablesCache.length} Tabel`;
+            }
         }
 
         if (!tablesToRender || tablesToRender.length === 0) {
             content.innerHTML = `
                 <div class="p-12 text-center rounded-2xl border border-dashed border-slate-300 bg-white space-y-2">
-                    <i data-lucide="database-zap" class="w-8 h-8 text-slate-300 mx-auto"></i>
-                    <p class="text-xs font-bold text-slate-700">Tidak ada tabel katalog yang cocok</p>
-                    <p class="text-[11px] text-slate-400">Coba ubah kata kunci pencarian atau sesuaikan filter skema/tier.</p>
+                    <i data-lucide="search-x" class="w-8 h-8 text-slate-300 mx-auto"></i>
+                    <p class="text-xs font-bold text-slate-700">Tidak ada tabel atau atribut yang cocok dengan "${rawQuery}"</p>
+                    <p class="text-[11px] text-slate-400">Pastikan ejaan benar, coba kata kunci lain (mis: peb, tarif, nilai, pelanggan, tanggal), atau reset filter skema ke 'Semua'.</p>
                 </div>
             `;
             lucide.createIcons();
@@ -2139,23 +2389,41 @@ function setupCatalogModal() {
                 </span>`
             ).join(" ");
 
-            // Preview first 8 column chips
-            const previewCols = tbl.columns.slice(0, 8).map(c => {
+            // Sort columns: Matched columns come first if search tokens match attributes!
+            const matchedColSet = new Set((tbl._matchedColumns || []).map(mc => mc.name));
+            const sortedColumns = [...tbl.columns].sort((a, b) => {
+                const aMatched = matchedColSet.has(a.name);
+                const bMatched = matchedColSet.has(b.name);
+                if (aMatched && !bMatched) return -1;
+                if (!aMatched && bMatched) return 1;
+                return 0;
+            });
+
+            // Preview column chips
+            const previewCols = sortedColumns.slice(0, 10).map(c => {
                 const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
                 const isPk = c.tags && c.tags.includes("PK");
                 const isFk = c.tags && c.tags.includes("FK");
+                const isColMatched = matchedColSet.has(c.name);
+
                 let badge = "";
                 if (isPk) badge = `<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1 rounded ml-1">PK</span>`;
                 else if (isFk) badge = `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1 rounded ml-1">FK</span>`;
                 else if (isPii) badge = `<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1 rounded ml-1">PII</span>`;
-                return `<span class="inline-flex items-center bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[11px] font-mono text-slate-700">${c.name}${badge}</span>`;
+
+                if (isColMatched) {
+                    return `<span class="inline-flex items-center bg-amber-100 border border-amber-300 px-2 py-0.5 rounded text-[11px] font-mono font-bold text-amber-950 shadow-2xs">${highlightMatchText(c.name, tokens)}${badge}</span>`;
+                }
+
+                return `<span class="inline-flex items-center bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[11px] font-mono text-slate-700">${highlightMatchText(c.name, tokens)}${badge}</span>`;
             }).join(" ");
 
-            // Schema Table rows for drawer
+            // Schema Table rows for full drawer
             const schemaRows = tbl.columns.map(c => {
                 const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
                 const isPk = c.tags && c.tags.includes("PK");
                 const isFk = c.tags && c.tags.includes("FK");
+                const isColMatched = matchedColSet.has(c.name);
 
                 let tagBadges = [];
                 if (isPk) tagBadges.push(`<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1.5 py-0.5 rounded">PK</span>`);
@@ -2167,17 +2435,20 @@ function setupCatalogModal() {
                     });
                 }
 
+                const rowBg = isColMatched ? "bg-amber-50/90 border-l-4 border-amber-500 font-medium" : "hover:bg-slate-50/70";
+
                 return `
-                    <tr class="border-b border-slate-100 hover:bg-slate-50/70 transition">
-                        <td class="py-2 px-3 font-mono text-xs font-bold text-slate-900">${c.name}</td>
-                        <td class="py-2 px-3 font-mono text-[11px] text-blue-700">${c.data_type || 'VARCHAR'}</td>
-                        <td class="py-2 px-3 text-xs text-slate-600">${c.description || '-'}</td>
+                    <tr class="border-b border-slate-100 ${rowBg} transition">
+                        <td class="py-2 px-3 font-mono text-xs ${isColMatched ? 'font-bold text-amber-950' : 'font-bold text-slate-900'}">${highlightMatchText(c.name, tokens)}</td>
+                        <td class="py-2 px-3 font-mono text-[11px] text-blue-700 font-semibold">${c.data_type || 'VARCHAR'}</td>
+                        <td class="py-2 px-3 text-xs text-slate-600">${highlightMatchText(c.description || '-', tokens)}</td>
                         <td class="py-2 px-3 flex flex-wrap gap-1 items-center">${tagBadges.join(" ")}</td>
                     </tr>
                 `;
             }).join("");
 
             const drawerId = `catalog-drawer-${idx}`;
+            const isAutoExpanded = Boolean(tokens.length > 0 && tbl._hasAttrMatch);
 
             card.innerHTML = `
                 <!-- Top Row: FQN, Tier, and Action Buttons -->
@@ -2185,7 +2456,7 @@ function setupCatalogModal() {
                     <div class="flex items-center space-x-2 flex-wrap gap-y-1">
                         <span class="font-mono text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md font-bold flex items-center space-x-1.5">
                             <i data-lucide="table" class="w-3.5 h-3.5 text-blue-600"></i>
-                            <span>${tbl.fqn}</span>
+                            <span>${highlightMatchText(tbl.fqn, tokens)}</span>
                         </span>
                         <span class="text-[10px] bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full font-medium">${tbl.tier || 'Tier 1'}</span>
                         <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">Schema: ${tbl.schema_name || 'public'}</span>
@@ -2207,11 +2478,22 @@ function setupCatalogModal() {
                 <!-- Description & Ownership Details -->
                 <div class="space-y-1.5">
                     <h4 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                        <span>${tbl.table_name}</span>
+                        <span>${highlightMatchText(tbl.table_name, tokens)}</span>
                         <span class="text-[11px] text-slate-400 font-normal">(${tbl.columns.length} kolom, PK: ${pkCols})</span>
                     </h4>
-                    <p class="text-xs text-slate-600 leading-relaxed">${tbl.description}</p>
+                    <p class="text-xs text-slate-600 leading-relaxed">${highlightMatchText(tbl.description, tokens)}</p>
                 </div>
+
+                <!-- Attribute Match Notice Banner -->
+                ${tbl._hasAttrMatch ? `
+                <div class="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
+                    <div class="flex items-center space-x-1.5 font-medium">
+                        <i data-lucide="check-circle" class="w-3.5 h-3.5 text-amber-600 flex-shrink-0"></i>
+                        <span>Ditemukan <strong>${tbl._matchedColumns.length} atribut</strong> yang cocok dengan pencarian Anda.</span>
+                    </div>
+                    <span class="text-[10px] font-mono text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded font-semibold">Glosarium dibuka otomatis</span>
+                </div>
+                ` : ''}
 
                 <!-- Metadata Properties & Lineage -->
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-[11px]">
@@ -2241,18 +2523,18 @@ function setupCatalogModal() {
                     <div class="flex items-center justify-between text-[11px]">
                         <span class="font-semibold text-slate-700">Pratinjau Atribut Kolom:</span>
                         <button class="btn-toggle-schema-drawer text-blue-600 hover:text-blue-800 font-semibold flex items-center space-x-1" data-drawer="${drawerId}">
-                            <span>Buka Glosarium Lengkap (${tbl.columns.length})</span>
-                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" id="icon-${drawerId}"></i>
+                            <span>${isAutoExpanded ? 'Tutup Glosarium (Atribut Ditemukan)' : `Buka Glosarium Lengkap (${tbl.columns.length})`}</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200 ${isAutoExpanded ? 'rotate-180' : ''}" id="icon-${drawerId}"></i>
                         </button>
                     </div>
                     <div class="flex flex-wrap gap-1.5">
                         ${previewCols}
-                        ${tbl.columns.length > 8 ? `<span class="text-[11px] text-slate-400 font-mono self-center pl-1">+${tbl.columns.length - 8} lainnya</span>` : ''}
+                        ${tbl.columns.length > 10 ? `<span class="text-[11px] text-slate-400 font-mono self-center pl-1">+${tbl.columns.length - 10} lainnya</span>` : ''}
                     </div>
                 </div>
 
                 <!-- Expandable Full Schema Drawer -->
-                <div id="${drawerId}" class="hidden pt-3 border-t border-slate-200">
+                <div id="${drawerId}" class="${isAutoExpanded ? '' : 'hidden'} pt-3 border-t border-slate-200">
                     <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-[11px]">
@@ -2279,7 +2561,7 @@ function setupCatalogModal() {
                 const fqn = btn.getAttribute("data-fqn");
                 navigator.clipboard.writeText(fqn).then(() => {
                     const originalHtml = btn.innerHTML;
-                    btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i><span class="text-emerald-700">Tersalin!</span>`;
+                    btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i><span class="text-emerald-700 font-bold">Tersalin!</span>`;
                     lucide.createIcons();
                     setTimeout(() => {
                         btn.innerHTML = originalHtml;
@@ -2321,7 +2603,6 @@ function setupCatalogModal() {
                 const filenameElem = document.getElementById("sql-window-filename");
                 if (filenameElem) filenameElem.innerText = `explore_${tblName}.sql`;
 
-                // Alert user
                 console.log(`[Catalog] Loaded ${fqn} into SQL Studio.`);
             });
         });
@@ -2368,23 +2649,45 @@ function setupCatalogModal() {
         });
     }
 
+    // Open Modal Button
     openBtn.addEventListener("click", async () => {
         modal.classList.remove("hidden");
         const content = document.getElementById("modal-catalog-content");
-        content.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Memuat katalog OpenMetadata...</div>`;
 
-        try {
-            const res = await fetch("/api/catalog");
-            const data = await res.json();
-            allCatalogTablesCache = data.tables || [];
-            renderModalTables();
-        } catch (err) {
-            content.innerHTML = `<div class="p-8 text-center text-xs text-red-500">Gagal memuat katalog: ${err.message}</div>`;
+        if (!allCatalogTablesCache || allCatalogTablesCache.length === 0) {
+            content.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Memuat katalog OpenMetadata...</div>`;
+            try {
+                const res = await fetch("/api/catalog");
+                const data = await res.json();
+                allCatalogTablesCache = data.tables || [];
+            } catch (err) {
+                content.innerHTML = `<div class="p-8 text-center text-xs text-red-500">Gagal memuat katalog: ${err.message}</div>`;
+                return;
+            }
+        }
+        renderModalTables();
+        if (searchInput) {
+            setTimeout(() => searchInput.focus(), 50);
         }
     });
 
+    // Real-time search listeners
     if (searchInput) {
-        searchInput.addEventListener("input", () => {
+        ['input', 'keyup', 'search', 'paste', 'change'].forEach(evt => {
+            searchInput.addEventListener(evt, () => {
+                renderModalTables();
+            });
+        });
+    }
+
+    // Clear search button
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener("click", () => {
+            if (searchInput) {
+                searchInput.value = "";
+                searchInput.focus();
+            }
+            clearSearchBtn.classList.add("hidden");
             renderModalTables();
         });
     }
