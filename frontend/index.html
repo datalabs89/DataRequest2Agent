@@ -1075,39 +1075,81 @@
                 </div>
             </div>
 
+            <!-- Period Filter Bar -->
+            <div class="px-4 sm:px-6 py-2.5 bg-slate-100/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center space-x-1.5 overflow-x-auto">
+                    <span class="text-slate-500 font-semibold mr-1 flex items-center space-x-1">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600"></i>
+                        <span>Rentang Periode:</span>
+                    </span>
+                    <button type="button" data-period="all" class="btn-period-filter px-3 py-1 rounded-lg font-semibold transition bg-blue-600 text-white shadow-2xs">Semua Waktu</button>
+                    <button type="button" data-period="today" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">Hari Ini</button>
+                    <button type="button" data-period="7d" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">7 Hari Terakhir</button>
+                    <button type="button" data-period="30d" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">30 Hari Terakhir</button>
+                </div>
+                <div class="flex items-center space-x-1 text-[11px] text-slate-500">
+                    <i data-lucide="trending-up" class="w-3 h-3 text-slate-400"></i>
+                    <span id="period-comparison-label">Membandingkan dengan periode historis sebelumnya</span>
+                </div>
+            </div>
+
             <!-- Modal Scrollable Content -->
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6">
                 <!-- 6 KPI Stat Cards -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] text-blue-700 font-semibold uppercase tracking-wider block">Total Permohonan</span>
-                        <span id="stat-total-requests" class="text-xl sm:text-2xl font-bold text-blue-950 mt-1 block font-mono">-</span>
-                        <span class="text-[10px] text-blue-600 mt-0.5 block">Seluruh Riwayat CMS</span>
+                    <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                        <div>
+                            <span class="text-[11px] text-blue-700 font-semibold uppercase tracking-wider block">Total Permohonan</span>
+                            <span id="stat-total-requests" class="text-xl sm:text-2xl font-bold text-blue-950 mt-1 block font-mono">-</span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t border-blue-200/60 flex items-center justify-center">
+                            <span id="delta-total-requests" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">...</span>
+                        </div>
                     </div>
-                    <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] text-emerald-700 font-semibold uppercase tracking-wider block">Kepatuhan SLA</span>
-                        <span id="stat-compliance-rate" class="text-xl sm:text-2xl font-bold text-emerald-950 mt-1 block font-mono">-</span>
-                        <span class="text-[10px] text-emerald-600 mt-0.5 block">Target &gt; 85%</span>
+                    <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                        <div>
+                            <span class="text-[11px] text-emerald-700 font-semibold uppercase tracking-wider block">Kepatuhan SLA</span>
+                            <span id="stat-compliance-rate" class="text-xl sm:text-2xl font-bold text-emerald-950 mt-1 block font-mono">-</span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t border-emerald-200/60 flex items-center justify-center">
+                            <span id="delta-compliance-rate" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">...</span>
+                        </div>
                     </div>
-                    <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] text-purple-700 font-semibold uppercase tracking-wider block">Baris Diserahkan</span>
-                        <span id="stat-total-rows" class="text-xl sm:text-2xl font-bold text-purple-950 mt-1 block font-mono">-</span>
-                        <span class="text-[10px] text-purple-600 mt-0.5 block">Rekor Data DWH</span>
+                    <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                        <div>
+                            <span class="text-[11px] text-purple-700 font-semibold uppercase tracking-wider block">Baris Diserahkan</span>
+                            <span id="stat-total-rows" class="text-xl sm:text-2xl font-bold text-purple-950 mt-1 block font-mono">-</span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t border-purple-200/60 flex items-center justify-center">
+                            <span id="delta-total-rows" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">...</span>
+                        </div>
                     </div>
-                    <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] text-amber-700 font-semibold uppercase tracking-wider block">Atribut PII Masked</span>
-                        <span id="stat-pii-columns" class="text-xl sm:text-2xl font-bold text-amber-950 mt-1 block font-mono">-</span>
-                        <span class="text-[10px] text-amber-600 mt-0.5 block">UU PDP No. 27/2022</span>
+                    <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                        <div>
+                            <span class="text-[11px] text-amber-700 font-semibold uppercase tracking-wider block">Atribut PII Masked</span>
+                            <span id="stat-pii-columns" class="text-xl sm:text-2xl font-bold text-amber-950 mt-1 block font-mono">-</span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t border-amber-200/60 flex items-center justify-center">
+                            <span id="delta-pii-columns" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">...</span>
+                        </div>
                     </div>
-                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] text-indigo-700 font-semibold uppercase tracking-wider block">Rata-rata Latensi</span>
-                        <span id="stat-avg-latency" class="text-xl sm:text-2xl font-bold text-indigo-950 mt-1 block font-mono">-</span>
-                        <span class="text-[10px] text-indigo-600 mt-0.5 block">Eksekusi DWH CEISA</span>
+                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                        <div>
+                            <span class="text-[11px] text-indigo-700 font-semibold uppercase tracking-wider block">Rata-rata Latensi</span>
+                            <span id="stat-avg-latency" class="text-xl sm:text-2xl font-bold text-indigo-950 mt-1 block font-mono">-</span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t border-indigo-200/60 flex items-center justify-center">
+                            <span id="delta-avg-latency" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">...</span>
+                        </div>
                     </div>
-                    <div class="bg-teal-50/80 border border-teal-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] text-teal-700 font-semibold uppercase tracking-wider block">Digital Seal Rate</span>
-                        <span id="stat-digital-seal" class="text-xl sm:text-2xl font-bold text-teal-950 mt-1 block font-mono">-</span>
-                        <span class="text-[10px] text-teal-600 mt-0.5 block">Anti-Tampering SHA256</span>
+                    <div class="bg-teal-50/80 border border-teal-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                        <div>
+                            <span class="text-[11px] text-teal-700 font-semibold uppercase tracking-wider block">Digital Seal Rate</span>
+                            <span id="stat-digital-seal" class="text-xl sm:text-2xl font-bold text-teal-950 mt-1 block font-mono">-</span>
+                        </div>
+                        <div class="mt-2 pt-1.5 border-t border-teal-200/60 flex items-center justify-center">
+                            <span id="delta-digital-seal" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">...</span>
+                        </div>
                     </div>
                 </div>
 

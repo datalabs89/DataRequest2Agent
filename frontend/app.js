@@ -2010,6 +2010,307 @@ let chartStatusDonutInstance = null;
 let chartBizProcessInstance = null;
 let chartTimelineTrendInstance = null;
 
+let currentAnalyticsPeriod = "all";
+
+function renderDeltaBadge(elemId, deltaObj, isInverse = false) {
+    const elem = document.getElementById(elemId);
+    if (!elem) return;
+
+    if (!deltaObj) {
+        elem.className = "text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center bg-slate-100 text-slate-500 border border-slate-200";
+        elem.innerHTML = `<span>0.0%</span>`;
+        return;
+    }
+
+    const val = deltaObj.value || 0;
+    const formatted = deltaObj.formatted || `${val}%`;
+
+    // Untuk latensi (isInverse = true), penurunan durasi adalah hal positif (warna hijau)
+    const isPositive = isInverse ? val < 0 : val > 0;
+    const isNegative = isInverse ? val > 0 : val < 0;
+
+    let bgClass = "bg-slate-100 text-slate-700 border border-slate-200";
+    let icon = `<i data-lucide="minus" class="w-3 h-3 inline mr-0.5"></i>`;
+
+    if (isPositive) {
+        bgClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
+        icon = `<i data-lucide="trending-up" class="w-3 h-3 inline mr-0.5"></i>`;
+    } else if (isNegative) {
+        bgClass = isInverse
+            ? "bg-amber-100 text-amber-800 border border-amber-300"
+            : "bg-red-100 text-red-800 border border-red-300";
+        icon = `<i data-lucide="trending-down" class="w-3 h-3 inline mr-0.5"></i>`;
+    }
+
+    elem.className = `text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center shadow-2xs ${bgClass}`;
+    elem.innerHTML = `${icon}<span>${formatted}</span>`;
+}
+
+async function fetchAndRenderAnalytics(period = "all") {
+    try {
+        const res = await fetch(`/api/analytics?period=${encodeURIComponent(period)}`);
+        const data = await res.json();
+
+        // Label perbandingan periode
+        const compLabelElem = document.getElementById("period-comparison-label");
+        if (compLabelElem && data.comparison_label) {
+            compLabelElem.innerText = `Membandingkan tren ${data.comparison_label}`;
+        }
+
+        // 1. Top 6 KPI Cards
+        const reqCount = data.total_requests || 0;
+        document.getElementById("stat-total-requests").innerText = reqCount;
+        document.getElementById("stat-compliance-rate").innerText = `${data.compliance_rate_pct || 100}%`;
+        document.getElementById("stat-total-rows").innerText = (data.total_rows_delivered || 0).toLocaleString();
+        document.getElementById("stat-pii-columns").innerText = `${data.pii_columns_protected_count || reqCount * 6}`;
+        document.getElementById("stat-avg-latency").innerText = `${data.avg_latency_ms || 38.5} ms`;
+        document.getElementById("stat-digital-seal").innerText = `${data.digital_seal_pct || 100}%`;
+
+        // 2. Render 6 Delta Change Badges
+        const deltas = data.deltas || {};
+        renderDeltaBadge("delta-total-requests", deltas.total_requests, false);
+        renderDeltaBadge("delta-compliance-rate", deltas.compliance_rate, false);
+        renderDeltaBadge("delta-total-rows", deltas.total_rows, false);
+        renderDeltaBadge("delta-pii-columns", deltas.pii_protected, false);
+        renderDeltaBadge("delta-avg-latency", deltas.avg_latency, true); // Latensi: penurunan = perbaikan hijau
+        renderDeltaBadge("delta-digital-seal", deltas.digital_seal, false);
+
+        // Sub-pill counts
+        const approvedCount = data.approved_count || 0;
+        const revisionCount = data.revision_count || 0;
+        const rejectedCount = data.rejected_count || 0;
+        const pillApp = document.getElementById("pill-approved-count");
+        const pillRev = document.getElementById("pill-revision-count");
+        const pillRej = document.getElementById("pill-rejected-count");
+        if (pillApp) pillApp.innerText = approvedCount;
+        if (pillRev) pillRev.innerText = revisionCount;
+        if (pillRej) pillRej.innerText = rejectedCount;
+
+        // 3. UU PDP Masking Breakdown Cards
+        const pii = data.pii_breakdown || {};
+        const npwpElem = document.getElementById("stat-npwp-masked");
+        const nikElem = document.getElementById("stat-nik-masked");
+        const namaElem = document.getElementById("stat-nama-masked");
+        const phoneElem = document.getElementById("stat-kontak-masked");
+        if (npwpElem) npwpElem.innerText = `${(pii.npwp_masked ?? reqCount * 2).toLocaleString()} Rekor`;
+        if (nikElem) nikElem.innerText = `${(pii.nik_masked ?? reqCount).toLocaleString()} Rekor`;
+        if (namaElem) namaElem.innerText = `${(pii.nama_masked ?? reqCount * 2).toLocaleString()} Rekor`;
+        if (phoneElem) phoneElem.innerText = `${(pii.phone_masked ?? reqCount).toLocaleString()} Rekor`;
+
+        // 4. Render Chart 1: Donut Status Keputusan Verifikator
+        if (typeof Chart !== "undefined") {
+            const donutCtx = document.getElementById("chart-status-donut");
+            if (donutCtx) {
+                if (chartStatusDonutInstance) {
+                    chartStatusDonutInstance.destroy();
+                    chartStatusDonutInstance = null;
+                }
+                chartStatusDonutInstance = new Chart(donutCtx, {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Disetujui Resmi", "Perlu Revisi", "Ditolak / Disangkal"],
+                        datasets: [{
+                            data: [approvedCount, revisionCount, rejectedCount],
+                            backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
+                            hoverBackgroundColor: ["#059669", "#d97706", "#dc2626"],
+                            borderWidth: 2,
+                            borderColor: "#ffffff"
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: "68%",
+                        plugins: {
+                            legend: {
+                                position: "bottom",
+                                labels: {
+                                    boxWidth: 12,
+                                    font: { size: 11, family: "inherit" },
+                                    color: "#475569"
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 5. Render Chart 2: Proses Bisnis Kepabeanan
+            const bizCtx = document.getElementById("chart-biz-process");
+            if (bizCtx) {
+                if (chartBizProcessInstance) {
+                    chartBizProcessInstance.destroy();
+                    chartBizProcessInstance = null;
+                }
+                const bizData = data.business_process_distribution || {
+                    "Ekspor (PEB BC 3.0)": reqCount,
+                    "Impor (PIB BC 2.0)": 0,
+                    "Cukai (BKC)": 0,
+                    "Manifest (BC 1.1)": 0,
+                    "TPB / Fasilitas Berikat": 0
+                };
+                const bizLabels = Object.keys(bizData);
+                const bizValues = Object.values(bizData);
+
+                chartBizProcessInstance = new Chart(bizCtx, {
+                    type: "bar",
+                    data: {
+                        labels: bizLabels,
+                        datasets: [{
+                            label: "Jumlah Permohonan",
+                            data: bizValues,
+                            backgroundColor: ["#2563eb", "#0d9488", "#d97706", "#7c3aed", "#64748b"],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: "y",
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { color: "#f1f5f9" },
+                                ticks: { precision: 0, font: { size: 10 } }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+
+            // 6. Render Chart 3: Timeline Aktivitas Pemenuhan Data
+            const timelineCtx = document.getElementById("chart-timeline-trend");
+            if (timelineCtx) {
+                if (chartTimelineTrendInstance) {
+                    chartTimelineTrendInstance.destroy();
+                    chartTimelineTrendInstance = null;
+                }
+                const trends = data.timeline_trends && data.timeline_trends.length > 0
+                    ? data.timeline_trends
+                    : [{ date: new Date().toISOString().split("T")[0], total: reqCount, approved: approvedCount, rows: data.total_rows_delivered || 0 }];
+                
+                const timeLabels = trends.map(t => t.date);
+                const timeTotals = trends.map(t => t.total);
+                const timeApproved = trends.map(t => t.approved);
+
+                chartTimelineTrendInstance = new Chart(timelineCtx, {
+                    type: "line",
+                    data: {
+                        labels: timeLabels,
+                        datasets: [
+                            {
+                                label: "Total Permohonan Masuk",
+                                data: timeTotals,
+                                borderColor: "#4f46e5",
+                                backgroundColor: "rgba(79, 70, 229, 0.1)",
+                                tension: 0.3,
+                                fill: true,
+                                pointRadius: 4
+                            },
+                            {
+                                label: "Disetujui Resmi (Fulfillment)",
+                                data: timeApproved,
+                                borderColor: "#10b981",
+                                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                                tension: 0.3,
+                                fill: false,
+                                pointRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: "#f1f5f9" },
+                                ticks: { precision: 0, font: { size: 10 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: "top",
+                                labels: { boxWidth: 10, font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 7. Render Departemen List
+        const deptList = document.getElementById("analytics-dept-list");
+        if (deptList) {
+            deptList.innerHTML = "";
+            const depts = data.department_distribution || {};
+            if (Object.keys(depts).length === 0) {
+                deptList.innerHTML = `<div class="text-slate-400 italic">Belum ada data permohonan.</div>`;
+            } else {
+                for (const [dept, count] of Object.entries(depts)) {
+                    const pct = reqCount > 0 ? Math.round((count / reqCount) * 100) : 0;
+                    let barColor = "bg-blue-600";
+                    let badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
+                    if (dept.includes("Bea dan Cukai")) {
+                        barColor = "bg-blue-700";
+                        badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
+                    } else if (dept.includes("Internal Kemenkeu")) {
+                        barColor = "bg-amber-600";
+                        badgeColor = "bg-amber-50 text-amber-900 border-amber-200";
+                    } else if (dept.includes("Eksternal")) {
+                        barColor = "bg-teal-600";
+                        badgeColor = "bg-teal-50 text-teal-900 border-teal-200";
+                    }
+
+                    const item = document.createElement("div");
+                    item.className = "space-y-1 bg-white p-2 rounded-lg border border-slate-200";
+                    item.innerHTML = `
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-semibold px-2 py-0.5 rounded text-[10px] border ${badgeColor}">${dept}</span>
+                            <span class="text-slate-600 font-mono font-bold">${count} req (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1">
+                            <div class="${barColor} h-1.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                    `;
+                    deptList.appendChild(item);
+                }
+            }
+        }
+
+        // 8. Render Dialect Distribution List
+        const dialectList = document.getElementById("analytics-dialect-list");
+        if (dialectList) {
+            dialectList.innerHTML = "";
+            const dialects = data.dialect_distribution || { "PostgreSQL": reqCount, "Oracle": 0, "SQLite": 0 };
+            for (const [dName, dCount] of Object.entries(dialects)) {
+                const card = document.createElement("div");
+                card.className = "bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs";
+                card.innerHTML = `
+                    <span class="text-[10px] text-slate-500 font-bold block uppercase">${dName}</span>
+                    <span class="text-sm font-bold text-slate-900 font-mono mt-0.5 block">${dCount}</span>
+                `;
+                dialectList.appendChild(card);
+            }
+        }
+
+        lucide.createIcons();
+    } catch (err) {
+        console.error("Gagal memuat analitik:", err);
+    }
+}
+
 function setupAnalyticsModal() {
     const modal = document.getElementById("analytics-modal");
     const openBtn = document.getElementById("btn-open-analytics");
@@ -2031,255 +2332,23 @@ function setupAnalyticsModal() {
         });
     }
 
-    openBtn.addEventListener("click", async () => {
+    // Attach click listeners to period filter buttons
+    const periodButtons = modal.querySelectorAll(".btn-period-filter");
+    periodButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            periodButtons.forEach(b => {
+                b.className = "btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition";
+            });
+            btn.className = "btn-period-filter px-3 py-1 rounded-lg font-semibold transition bg-blue-600 text-white shadow-2xs";
+            const period = btn.getAttribute("data-period") || "all";
+            currentAnalyticsPeriod = period;
+            fetchAndRenderAnalytics(period);
+        });
+    });
+
+    openBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
-        try {
-            const res = await fetch("/api/analytics");
-            const data = await res.json();
-
-            // 1. Top 6 KPI Cards
-            const reqCount = data.total_requests || 0;
-            document.getElementById("stat-total-requests").innerText = reqCount;
-            document.getElementById("stat-compliance-rate").innerText = `${data.compliance_rate_pct || 100}%`;
-            document.getElementById("stat-total-rows").innerText = (data.total_rows_delivered || 0).toLocaleString();
-            document.getElementById("stat-pii-columns").innerText = `${data.pii_columns_protected_count || reqCount * 6}`;
-            document.getElementById("stat-avg-latency").innerText = `${data.avg_latency_ms || 38.5} ms`;
-            document.getElementById("stat-digital-seal").innerText = `${data.digital_seal_pct || 100}%`;
-
-            // Sub-pill counts
-            const approvedCount = data.approved_count || 0;
-            const revisionCount = data.revision_count || 0;
-            const rejectedCount = data.rejected_count || 0;
-            const pillApp = document.getElementById("pill-approved-count");
-            const pillRev = document.getElementById("pill-revision-count");
-            const pillRej = document.getElementById("pill-rejected-count");
-            if (pillApp) pillApp.innerText = approvedCount;
-            if (pillRev) pillRev.innerText = revisionCount;
-            if (pillRej) pillRej.innerText = rejectedCount;
-
-            // 2. UU PDP Masking Breakdown Cards
-            const pii = data.pii_breakdown || {};
-            const npwpElem = document.getElementById("stat-npwp-masked");
-            const nikElem = document.getElementById("stat-nik-masked");
-            const namaElem = document.getElementById("stat-nama-masked");
-            const phoneElem = document.getElementById("stat-kontak-masked");
-            if (npwpElem) npwpElem.innerText = `${(pii.npwp_masked ?? reqCount * 2).toLocaleString()} Rekor`;
-            if (nikElem) nikElem.innerText = `${(pii.nik_masked ?? reqCount).toLocaleString()} Rekor`;
-            if (namaElem) namaElem.innerText = `${(pii.nama_masked ?? reqCount * 2).toLocaleString()} Rekor`;
-            if (phoneElem) phoneElem.innerText = `${(pii.phone_masked ?? reqCount).toLocaleString()} Rekor`;
-
-            // 3. Render Chart 1: Donut Status Keputusan Verifikator
-            if (typeof Chart !== "undefined") {
-                const donutCtx = document.getElementById("chart-status-donut");
-                if (donutCtx) {
-                    if (chartStatusDonutInstance) {
-                        chartStatusDonutInstance.destroy();
-                        chartStatusDonutInstance = null;
-                    }
-                    chartStatusDonutInstance = new Chart(donutCtx, {
-                        type: "doughnut",
-                        data: {
-                            labels: ["Disetujui Resmi", "Perlu Revisi", "Ditolak / Disangkal"],
-                            datasets: [{
-                                data: [approvedCount, revisionCount, rejectedCount],
-                                backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
-                                hoverBackgroundColor: ["#059669", "#d97706", "#dc2626"],
-                                borderWidth: 2,
-                                borderColor: "#ffffff"
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: "68%",
-                            plugins: {
-                                legend: {
-                                    position: "bottom",
-                                    labels: {
-                                        boxWidth: 12,
-                                        font: { size: 11, family: "inherit" },
-                                        color: "#475569"
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-                // 4. Render Chart 2: Proses Bisnis Kepabeanan
-                const bizCtx = document.getElementById("chart-biz-process");
-                if (bizCtx) {
-                    if (chartBizProcessInstance) {
-                        chartBizProcessInstance.destroy();
-                        chartBizProcessInstance = null;
-                    }
-                    const bizData = data.business_process_distribution || {
-                        "Ekspor (PEB BC 3.0)": reqCount,
-                        "Impor (PIB BC 2.0)": 0,
-                        "Cukai (BKC)": 0,
-                        "Manifest (BC 1.1)": 0,
-                        "TPB / Fasilitas Berikat": 0
-                    };
-                    const bizLabels = Object.keys(bizData);
-                    const bizValues = Object.values(bizData);
-
-                    chartBizProcessInstance = new Chart(bizCtx, {
-                        type: "bar",
-                        data: {
-                            labels: bizLabels,
-                            datasets: [{
-                                label: "Jumlah Permohonan",
-                                data: bizValues,
-                                backgroundColor: ["#2563eb", "#0d9488", "#d97706", "#7c3aed", "#64748b"],
-                                borderRadius: 6
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            indexAxis: "y",
-                            scales: {
-                                x: {
-                                    beginAtZero: true,
-                                    grid: { color: "#f1f5f9" },
-                                    ticks: { precision: 0, font: { size: 10 } }
-                                },
-                                y: {
-                                    grid: { display: false },
-                                    ticks: { font: { size: 10 } }
-                                }
-                            },
-                            plugins: {
-                                legend: { display: false }
-                            }
-                        }
-                    });
-                }
-
-                // 5. Render Chart 3: Timeline Aktivitas Pemenuhan Data
-                const timelineCtx = document.getElementById("chart-timeline-trend");
-                if (timelineCtx) {
-                    if (chartTimelineTrendInstance) {
-                        chartTimelineTrendInstance.destroy();
-                        chartTimelineTrendInstance = null;
-                    }
-                    const trends = data.timeline_trends && data.timeline_trends.length > 0
-                        ? data.timeline_trends
-                        : [{ date: new Date().toISOString().split("T")[0], total: reqCount, approved: approvedCount, rows: data.total_rows_delivered || 0 }];
-                    
-                    const timeLabels = trends.map(t => t.date);
-                    const timeTotals = trends.map(t => t.total);
-                    const timeApproved = trends.map(t => t.approved);
-
-                    chartTimelineTrendInstance = new Chart(timelineCtx, {
-                        type: "line",
-                        data: {
-                            labels: timeLabels,
-                            datasets: [
-                                {
-                                    label: "Total Permohonan Masuk",
-                                    data: timeTotals,
-                                    borderColor: "#4f46e5",
-                                    backgroundColor: "rgba(79, 70, 229, 0.1)",
-                                    tension: 0.3,
-                                    fill: true,
-                                    pointRadius: 4
-                                },
-                                {
-                                    label: "Disetujui Resmi (Fulfillment)",
-                                    data: timeApproved,
-                                    borderColor: "#10b981",
-                                    backgroundColor: "rgba(16, 185, 129, 0.1)",
-                                    tension: 0.3,
-                                    fill: false,
-                                    pointRadius: 4
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { color: "#f1f5f9" },
-                                    ticks: { precision: 0, font: { size: 10 } }
-                                },
-                                x: {
-                                    grid: { display: false },
-                                    ticks: { font: { size: 10 } }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    position: "top",
-                                    labels: { boxWidth: 10, font: { size: 10 } }
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // 6. Render Departemen List
-            const deptList = document.getElementById("analytics-dept-list");
-            if (deptList) {
-                deptList.innerHTML = "";
-                const depts = data.department_distribution || {};
-                if (Object.keys(depts).length === 0) {
-                    deptList.innerHTML = `<div class="text-slate-400 italic">Belum ada data permohonan.</div>`;
-                } else {
-                    for (const [dept, count] of Object.entries(depts)) {
-                        const pct = reqCount > 0 ? Math.round((count / reqCount) * 100) : 0;
-                        let barColor = "bg-blue-600";
-                        let badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
-                        if (dept.includes("Bea dan Cukai")) {
-                            barColor = "bg-blue-700";
-                            badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
-                        } else if (dept.includes("Internal Kemenkeu")) {
-                            barColor = "bg-amber-600";
-                            badgeColor = "bg-amber-50 text-amber-900 border-amber-200";
-                        } else if (dept.includes("Eksternal")) {
-                            barColor = "bg-teal-600";
-                            badgeColor = "bg-teal-50 text-teal-900 border-teal-200";
-                        }
-
-                        const item = document.createElement("div");
-                        item.className = "space-y-1 bg-white p-2 rounded-lg border border-slate-200";
-                        item.innerHTML = `
-                            <div class="flex justify-between items-center text-xs">
-                                <span class="font-semibold px-2 py-0.5 rounded text-[10px] border ${badgeColor}">${dept}</span>
-                                <span class="text-slate-600 font-mono font-bold">${count} req (${pct}%)</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1">
-                                <div class="${barColor} h-1.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
-                            </div>
-                        `;
-                        deptList.appendChild(item);
-                    }
-                }
-            }
-
-            // 7. Render Dialect Distribution List
-            const dialectList = document.getElementById("analytics-dialect-list");
-            if (dialectList) {
-                dialectList.innerHTML = "";
-                const dialects = data.dialect_distribution || { "PostgreSQL": reqCount, "Oracle": 0, "SQLite": 0 };
-                for (const [dName, dCount] of Object.entries(dialects)) {
-                    const card = document.createElement("div");
-                    card.className = "bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs";
-                    card.innerHTML = `
-                        <span class="text-[10px] text-slate-500 font-bold block uppercase">${dName}</span>
-                        <span class="text-sm font-bold text-slate-900 font-mono mt-0.5 block">${dCount}</span>
-                    `;
-                    dialectList.appendChild(card);
-                }
-            }
-
-            lucide.createIcons();
-        } catch (err) {
-            console.error("Gagal memuat analitik:", err);
-        }
+        fetchAndRenderAnalytics(currentAnalyticsPeriod);
     });
 
     closeBtn.addEventListener("click", () => modal.classList.add("hidden"));

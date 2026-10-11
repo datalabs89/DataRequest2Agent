@@ -229,9 +229,9 @@ def get_request_history():
     return {"history": coordinator.history_mgr.get_all()}
 
 @app.get("/api/analytics")
-def get_governance_analytics():
+def get_governance_analytics(period: str = "all"):
     """Mengambil metrik ringkasan analitik kepatuhan dan tata kelola data."""
-    return coordinator.history_mgr.get_analytics_summary()
+    return coordinator.history_mgr.get_analytics_summary(period=period)
 
 @app.get("/api/history/export")
 def export_history():
