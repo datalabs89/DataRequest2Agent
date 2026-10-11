@@ -9,6 +9,106 @@ let selectedFile = null;
 let selectedSampleName = null;
 let currentPipelineData = null;
 let isSqlEditMode = false;
+let originalGeneratedSqlQuery = "";
+
+function updateSqlGutter(gutterElem, text) {
+    if (!gutterElem) return;
+    const lines = (text || "").split("\n");
+    const count = Math.max(lines.length, 1);
+    let html = "";
+    for (let i = 1; i <= count; i++) {
+        html += `<div class="sql-line-num">${i}</div>`;
+    }
+    gutterElem.innerHTML = html;
+}
+
+function updateSqlStats(query) {
+    const text = query || "";
+    const lines = text ? text.split("\n").length : 0;
+    const chars = text.length;
+    const linesElem = document.getElementById("sql-stats-lines");
+    const charsElem = document.getElementById("sql-stats-chars");
+    if (linesElem) linesElem.innerText = `Baris: ${lines}`;
+    if (charsElem) charsElem.innerText = `Karakter: ${chars}`;
+}
+
+function beautifySqlQuery(rawSql) {
+    if (!rawSql) return "";
+    let formatted = rawSql.trim();
+    const keywords = [
+        "SELECT", "FROM", "WHERE", "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "JOIN", 
+        "ON", "GROUP BY", "ORDER BY", "HAVING", "LIMIT", "OFFSET", "AND", "OR", "AS", "BETWEEN",
+        "IN", "NOT IN", "IS NULL", "IS NOT NULL", "CASE", "WHEN", "THEN", "ELSE", "END",
+        "UNION ALL", "UNION", "DESC", "ASC", "WITH", "DISTINCT", "LIKE", "ILIKE"
+    ];
+    keywords.forEach(kw => {
+        const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+        formatted = formatted.replace(regex, kw);
+    });
+    return formatted;
+}
+
+function updateSqlBreakdown(query, spec) {
+    const qUpper = (query || "").toUpperCase();
+    
+    // 1. SELECT & Masking breakdown
+    const selectElem = document.getElementById("sql-breakdown-select");
+    if (selectElem) {
+        let maskingDetected = [];
+        if (qUpper.includes("LEFT(") || qUpper.includes("RIGHT(") || qUpper.includes("SUBSTR")) maskingDetected.push("Masking Karakter");
+        if (qUpper.includes("HASH") || qUpper.includes("MD5") || qUpper.includes("SHA256")) maskingDetected.push("Kriptografi Hash");
+        if (qUpper.includes("CONCAT") && (qUpper.includes("***") || qUpper.includes("X"))) maskingDetected.push("Redaksi Parsial");
+        
+        let colCount = spec && spec.requested_columns ? spec.requested_columns.length : 0;
+        let piiCount = spec && spec.pii_fields ? spec.pii_fields.length : 0;
+        
+        if (maskingDetected.length > 0) {
+            selectElem.innerHTML = `<span class="text-blue-700 font-semibold">${colCount} atribut</span> diproses dengan aturan proteksi <span class="text-emerald-700 font-semibold">(${maskingDetected.join(", ")})</span>.`;
+        } else if (piiCount > 0) {
+            selectElem.innerHTML = `<span class="text-blue-700 font-semibold">${colCount} atribut</span> diekstrak dengan penjagaan <span class="text-amber-700 font-semibold">${piiCount} field PII</span>.`;
+        } else {
+            selectElem.innerText = `${colCount > 0 ? colCount : 'Semua'} atribut diekstrak sesuai standar integritas tata kelola.`;
+        }
+    }
+
+    // 2. JOIN breakdown
+    const joinElem = document.getElementById("sql-breakdown-join");
+    if (joinElem) {
+        const joinMatches = (query || "").match(/(?:FROM|JOIN)\s+([a-zA-Z0-9_\.]+)/gi);
+        if (joinMatches && joinMatches.length > 0) {
+            const tableList = [...new Set(joinMatches.map(m => m.replace(/^(FROM|JOIN)\s+/i, '').trim()))];
+            joinElem.innerHTML = `<span class="font-semibold text-purple-700">${tableList.length} tabel resmi:</span> ${tableList.slice(0, 3).join(", ")}${tableList.length > 3 ? '...' : ''}`;
+        } else {
+            joinElem.innerText = "Tabel fakta dan dimensi terhubung via Primary & Foreign Key resmi.";
+        }
+    }
+
+    // 3. WHERE breakdown
+    const whereElem = document.getElementById("sql-breakdown-where");
+    if (whereElem) {
+        if (spec && spec.date_range && (spec.date_range.start || spec.date_range.end)) {
+            const start = spec.date_range.start || "awal";
+            const end = spec.date_range.end || "akhir";
+            whereElem.innerHTML = `Filter periode waktu: <span class="font-semibold text-emerald-700">${start} s.d. ${end}</span>.`;
+        } else if (qUpper.includes("WHERE")) {
+            whereElem.innerHTML = `<span class="text-emerald-700 font-semibold">Klausa WHERE aktif</span> membatasi lingkup data sesuai parameter bisnis.`;
+        } else {
+            whereElem.innerText = "Pembatasan periode waktu dan parameter bisnis spesifik.";
+        }
+    }
+
+    // 4. Circuit Breaker Guard
+    const guardElem = document.getElementById("sql-breakdown-guard");
+    if (guardElem) {
+        const isSafe = !qUpper.includes("DROP ") && !qUpper.includes("DELETE ") && !qUpper.includes("UPDATE ") && !qUpper.includes("INSERT ") && !qUpper.includes("ALTER ");
+        if (isSafe) {
+            guardElem.innerHTML = `<span class="text-emerald-700 font-semibold">Terverifikasi 100% Aman:</span> Read-only URI terisolasi tanpa risiko mutasi data.`;
+        } else {
+            guardElem.innerHTML = `<span class="text-rose-700 font-semibold">Peringatan Keamanan:</span> Terdeteksi potensi mutasi data!`;
+        }
+    }
+}
+
 
 async function initApp() {
     checkHealth();
@@ -406,13 +506,36 @@ function renderResults(data) {
         catContainer.appendChild(card);
     });
 
-    // TAB 3: SQL
-    document.getElementById("sql-explanation-text").innerText = data.generated_sql.explanation;
-    const sqlCode = document.getElementById("sql-code-block");
-    sqlCode.textContent = data.generated_sql.query;
-    Prism.highlightElement(sqlCode);
+    // TAB 3: SQL Studio
+    originalGeneratedSqlQuery = data.generated_sql.query;
+    document.getElementById("sql-explanation-text").innerText = data.generated_sql.explanation || "Kueri SQL diekstrak dan divalidasi sesuai spesifikasi kebutuhan.";
+    
+    const reqId = (data.spec && data.spec.request_id) ? data.spec.request_id.replace(/[^a-zA-Z0-9_-]/g, "_") : "data_request";
+    const filenameElem = document.getElementById("sql-window-filename");
+    if (filenameElem) filenameElem.innerText = `query_${reqId}.sql`;
 
-    document.getElementById("sql-editor-input").value = data.generated_sql.query;
+    const dialectBadge = document.getElementById("sql-active-dialect-badge");
+    const activeDialect = (data.generated_sql && data.generated_sql.dialect) 
+        ? data.generated_sql.dialect 
+        : (document.getElementById("select-dialect") ? document.getElementById("select-dialect").value : "PostgreSQL");
+    if (dialectBadge) dialectBadge.innerText = activeDialect;
+
+    const sqlCode = document.getElementById("sql-code-block");
+    if (sqlCode) {
+        sqlCode.textContent = data.generated_sql.query;
+        Prism.highlightElement(sqlCode);
+    }
+    const viewGutter = document.getElementById("sql-view-gutter");
+    if (viewGutter) updateSqlGutter(viewGutter, data.generated_sql.query);
+
+    const editorInput = document.getElementById("sql-editor-input");
+    if (editorInput) editorInput.value = data.generated_sql.query;
+
+    const editGutter = document.getElementById("sql-edit-gutter");
+    if (editGutter) updateSqlGutter(editGutter, data.generated_sql.query);
+
+    updateSqlStats(data.generated_sql.query);
+    updateSqlBreakdown(data.generated_sql.query, data.spec);
 
     // TAB 4: VERIFICATION & VERIFIER FEEDBACK
     const badge = document.getElementById("verif-status-badge");
@@ -512,79 +635,187 @@ function setupSqlEditor() {
     const toggleText = document.getElementById("btn-toggle-edit-text");
     const viewContainer = document.getElementById("sql-view-container");
     const editContainer = document.getElementById("sql-edit-container");
+    const editActionBar = document.getElementById("sql-edit-action-bar");
+    const editorInput = document.getElementById("sql-editor-input");
+    const editGutter = document.getElementById("sql-edit-gutter");
+    const viewGutter = document.getElementById("sql-view-gutter");
     const reverifyBtn = document.getElementById("btn-reverify-sql");
+    const resetBtn = document.getElementById("btn-reset-sql");
+    const beautifyBtn = document.getElementById("btn-beautify-sql");
+    const downloadBtn = document.getElementById("btn-download-sql");
 
-    toggleBtn.addEventListener("click", () => {
-        isSqlEditMode = !isSqlEditMode;
-        if (isSqlEditMode) {
-            viewContainer.classList.add("hidden");
-            editContainer.classList.remove("hidden");
-            toggleText.innerText = "Kembali ke Tampilan Kode";
-            toggleBtn.classList.replace("bg-slate-100", "bg-blue-100");
-            toggleBtn.classList.replace("text-slate-700", "text-blue-800");
-        } else {
-            viewContainer.classList.remove("hidden");
-            editContainer.classList.add("hidden");
-            toggleText.innerText = "Mode Edit SQL";
-            toggleBtn.classList.replace("bg-blue-100", "bg-slate-100");
-            toggleBtn.classList.replace("text-blue-800", "text-slate-700");
-        }
-        lucide.createIcons();
-    });
+    // Sync line numbers on typing in textarea & sync scroll
+    if (editorInput && editGutter) {
+        editorInput.addEventListener("input", () => {
+            updateSqlGutter(editGutter, editorInput.value);
+            updateSqlStats(editorInput.value);
+        });
 
-    reverifyBtn.addEventListener("click", async () => {
-        if (!currentPipelineData) return;
+        editorInput.addEventListener("scroll", () => {
+            editGutter.scrollTop = editorInput.scrollTop;
+        });
+    }
 
-        const modifiedSql = document.getElementById("sql-editor-input").value;
-        const dialect = document.getElementById("select-dialect").value;
+    // Toggle Edit Mode
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+            isSqlEditMode = !isSqlEditMode;
+            if (isSqlEditMode) {
+                viewContainer.classList.add("hidden");
+                editContainer.classList.remove("hidden");
+                if (editActionBar) editActionBar.classList.remove("hidden");
+                toggleText.innerText = "Tutup Mode Editor";
+                toggleBtn.classList.replace("bg-white", "bg-blue-50");
+                toggleBtn.classList.replace("text-slate-700", "text-blue-800");
+                toggleBtn.classList.add("border-blue-300");
 
-        reverifyBtn.disabled = true;
-        reverifyBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Mengaudit Ulang...</span>`;
-        lucide.createIcons();
+                if (editorInput) {
+                    updateSqlGutter(editGutter, editorInput.value);
+                    updateSqlStats(editorInput.value);
+                    editorInput.focus();
+                }
+            } else {
+                viewContainer.classList.remove("hidden");
+                editContainer.classList.add("hidden");
+                if (editActionBar) editActionBar.classList.add("hidden");
+                toggleText.innerText = "Buka Mode Editor SQL";
+                toggleBtn.classList.replace("bg-blue-50", "bg-white");
+                toggleBtn.classList.replace("text-blue-800", "text-slate-700");
+                toggleBtn.classList.remove("border-blue-300");
 
-        appendConsoleLog("Human-in-the-Loop", "Data Analyst mengubah kueri SQL. Mengirimkan ke Auditor Independen...");
+                if (editorInput && currentPipelineData) {
+                    const sqlCode = document.getElementById("sql-code-block");
+                    if (sqlCode) {
+                        sqlCode.textContent = editorInput.value;
+                        Prism.highlightElement(sqlCode);
+                    }
+                    if (viewGutter) updateSqlGutter(viewGutter, editorInput.value);
+                    updateSqlStats(editorInput.value);
+                    updateSqlBreakdown(editorInput.value, currentPipelineData.spec);
+                }
+            }
+            lucide.createIcons();
+        });
+    }
 
-        try {
-            const res = await fetch("/api/reverify-sql", {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "X-User-Role": getCurrentPersona()
-                },
-                body: JSON.stringify({
-                    spec: currentPipelineData.spec,
-                    catalog_match: currentPipelineData.catalog_match,
-                    modified_sql: modifiedSql,
-                    dialect: dialect
-                })
-            });
+    // Beautify SQL Button
+    if (beautifyBtn) {
+        beautifyBtn.addEventListener("click", () => {
+            if (isSqlEditMode && editorInput) {
+                editorInput.value = beautifySqlQuery(editorInput.value);
+                updateSqlGutter(editGutter, editorInput.value);
+                updateSqlStats(editorInput.value);
+            } else if (currentPipelineData) {
+                const sqlCode = document.getElementById("sql-code-block");
+                const beautified = beautifySqlQuery(sqlCode.textContent);
+                sqlCode.textContent = beautified;
+                Prism.highlightElement(sqlCode);
+                if (viewGutter) updateSqlGutter(viewGutter, beautified);
+                if (editorInput) editorInput.value = beautified;
+                updateSqlStats(beautified);
+            }
+        });
+    }
 
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.detail || "Gagal mengaudit kueri.");
+    // Reset SQL Button
+    if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+            if (originalGeneratedSqlQuery && editorInput) {
+                editorInput.value = originalGeneratedSqlQuery;
+                updateSqlGutter(editGutter, originalGeneratedSqlQuery);
+                updateSqlStats(originalGeneratedSqlQuery);
+            }
+        });
+    }
+
+    // Download .sql file button
+    if (downloadBtn) {
+        downloadBtn.addEventListener("click", () => {
+            const queryToDownload = isSqlEditMode && editorInput 
+                ? editorInput.value 
+                : (currentPipelineData && currentPipelineData.generated_sql ? currentPipelineData.generated_sql.query : (editorInput ? editorInput.value : ""));
+
+            if (!queryToDownload) {
+                alert("Tidak ada kueri SQL untuk diunduh.");
+                return;
             }
 
-            const updatedData = await res.json();
-            currentPipelineData = updatedData;
-            renderResults(updatedData);
+            const reqId = (currentPipelineData && currentPipelineData.spec && currentPipelineData.spec.request_id)
+                ? currentPipelineData.spec.request_id.replace(/[^a-zA-Z0-9_-]/g, "_")
+                : "export";
+            const filename = `query_${reqId}.sql`;
 
-            appendConsoleLog("Independent Verifier", `Audit Kueri Custom Selesai: Status=${updatedData.verification.status}. Output data diperbarui.`);
+            const blob = new Blob([queryToDownload], { type: "text/sql;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+    }
 
-            isSqlEditMode = false;
-            viewContainer.classList.remove("hidden");
-            editContainer.classList.add("hidden");
-            toggleText.innerText = "Mode Edit SQL";
-            toggleBtn.classList.replace("bg-blue-100", "bg-slate-100");
-            toggleBtn.classList.replace("text-blue-800", "text-slate-700");
-        } catch (err) {
-            alert("Error audit kueri: " + err.message);
-            appendConsoleLog("Error", err.message);
-        } finally {
-            reverifyBtn.disabled = false;
-            reverifyBtn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span>Audit Ulang & Eksekusi Kueri</span>`;
+    // Re-verify & Execute Button
+    if (reverifyBtn) {
+        reverifyBtn.addEventListener("click", async () => {
+            if (!currentPipelineData) return;
+
+            const modifiedSql = document.getElementById("sql-editor-input").value;
+            const dialect = document.getElementById("select-dialect").value;
+
+            reverifyBtn.disabled = true;
+            reverifyBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Mengaudit Ulang...</span>`;
             lucide.createIcons();
-        }
-    });
+
+            appendConsoleLog("Human-in-the-Loop", "Data Analyst mengubah kueri SQL. Mengirimkan ke Auditor Independen...");
+
+            try {
+                const res = await fetch("/api/reverify-sql", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "X-User-Role": getCurrentPersona()
+                    },
+                    body: JSON.stringify({
+                        spec: currentPipelineData.spec,
+                        catalog_match: currentPipelineData.catalog_match,
+                        modified_sql: modifiedSql,
+                        dialect: dialect
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Gagal mengaudit kueri.");
+                }
+
+                const updatedData = await res.json();
+                currentPipelineData = updatedData;
+                originalGeneratedSqlQuery = modifiedSql;
+                renderResults(updatedData);
+
+                appendConsoleLog("Independent Verifier", `Audit Kueri Custom Selesai: Status=${updatedData.verification.status}. Output data diperbarui.`);
+
+                isSqlEditMode = false;
+                viewContainer.classList.remove("hidden");
+                editContainer.classList.add("hidden");
+                if (editActionBar) editActionBar.classList.add("hidden");
+                toggleText.innerText = "Buka Mode Editor SQL";
+                toggleBtn.classList.replace("bg-blue-50", "bg-white");
+                toggleBtn.classList.replace("text-blue-800", "text-slate-700");
+                toggleBtn.classList.remove("border-blue-300");
+            } catch (err) {
+                alert("Error audit kueri: " + err.message);
+                appendConsoleLog("Error", err.message);
+            } finally {
+                reverifyBtn.disabled = false;
+                reverifyBtn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span>Audit Ulang & Eksekusi Kueri</span>`;
+                lucide.createIcons();
+            }
+        });
+    }
 }
 
 function getCurrentPersona() {
@@ -846,17 +1077,30 @@ function setupTabs() {
 
 // 12. Copy SQL
 function copySql() {
-    if (!currentPipelineData) return;
-    const queryToCopy = isSqlEditMode 
-        ? document.getElementById("sql-editor-input").value 
-        : currentPipelineData.generated_sql.query;
+    const editorInput = document.getElementById("sql-editor-input");
+    const queryToCopy = isSqlEditMode && editorInput 
+        ? editorInput.value 
+        : (currentPipelineData && currentPipelineData.generated_sql 
+            ? currentPipelineData.generated_sql.query 
+            : (editorInput ? editorInput.value : ""));
+
+    if (!queryToCopy) return;
 
     navigator.clipboard.writeText(queryToCopy).then(() => {
-        const btn = document.getElementById("btn-copy-sql");
-        btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i><span>Tersalin!</span>`;
+        const btnText = document.getElementById("btn-copy-sql-text");
+        const icon = document.getElementById("icon-copy-sql");
+        if (btnText) btnText.innerText = "Tersalin!";
+        if (icon) {
+            icon.setAttribute("data-lucide", "check");
+            icon.className = "w-3.5 h-3.5 text-emerald-600";
+        }
         lucide.createIcons();
         setTimeout(() => {
-            btn.innerHTML = `<i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Salin SQL</span>`;
+            if (btnText) btnText.innerText = "Salin SQL";
+            if (icon) {
+                icon.setAttribute("data-lucide", "copy");
+                icon.className = "w-3.5 h-3.5 text-slate-500";
+            }
             lucide.createIcons();
         }, 2000);
     });

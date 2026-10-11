@@ -55,3 +55,59 @@ header select {
     padding-right: 1.35rem;
 }
 
+/* SQL IDE Window & Editor Styles */
+.sql-window {
+    background: #0B1120;
+    border: 1px solid #1E293B;
+    border-radius: 0.875rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+.sql-window-header {
+    background: #0F172A;
+    border-bottom: 1px solid #1E293B;
+    border-top-left-radius: 0.875rem;
+    border-top-right-radius: 0.875rem;
+}
+
+.sql-editor-gutter {
+    user-select: none;
+    color: #475569;
+    background: #090E1A;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.625rem;
+    text-align: right;
+    padding: 1rem 0.75rem 1rem 0.5rem;
+    border-right: 1px solid #1E293B;
+}
+
+.sql-code-area {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.625rem;
+    background: transparent;
+    color: #E2E8F0;
+}
+
+.sql-textarea-editor {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.625rem;
+    background: transparent;
+    color: #34D399;
+    resize: vertical;
+    outline: none;
+}
+
+.sql-textarea-editor:focus {
+    color: #F8FAFC;
+}
+
+.sql-status-bar {
+    background: #090E1A;
+    border-top: 1px solid #1E293B;
+    border-bottom-left-radius: 0.875rem;
+    border-bottom-right-radius: 0.875rem;
+}
+

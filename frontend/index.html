@@ -344,42 +344,161 @@
                 <div id="catalog-tables-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
             </div>
 
-            <!-- Tab 3: SQL Content & Editor -->
-            <div id="tab-sql" class="tab-content hidden p-6 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                            <span>Query SQL Terverifikasi</span>
-                            <span class="text-[11px] bg-blue-100 text-blue-700 font-normal px-2 py-0.5 rounded">Human-in-the-Loop Supported</span>
-                        </h3>
-                        <p class="text-xs text-slate-500" id="sql-explanation-text">-</p>
+            <!-- Tab 3: SQL Content & Editor Studio -->
+            <div id="tab-sql" class="tab-content hidden p-6 space-y-6">
+                <!-- Top Summary & Control Bar -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                            <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+                                <i data-lucide="terminal" class="w-4 h-4 text-blue-600"></i>
+                                <span>SQL Synthesis & Governance Studio</span>
+                            </h3>
+                            <span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full border border-blue-200">Human-in-the-Loop Supported</span>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center space-x-1">
+                                <i data-lucide="shield-check" class="w-3 h-3"></i>
+                                <span>Read-Only Circuit Breaker</span>
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed" id="sql-explanation-text">-</p>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button id="btn-toggle-sql-edit" class="text-xs flex items-center space-x-1 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-700 transition">
-                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                            <span id="btn-toggle-edit-text">Mode Edit SQL</span>
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        <button id="btn-toggle-sql-edit" class="text-xs font-semibold flex items-center space-x-1.5 bg-white border border-slate-300 hover:bg-slate-100 px-3.5 py-2 rounded-xl text-slate-700 transition shadow-2xs">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-600"></i>
+                            <span id="btn-toggle-edit-text">Buka Mode Editor SQL</span>
                         </button>
-                        <button id="btn-copy-sql" class="text-xs flex items-center space-x-1 bg-white border border-slate-300 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-slate-700 transition">
-                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                            <span>Salin SQL</span>
+                        <button id="btn-copy-sql" class="text-xs font-semibold flex items-center space-x-1.5 bg-white border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-xl text-slate-700 transition shadow-2xs">
+                            <i data-lucide="copy" class="w-3.5 h-3.5 text-slate-500" id="icon-copy-sql"></i>
+                            <span id="btn-copy-sql-text">Salin SQL</span>
+                        </button>
+                        <button id="btn-download-sql" class="text-xs font-semibold flex items-center space-x-1.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-xl text-blue-800 transition shadow-2xs">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Unduh .sql</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- View Mode (Prism Highlighted) -->
-                <div id="sql-view-container" class="relative rounded-xl overflow-hidden border border-slate-800 shadow-inner">
-                    <pre class="m-0 p-4 bg-slate-900 text-xs sm:text-sm font-mono overflow-x-auto"><code class="language-sql" id="sql-code-block"></code></pre>
+                <!-- Modern IDE Window Frame -->
+                <div class="sql-window overflow-hidden">
+                    <!-- Window Top Chrome -->
+                    <div class="sql-window-header px-4 py-2.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-1.5">
+                                <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
+                                <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                                <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+                            </div>
+                            <div class="h-4 w-px bg-slate-700"></div>
+                            <div class="flex items-center space-x-1.5 bg-slate-800/80 text-slate-200 px-3 py-1 rounded-md text-xs font-mono font-medium border border-slate-700/60 shadow-xs">
+                                <i data-lucide="file-code" class="w-3.5 h-3.5 text-blue-400"></i>
+                                <span id="sql-window-filename">data_request_export.sql</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3 text-xs">
+                            <div class="flex items-center space-x-1 text-slate-400">
+                                <span class="text-[11px] font-mono text-slate-400">Dialek:</span>
+                                <span id="sql-active-dialect-badge" class="font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2 py-0.5 rounded text-[10px] font-bold">PostgreSQL</span>
+                            </div>
+                            <button id="btn-beautify-sql" title="Rapikan Format SQL" class="text-slate-400 hover:text-slate-200 hover:bg-slate-800 p-1.5 rounded-lg transition flex items-center space-x-1">
+                                <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+                                <span class="hidden sm:inline text-[11px]">Format SQL</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 1. Code View Mode (Gutter + Prism Highlighted) -->
+                    <div id="sql-view-container" class="relative flex overflow-x-auto min-h-[280px] max-h-[500px]">
+                        <div id="sql-view-gutter" class="sql-editor-gutter">
+                            <!-- Populated with line numbers 1, 2, 3... via JS -->
+                        </div>
+                        <div class="flex-1 p-4 overflow-x-auto">
+                            <pre class="m-0 p-0 bg-transparent text-xs sm:text-[13px] font-mono leading-relaxed"><code class="language-sql sql-code-area" id="sql-code-block"></code></pre>
+                        </div>
+                    </div>
+
+                    <!-- 2. Code Edit Mode (Interactive IDE Textarea + Gutter) -->
+                    <div id="sql-edit-container" class="hidden relative flex overflow-x-auto min-h-[300px]">
+                        <div id="sql-edit-gutter" class="sql-editor-gutter">
+                            <!-- Populated with line numbers 1, 2, 3... via JS -->
+                        </div>
+                        <div class="flex-1 p-4 bg-slate-950/50">
+                            <textarea id="sql-editor-input" rows="14" spellcheck="false" class="w-full h-full sql-textarea-editor font-mono text-xs sm:text-[13px] leading-relaxed p-0 border-0 bg-transparent outline-none focus:ring-0" placeholder="Ketik kueri SQL di sini..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Window Status Bar -->
+                    <div class="sql-status-bar px-4 py-2 flex flex-wrap items-center justify-between text-[11px] text-slate-400 font-mono">
+                        <div class="flex items-center space-x-4">
+                            <span class="flex items-center space-x-1 text-slate-300">
+                                <i data-lucide="database" class="w-3 h-3 text-blue-400"></i>
+                                <span>UTF-8</span>
+                            </span>
+                            <span class="text-slate-600">•</span>
+                            <span id="sql-stats-lines">Baris: 0</span>
+                            <span class="text-slate-600">•</span>
+                            <span id="sql-stats-chars">Karakter: 0</span>
+                        </div>
+                        <div class="flex items-center space-x-3 text-slate-400">
+                            <span class="flex items-center space-x-1 text-emerald-400">
+                                <i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i>
+                                <span>Syntax Validated</span>
+                            </span>
+                            <span class="text-slate-600">•</span>
+                            <span class="text-slate-400">Mode: Read-Only Isolated</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Edit Mode (Interactive Textarea) -->
-                <div id="sql-edit-container" class="hidden space-y-3">
-                    <textarea id="sql-editor-input" rows="12" class="w-full bg-slate-900 text-emerald-400 font-mono text-xs sm:text-sm p-4 rounded-xl border border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed shadow-inner"></textarea>
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-slate-400">Modifikasi kueri di atas, lalu jalankan verifikasi ulang terhadap parameter keamanan & dokumen PDF.</span>
-                        <button id="btn-reverify-sql" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-2 transition">
+                <!-- Edit Action Banner (Active in Edit Mode) -->
+                <div id="sql-edit-action-bar" class="hidden bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-start space-x-3">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <h4 class="text-xs font-bold text-indigo-950">Mode Kueri Kustom Terbuka (Human-in-the-Loop)</h4>
+                            <p class="text-[11px] text-indigo-800 mt-0.5">Perubahan kueri akan diverifikasi secara independen terhadap katalog OpenMetadata dan aturan kepatuhan PDP.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        <button id="btn-reset-sql" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-200 bg-white hover:bg-indigo-100 text-indigo-800 transition">
+                            Reset ke Asli
+                        </button>
+                        <button id="btn-reverify-sql" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-2 transition shadow-indigo-600/20">
                             <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                             <span>Audit Ulang & Eksekusi Kueri</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- SQL Semantic Clause Breakdown Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1">
+                        <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-800">
+                            <i data-lucide="columns-3" class="w-3.5 h-3.5 text-blue-600"></i>
+                            <span>1. Klausa SELECT & Masking</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500" id="sql-breakdown-select">Ekstraksi kolom dengan pembungkusan fungsi proteksi PII.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1">
+                        <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-800">
+                            <i data-lucide="network" class="w-3.5 h-3.5 text-purple-600"></i>
+                            <span>2. Relasi Tabel (JOIN)</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500" id="sql-breakdown-join">Tabel fakta dan dimensi terhubung via Primary & Foreign Key resmi.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1">
+                        <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-800">
+                            <i data-lucide="filter" class="w-3.5 h-3.5 text-emerald-600"></i>
+                            <span>3. Filter Bisnis (WHERE)</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500" id="sql-breakdown-where">Pembatasan periode waktu dan parameter bisnis spesifik.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1">
+                        <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-800">
+                            <i data-lucide="shield" class="w-3.5 h-3.5 text-rose-600"></i>
+                            <span>4. Circuit Breaker Guard</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500" id="sql-breakdown-guard">Read-only URI terisolasi tanpa risiko mutasi data.</p>
                     </div>
                 </div>
             </div>
