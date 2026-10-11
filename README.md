@@ -1,7 +1,7 @@
 # DataRequest Studio
 
 > **Enterprise Data Requisition & Automated Governance Platform**  
-> Sistem Otomasi Pemenuhan Permohonan Data Berbasis Katalog Metadata OpenMetadata & Audit Independen.
+> Platform Layanan dan Tata Kelola Data Terpadu Berbasis Katalog Metadata OpenMetadata & Audit Independen.
 
 ---
 
