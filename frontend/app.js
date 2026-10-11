@@ -80,6 +80,46 @@ function downloadClientBlob(filename, text, mimeType) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+function triggerArtifactDownload(filename, defaultMime = 'application/octet-stream') {
+    if (!filename) return;
+    const cleanName = filename.split(/[\\/]/).pop();
+    
+    // 1. Cek apakah ada di cache base64 mock_data
+    if (window.MOCK_DATA && window.MOCK_DATA.artifacts_base64 && window.MOCK_DATA.artifacts_base64[cleanName]) {
+        const b64Data = window.MOCK_DATA.artifacts_base64[cleanName];
+        const byteCharacters = atob(b64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: defaultMime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = cleanName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+    }
+
+    // 2. Jika di GitHub Pages atau offline, arahkan ke static folder outputs/
+    if (isGitHubPagesOrOffline()) {
+        const link = document.createElement('a');
+        link.href = `outputs/${cleanName}`;
+        link.download = cleanName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+    }
+
+    // 3. Jika di localhost dengan FastAPI backend
+    window.location.href = `/api/download/outputs/${cleanName}`;
+}
 // ======================================================================================
 
 
@@ -203,67 +243,84 @@ async function initApp() {
 
 // 1. Health & Connection Check
 async function checkHealth() {
+    const textElem = document.getElementById("om-status-text");
+    const badgeElem = document.getElementById("badge-om-status");
     try {
-        const res = await fetch("/api/health");
-        const data = await res.json();
-        const textElem = document.getElementById("om-status-text");
-        const badgeElem = document.getElementById("badge-om-status");
-        if (data.openmetadata && data.openmetadata.connected) {
-            textElem.innerText = `Live (v${data.openmetadata.version || '1.0'})`;
-            if (badgeElem) {
-                badgeElem.className = "flex items-center space-x-1.5 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/90 px-2.5 py-1.5 rounded-xl font-medium flex-shrink-0 whitespace-nowrap shadow-2xs";
-                badgeElem.title = `OpenMetadata Live Server Aktif (Versi ${data.openmetadata.version})`;
-            }
-        } else {
-            const count = data.openmetadata ? data.openmetadata.tables_available : 5;
-            textElem.innerText = `Katalog DWH (${count})`;
-            if (badgeElem) {
-                badgeElem.className = "flex items-center space-x-1.5 text-xs bg-blue-50 text-blue-800 border border-blue-200/90 px-2.5 py-1.5 rounded-xl font-medium flex-shrink-0 whitespace-nowrap shadow-2xs";
-                badgeElem.title = `Katalog DWH Enterprise Emulated (${count} Tabel Aktif)`;
+        if (!isGitHubPagesOrOffline()) {
+            const res = await fetch("/api/health");
+            if (res.ok) {
+                const data = await res.json();
+                if (data.openmetadata && data.openmetadata.connected) {
+                    if (textElem) textElem.innerText = `Live (v${data.openmetadata.version || '1.0'})`;
+                    if (badgeElem) {
+                        badgeElem.className = "flex items-center space-x-1.5 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/90 px-2.5 py-1.5 rounded-xl font-medium flex-shrink-0 whitespace-nowrap shadow-2xs";
+                        badgeElem.title = `OpenMetadata Live Server Aktif (Versi ${data.openmetadata.version})`;
+                    }
+                    return;
+                }
             }
         }
     } catch (err) {
-        console.warn("Health check error:", err);
+        console.warn("Health check live error, falling back to emulated catalog:", err);
+    }
+    // Fallback for GitHub Pages or offline
+    if (textElem) textElem.innerText = "Katalog DWH (11)";
+    if (badgeElem) {
+        badgeElem.className = "flex items-center space-x-1.5 text-xs bg-blue-50 text-blue-800 border border-blue-200/90 px-2.5 py-1.5 rounded-xl font-medium flex-shrink-0 whitespace-nowrap shadow-2xs";
+        badgeElem.title = "Katalog DWH Enterprise CEISA 4.0 (11 Tabel Aktif - OpenMetadata Emulated)";
     }
 }
 
 // 2. Load Samples
 async function loadSamples() {
     const listElem = document.getElementById("sample-list");
+    let samples = [];
     try {
-        const res = await fetch("/api/samples");
-        const data = await res.json();
-        if (!data.samples || data.samples.length === 0) {
-            listElem.innerHTML = `<div class="text-xs text-slate-400">Tidak ada sample tersedia.</div>`;
-            return;
-        }
-
-        listElem.innerHTML = "";
-        data.samples.forEach((s, idx) => {
-            const btn = document.createElement("button");
-            btn.className = `w-full text-left p-2.5 rounded-lg border text-xs transition flex items-center justify-between ${
-                idx === 0 ? "border-blue-500 bg-blue-50/50 text-blue-900 font-semibold" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
-            }`;
-            btn.innerHTML = `
-                <div class="truncate pr-2">
-                    <p class="truncate font-medium">${s.title}</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">PDF Berkas Resmi (${Math.round(s.size_bytes / 1024)} KB)</p>
-                </div>
-                <i data-lucide="file-check" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
-            `;
-            btn.addEventListener("click", () => {
-                selectSample(s.filename, btn);
-            });
-            listElem.appendChild(btn);
-
-            if (idx === 0) {
-                selectedSampleName = s.filename;
+        if (!isGitHubPagesOrOffline()) {
+            const res = await fetch("/api/samples");
+            if (res.ok) {
+                const data = await res.json();
+                samples = data.samples || [];
             }
-        });
-        lucide.createIcons();
+        }
     } catch (err) {
-        listElem.innerHTML = `<div class="text-xs text-red-400">Gagal memuat sample.</div>`;
+        console.warn("Fetch /api/samples failed, using mock samples:", err);
     }
+
+    if (!samples || samples.length === 0) {
+        if (window.MOCK_DATA && window.MOCK_DATA.samples) {
+            samples = window.MOCK_DATA.samples;
+        }
+    }
+
+    if (!samples || samples.length === 0) {
+        listElem.innerHTML = `<div class="text-xs text-slate-400">Tidak ada sample tersedia.</div>`;
+        return;
+    }
+
+    listElem.innerHTML = "";
+    samples.forEach((s, idx) => {
+        const btn = document.createElement("button");
+        btn.className = `w-full text-left p-2.5 rounded-lg border text-xs transition flex items-center justify-between ${
+            idx === 0 ? "border-blue-500 bg-blue-50/50 text-blue-900 font-semibold" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+        }`;
+        btn.innerHTML = `
+            <div class="truncate pr-2">
+                <p class="truncate font-medium">${s.title}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">PDF Berkas Resmi (${Math.round((s.size_bytes || 3200) / 1024)} KB)</p>
+            </div>
+            <i data-lucide="file-check" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
+        `;
+        btn.addEventListener("click", () => {
+            selectSample(s.filename, btn);
+        });
+        listElem.appendChild(btn);
+
+        if (idx === 0) {
+            selectSample(s.filename, btn);
+        }
+    });
+    lucide.createIcons();
 }
 
 function selectSample(filename, activeBtn) {
@@ -854,16 +911,16 @@ function renderResults(data) {
         const btnZip = document.getElementById("btn-download-zip");
 
         if (btnExcel && excelName) {
-            btnExcel.href = `/api/download/outputs/${excelName}`;
+            btnExcel.href = isGitHubPagesOrOffline() ? `outputs/${excelName}` : `/api/download/outputs/${excelName}`;
             btnExcel.onclick = (e) => {
                 if (isGitHubPagesOrOffline()) {
                     e.preventDefault();
-                    alert("Di GitHub Pages demo, silakan unduh format CSV atau JSON langsung secara instan!");
+                    triggerArtifactDownload(excelName, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
                 }
             };
         }
         if (btnCsv && csvName) {
-            btnCsv.href = `/api/download/outputs/${csvName}`;
+            btnCsv.href = isGitHubPagesOrOffline() ? `outputs/${csvName}` : `/api/download/outputs/${csvName}`;
             btnCsv.onclick = (e) => {
                 if (isGitHubPagesOrOffline()) {
                     e.preventDefault();
@@ -878,7 +935,7 @@ function renderResults(data) {
             };
         }
         if (btnJson && jsonName) {
-            btnJson.href = `/api/download/outputs/${jsonName}`;
+            btnJson.href = isGitHubPagesOrOffline() ? `outputs/${jsonName}` : `/api/download/outputs/${jsonName}`;
             btnJson.onclick = (e) => {
                 if (isGitHubPagesOrOffline()) {
                     e.preventDefault();
@@ -890,12 +947,24 @@ function renderResults(data) {
 
         if (btnCert && data.execution.certificate_path) {
             const certName = data.execution.certificate_path.split(/[\\/]/).pop();
-            btnCert.href = `/api/download/outputs/${certName}`;
+            btnCert.href = isGitHubPagesOrOffline() ? `outputs/${certName}` : `/api/download/outputs/${certName}`;
+            btnCert.onclick = (e) => {
+                if (isGitHubPagesOrOffline()) {
+                    e.preventDefault();
+                    triggerArtifactDownload(certName, "application/pdf");
+                }
+            };
         }
 
         if (btnZip && data.execution.zip_path) {
             const zipName = data.execution.zip_path.split(/[\\/]/).pop();
-            btnZip.href = `/api/download/outputs/${zipName}`;
+            btnZip.href = isGitHubPagesOrOffline() ? `outputs/${zipName}` : `/api/download/outputs/${zipName}`;
+            btnZip.onclick = (e) => {
+                if (isGitHubPagesOrOffline()) {
+                    e.preventDefault();
+                    triggerArtifactDownload(zipName, "application/zip");
+                }
+            };
         }
 
         // Store rows & render preview
@@ -1672,16 +1741,18 @@ function openCmsDetailModal(item) {
     const dlContainer = document.getElementById("detail-download-buttons");
     dlContainer.innerHTML = "";
     if (item.excel_filename) {
+        const linkHref = isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`;
         dlContainer.innerHTML += `
-            <a href="/api/download/outputs/${item.excel_filename}" download class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs">
+            <a href="${linkHref}" download class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs" onclick="if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }">
                 <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
                 <span>Unduh Excel</span>
             </a>
         `;
     }
     if (item.zip_filename) {
+        const linkHref = isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`;
         dlContainer.innerHTML += `
-            <a href="/api/download/outputs/${item.zip_filename}" download class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs">
+            <a href="${linkHref}" download class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs" onclick="if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip'); }">
                 <i data-lucide="archive" class="w-3.5 h-3.5"></i>
                 <span>Unduh ZIP</span>
             </a>
@@ -1879,8 +1950,8 @@ function setupCmsModal() {
                         <i data-lucide="eye" class="w-3 h-3"></i>
                         <span>Detail</span>
                     </button>
-                    ${item.excel_filename ? `<a href="/api/download/outputs/${item.excel_filename}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation()">Excel</a>` : ''}
-                    ${item.zip_filename ? `<a href="/api/download/outputs/${item.zip_filename}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation()">ZIP</a>` : ''}
+                    ${item.excel_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }">Excel</a>` : ''}
+                    ${item.zip_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip'); }">ZIP</a>` : ''}
                 </td>
             `;
 
