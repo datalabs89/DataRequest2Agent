@@ -3350,7 +3350,7 @@ function setupCatalogModal() {
     schemaFilterBtns.forEach(btn => {
         btn.addEventListener("click", () => {
             schemaFilterBtns.forEach(b => {
-                b.className = "catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700";
+                b.className = "catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300";
             });
             btn.className = "catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-blue-600 text-white shadow-2xs";
             activeCatalogSchemaFilter = btn.getAttribute("data-filter");
