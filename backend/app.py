@@ -63,14 +63,20 @@ def health_check():
 def list_samples():
     files = []
     if os.path.exists(SAMPLES_DIR):
-        for f in os.listdir(SAMPLES_DIR):
-            if f.endswith(".pdf"):
-                path = os.path.join(SAMPLES_DIR, f)
-                files.append({
-                    "filename": f,
-                    "size_bytes": os.path.getsize(path),
-                    "title": f.replace("_", " ").replace(".pdf", "")
-                })
+        preferred = [
+            "Permohonan_Data_Internal_Bea_dan_Cukai.pdf",
+            "Permohonan_Data_Internal_Kemenkeu.pdf",
+            "Permohonan_Data_Eksternal_Kemenkeu.pdf"
+        ]
+        all_files = [f for f in os.listdir(SAMPLES_DIR) if f.endswith(".pdf")]
+        ordered_files = [f for f in preferred if f in all_files] + [f for f in sorted(all_files) if f not in preferred]
+        for f in ordered_files:
+            path = os.path.join(SAMPLES_DIR, f)
+            files.append({
+                "filename": f,
+                "size_bytes": os.path.getsize(path),
+                "title": f.replace("_", " ").replace(".pdf", "")
+            })
     return {"samples": files}
 
 @app.get("/api/config/openmetadata")

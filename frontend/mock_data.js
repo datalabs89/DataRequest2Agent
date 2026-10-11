@@ -2,17 +2,17 @@ window.MOCK_DATA = {
   "samples": [
     {
       "filename": "Permohonan_Data_Internal_Bea_dan_Cukai.pdf",
-      "title": "Permohonan Data Internal Bea dan Cukai (PEB BC 3.0)",
+      "title": "Permohonan Data Internal Bea dan Cukai",
       "size_bytes": 3350
     },
     {
       "filename": "Permohonan_Data_Internal_Kemenkeu.pdf",
-      "title": "Permohonan Data Internal Kemenkeu (PIB BC 2.0)",
+      "title": "Permohonan Data Internal Kemenkeu",
       "size_bytes": 3109
     },
     {
       "filename": "Permohonan_Data_Eksternal_Kemenkeu.pdf",
-      "title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
+      "title": "Permohonan Data Eksternal Kemenkeu",
       "size_bytes": 3122
     }
   ],
@@ -1737,6 +1737,166 @@ window.MOCK_DATA = {
   },
   "history": [
     {
+      "id": "REQ-1791737759",
+      "request_id": "REQ-2026-BC-089",
+      "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
+      "requester_name": "Ahmad Fauzi, S.Kom",
+      "department": "Internal Bea dan Cukai",
+      "business_process": "Ekspor",
+      "created_at": "2026-10-11 23:55:59",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 160.6,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "426a81f3e90c4707cd63f9cec429526a93dd87e3bdb5614ff287ca33b09a4979",
+      "excel_filename": "DataExport_REQ_2026_BC_089_20261011_235558.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_235558.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
+      "id": "REQ-1791737315",
+      "request_id": "REQ-2026-EKS-042",
+      "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
+      "requester_name": "Bambang Pratama, S.H., M.H.",
+      "department": "Eksternal Kemenkeu",
+      "business_process": "Keberatan & Banding",
+      "created_at": "2026-10-11 23:48:35",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 125.6,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "4aed111c0b1bcaa276001c884e58ec354e138868f96226f585113edeb0c964db",
+      "excel_filename": "DataExport_REQ_2026_EKS_042_20261011_234835.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_EKS_042_20261011_234835.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
+      "id": "REQ-1791736946",
+      "request_id": "REQ-2026-EKS-042",
+      "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
+      "requester_name": "Bambang Pratama, S.H., M.H.",
+      "department": "Eksternal Kemenkeu",
+      "business_process": "Keberatan & Banding",
+      "created_at": "2026-10-11 23:42:26",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 130.2,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "d6a76a5395b3c665d7609af68bd1fa5525191ddad0ef67c864168520c408619b",
+      "excel_filename": "DataExport_REQ_2026_EKS_042_20261011_234226.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_EKS_042_20261011_234226.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
+      "id": "REQ-1791736533",
+      "request_id": "REQ-2026-BC-089",
+      "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
+      "requester_name": "Ahmad Fauzi, S.Kom",
+      "department": "Internal Bea dan Cukai",
+      "business_process": "Ekspor",
+      "created_at": "2026-10-11 23:35:33",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 178.7,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "7f0da83b97d1ddab27e8b123f0c4527a02d1424a4f27df4032a901ec9d39c69e",
+      "excel_filename": "DataExport_REQ_2026_BC_089_20261011_233532.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_233532.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
+      "id": "REQ-1791736080",
+      "request_id": "REQ-2026-EKS-042",
+      "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
+      "requester_name": "Bambang Pratama, S.H., M.H.",
+      "department": "Eksternal Kemenkeu",
+      "business_process": "Keberatan & Banding",
+      "created_at": "2026-10-11 23:28:00",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 176.8,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "94d6b2e8971a9a328bd2eaa1a1fccca025a6fcd3d93a14d79cc95fa23178f171",
+      "excel_filename": "DataExport_REQ_2026_EKS_042_20261011_232759.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_EKS_042_20261011_232759.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
+      "id": "REQ-1791735005",
+      "request_id": "REQ-2026-EKS-042",
+      "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
+      "requester_name": "Bambang Pratama, S.H., M.H.",
+      "department": "Eksternal Kemenkeu",
+      "business_process": "Keberatan & Banding",
+      "created_at": "2026-10-11 23:10:05",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 101.9,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "94d9f68a15fc474aa1a1e189e8095355656b23302c6d527ff5780b6a9f190f9a",
+      "excel_filename": "DataExport_REQ_2026_EKS_042_20261011_231005.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_EKS_042_20261011_231005.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
+      "id": "REQ-1791734969",
+      "request_id": "REQ-2026-EKS-042",
+      "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
+      "requester_name": "Bambang Pratama, S.H., M.H.",
+      "department": "Eksternal Kemenkeu",
+      "business_process": "Keberatan & Banding",
+      "created_at": "2026-10-11 23:09:29",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 108.7,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "6e9d3e4082d689ee4995b8f1ad1259c2f132181d677f879c9f5df9edaabddcea",
+      "excel_filename": "DataExport_REQ_2026_EKS_042_20261011_230929.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_EKS_042_20261011_230929.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
+      "id": "REQ-1791732530",
+      "request_id": "REQ-2026-EKS-042",
+      "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
+      "requester_name": "Bambang Pratama, S.H., M.H.",
+      "department": "Eksternal Kemenkeu",
+      "business_process": "Keberatan & Banding",
+      "created_at": "2026-10-11 22:28:50",
+      "status": "APPROVED",
+      "row_count": 35,
+      "execution_time_ms": 95.4,
+      "dialect": "PostgreSQL",
+      "compliance_score": 100,
+      "digital_fingerprint": "994cfba863f3665bde950c9a283dcb8088f7140590c383e090c35be147b4a4db",
+      "excel_filename": "DataExport_REQ_2026_EKS_042_20261011_222850.xlsx",
+      "zip_filename": "DataFulfillment_REQ_2026_EKS_042_20261011_222850.zip",
+      "reviewer_name": null,
+      "reviewer_role": null,
+      "comments": "Menunggu review verifikator"
+    },
+    {
       "id": "REQ-1791731466",
       "request_id": "REQ-2026-EKS-042",
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
@@ -2624,42 +2784,42 @@ window.MOCK_DATA = {
     }
   ],
   "analytics": {
-    "total_requests": 54,
-    "approved_count": 44,
+    "total_requests": 62,
+    "approved_count": 52,
     "revision_count": 5,
     "rejected_count": 5,
-    "compliance_rate_pct": 81.5,
-    "total_rows_delivered": 1890,
-    "avg_latency_ms": 57.2,
-    "digital_seal_count": 44,
-    "digital_seal_pct": 81.5,
-    "pii_columns_protected_count": 324,
+    "compliance_rate_pct": 83.9,
+    "total_rows_delivered": 2170,
+    "avg_latency_ms": 67.2,
+    "digital_seal_count": 52,
+    "digital_seal_pct": 83.9,
+    "pii_columns_protected_count": 372,
     "pii_breakdown": {
-      "npwp_masked": 108,
-      "nik_masked": 54,
-      "nama_masked": 108,
-      "phone_masked": 54
+      "npwp_masked": 124,
+      "nik_masked": 62,
+      "nama_masked": 124,
+      "phone_masked": 62
     },
     "pdp_compliance_pct": 100.0,
     "department_distribution": {
-      "Internal Bea dan Cukai": 35,
+      "Internal Bea dan Cukai": 37,
       "Internal Kemenkeu": 12,
-      "Eksternal Kemenkeu": 7
+      "Eksternal Kemenkeu": 13
     },
     "status_distribution": {
-      "Disetujui Resmi": 44,
+      "Disetujui Resmi": 52,
       "Membutuhkan Revisi": 5,
       "Ditolak / Disangkal": 5
     },
     "business_process_distribution": {
-      "Ekspor (PEB BC 3.0)": 46,
+      "Ekspor (PEB BC 3.0)": 54,
       "Impor (PIB BC 2.0)": 4,
       "Cukai (BKC)": 2,
       "Manifest (BC 1.1)": 2,
       "TPB / Fasilitas Berikat": 0
     },
     "dialect_distribution": {
-      "PostgreSQL": 54,
+      "PostgreSQL": 62,
       "Oracle": 0,
       "SQLite": 0
     },
@@ -2702,9 +2862,9 @@ window.MOCK_DATA = {
       },
       {
         "date": "2026-10-11",
-        "total": 17,
-        "approved": 15,
-        "rows": 595
+        "total": 25,
+        "approved": 23,
+        "rows": 875
       }
     ],
     "period": "all",
@@ -2716,8 +2876,8 @@ window.MOCK_DATA = {
         "direction": "up"
       },
       "compliance_rate": {
-        "value": 3.7,
-        "formatted": "+3.7%",
+        "value": 6.5,
+        "formatted": "+6.5%",
         "direction": "up"
       },
       "total_rows": {
@@ -2731,13 +2891,13 @@ window.MOCK_DATA = {
         "direction": "up"
       },
       "avg_latency": {
-        "value": 24.9,
-        "formatted": "+24.9%",
+        "value": 49.3,
+        "formatted": "+49.3%",
         "direction": "up"
       },
       "digital_seal": {
-        "value": 3.7,
-        "formatted": "+3.7%",
+        "value": 6.5,
+        "formatted": "+6.5%",
         "direction": "up"
       }
     }
