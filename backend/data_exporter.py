@@ -249,7 +249,7 @@ BERKAS DALAM PAKET INI:
                     "nilai_devisa_usd": devisa_usd,
                     "bea_keluar_idr": bea_keluar,
                     "status_jalur": random.choice(["HIJAU", "HIJAU", "HIJAU", "KUNING", "MERAH"]),
-                    "status_dokumen": "SELESAI (SPPB EKSPOR)"
+                    "status_dokumen": "SELESAI (NPE)"
                 }
                 data.append(row)
 

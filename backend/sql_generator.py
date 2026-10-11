@@ -297,11 +297,19 @@ class SQLGenerator:
         for filt in spec.filters:
             if filt.target_column in ["status", "status_pabean", "status_jalur", "status_pelunasan"] and filt.operator == "=":
                 actual_col = filt.target_column
-                if primary_table.table_name == "fct_peb_ekspor": actual_col = "status_pabean"
-                elif primary_table.table_name == "fct_pib_impor": actual_col = "status_jalur"
-                elif primary_table.table_name == "fct_billing_cukai": actual_col = "status_pelunasan"
-                where_conditions.append(f"{t_alias}.{actual_col} = '{filt.value}'")
-                applied_filters.append(f"{actual_col} = '{filt.value}'")
+                val = filt.value
+                if primary_table.table_name == "fct_peb_ekspor":
+                    actual_col = "status_pabean"
+                    if str(filt.value).upper() in ["SPPB", "SPPB EKSPOR", "SUCCESS", "SELESAI"]:
+                        val = "NPE"
+                elif primary_table.table_name == "fct_pib_impor":
+                    actual_col = "status_jalur"
+                    if str(filt.value).upper() in ["SUCCESS", "SELESAI"]:
+                        val = "HIJAU"
+                elif primary_table.table_name == "fct_billing_cukai":
+                    actual_col = "status_pelunasan"
+                where_conditions.append(f"{t_alias}.{actual_col} = '{val}'")
+                applied_filters.append(f"{actual_col} = '{val}'")
             elif filt.target_column == "customer_segment" and has_customer_join:
                 where_conditions.append(f"{c_alias}.customer_segment = '{filt.value}'")
                 applied_filters.append(f"Segmen Nasabah = '{filt.value}'")

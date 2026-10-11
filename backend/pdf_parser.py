@@ -221,14 +221,48 @@ class PDFRequestParser:
 
         # 9. Filter & Kriteria
         filters = []
-        if "success" in lower_text or "berhasil" in lower_text:
+        if any(k in lower_text for k in ["npe", "nota pelayanan ekspor"]):
             filters.append(FilterCriterion(
-                field_description="Status transaksi",
-                target_column="status",
+                field_description="Status persetujuan ekspor",
+                target_column="status_pabean",
                 operator="=",
-                value="SUCCESS",
-                rationale="Hanya menyertakan transaksi yang berhasil diverifikasi."
+                value="NPE",
+                rationale="Hanya menyertakan dokumen PEB yang telah terbit Nota Pelayanan Ekspor (NPE)."
             ))
+        elif any(k in lower_text for k in ["sppb", "surat persetujuan pengeluaran barang"]):
+            if primary_entity == "ekspor":
+                filters.append(FilterCriterion(
+                    field_description="Status dokumen ekspor (NPE)",
+                    target_column="status_pabean",
+                    operator="=",
+                    value="NPE",
+                    rationale="Status persetujuan pengeluaran barang ekspor otomatis diarahkan ke Nota Pelayanan Ekspor (NPE)."
+                ))
+            else:
+                filters.append(FilterCriterion(
+                    field_description="Status dokumen impor (SPPB)",
+                    target_column="status_jalur",
+                    operator="=",
+                    value="SPPB",
+                    rationale="Hanya menyertakan dokumen PIB yang telah diterbitkan SPPB."
+                ))
+        elif "success" in lower_text or "berhasil" in lower_text:
+            if primary_entity == "ekspor":
+                filters.append(FilterCriterion(
+                    field_description="Status persetujuan pabean",
+                    target_column="status_pabean",
+                    operator="=",
+                    value="NPE",
+                    rationale="Dokumen ekspor yang selesai dan disetujui berstatus resmi NPE (Nota Pelayanan Ekspor)."
+                ))
+            else:
+                filters.append(FilterCriterion(
+                    field_description="Status transaksi",
+                    target_column="status",
+                    operator="=",
+                    value="SUCCESS",
+                    rationale="Hanya menyertakan transaksi yang berhasil diverifikasi."
+                ))
 
         if "prioritas" in lower_text or "priority" in lower_text:
             filters.append(FilterCriterion(
