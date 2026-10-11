@@ -2037,57 +2037,335 @@ function copySql() {
     });
 }
 
-// 13. Catalog Modal (Search & Filter Enhanced)
+// 13. Catalog Modal (Search & Filter Enhanced + Schema Detail & Lineage)
 let allCatalogTablesCache = [];
+let activeCatalogSchemaFilter = "all";
+let activeCatalogTierFilter = "all";
 
 function setupCatalogModal() {
     const modal = document.getElementById("catalog-modal");
     const openBtn = document.getElementById("btn-browse-catalog");
     const closeBtn = document.getElementById("btn-close-modal");
     const searchInput = document.getElementById("input-catalog-modal-search");
+    const tierSelect = document.getElementById("select-catalog-tier-filter");
+    const schemaFilterBtns = document.querySelectorAll(".catalog-filter-btn");
+    const badgeTotal = document.getElementById("catalog-badge-total");
 
-    function renderModalTables(tablesToRender) {
+    function getFilteredTables() {
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+        return allCatalogTablesCache.filter(tbl => {
+            // Schema filter
+            if (activeCatalogSchemaFilter !== "all") {
+                const schema = (tbl.schema_name || "").toLowerCase();
+                const fqn = (tbl.fqn || "").toLowerCase();
+                if (activeCatalogSchemaFilter === "master") {
+                    if (!schema.includes("master") && !fqn.includes("dim_") && !fqn.includes("master")) return false;
+                } else if (!schema.includes(activeCatalogSchemaFilter) && !fqn.includes(activeCatalogSchemaFilter)) {
+                    return false;
+                }
+            }
+
+            // Tier filter
+            if (activeCatalogTierFilter !== "all") {
+                const tier = (tbl.tier || "").toLowerCase();
+                if (activeCatalogTierFilter === "tier1" && !tier.includes("tier 1")) return false;
+                if (activeCatalogTierFilter === "tier2" && !tier.includes("tier 2")) return false;
+            }
+
+            // Text search
+            if (query) {
+                const nameMatch = tbl.fqn.toLowerCase().includes(query) || tbl.table_name.toLowerCase().includes(query);
+                const descMatch = (tbl.description || "").toLowerCase().includes(query);
+                const colMatch = (tbl.columns || []).some(c => 
+                    c.name.toLowerCase().includes(query) || 
+                    (c.description || "").toLowerCase().includes(query) ||
+                    (c.data_type || "").toLowerCase().includes(query)
+                );
+                return nameMatch || descMatch || colMatch;
+            }
+
+            return true;
+        });
+    }
+
+    function renderModalTables() {
         const content = document.getElementById("modal-catalog-content");
         content.innerHTML = "";
 
+        const tablesToRender = getFilteredTables();
+        if (badgeTotal) {
+            badgeTotal.innerText = `${tablesToRender.length} dari ${allCatalogTablesCache.length} Tabel`;
+        }
+
         if (!tablesToRender || tablesToRender.length === 0) {
-            content.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Tidak ada tabel katalog yang sesuai dengan kata kunci pencarian.</div>`;
+            content.innerHTML = `
+                <div class="p-12 text-center rounded-2xl border border-dashed border-slate-300 bg-white space-y-2">
+                    <i data-lucide="database-zap" class="w-8 h-8 text-slate-300 mx-auto"></i>
+                    <p class="text-xs font-bold text-slate-700">Tidak ada tabel katalog yang cocok</p>
+                    <p class="text-[11px] text-slate-400">Coba ubah kata kunci pencarian atau sesuaikan filter skema/tier.</p>
+                </div>
+            `;
+            lucide.createIcons();
             return;
         }
 
-        tablesToRender.forEach(tbl => {
+        tablesToRender.forEach((tbl, idx) => {
             const card = document.createElement("div");
-            card.className = "p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-2 hover:border-blue-300 transition";
+            card.className = "p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-4 hover:border-blue-300 transition duration-150";
 
-            const colTags = tbl.columns.map(c => {
+            // Count PII columns
+            const piiCount = tbl.columns.filter(c => c.is_pii || (c.tags && c.tags.includes("PII"))).length;
+            const pkCols = tbl.columns.filter(c => c.tags && c.tags.includes("PK")).map(c => c.name).join(", ") || "-";
+
+            // Upstream & Downstream badges
+            const upstreams = (tbl.lineage_upstream && tbl.lineage_upstream.length > 0) 
+                ? tbl.lineage_upstream 
+                : ["staging_ceisa.stg_raw_landing"];
+            const downstreams = (tbl.lineage_downstream && tbl.lineage_downstream.length > 0) 
+                ? tbl.lineage_downstream 
+                : ["datamart_ceisa.dm_analitik_nasional"];
+
+            const upstreamBadges = upstreams.map(u => 
+                `<span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono border border-slate-200">
+                    <i data-lucide="arrow-right-circle" class="w-3 h-3 text-emerald-600"></i>
+                    <span>${u}</span>
+                </span>`
+            ).join(" ");
+
+            const downstreamBadges = downstreams.map(d => 
+                `<span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-mono border border-blue-200">
+                    <i data-lucide="bar-chart-2" class="w-3 h-3 text-blue-600"></i>
+                    <span>${d}</span>
+                </span>`
+            ).join(" ");
+
+            // Preview first 8 column chips
+            const previewCols = tbl.columns.slice(0, 8).map(c => {
                 const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
                 const isPk = c.tags && c.tags.includes("PK");
+                const isFk = c.tags && c.tags.includes("FK");
                 let badge = "";
                 if (isPk) badge = `<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1 rounded ml-1">PK</span>`;
+                else if (isFk) badge = `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1 rounded ml-1">FK</span>`;
                 else if (isPii) badge = `<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1 rounded ml-1">PII</span>`;
-                return `<span class="inline-flex items-center bg-slate-100 px-2 py-0.5 rounded text-[11px] font-mono text-slate-700">${c.name}${badge}</span>`;
+                return `<span class="inline-flex items-center bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[11px] font-mono text-slate-700">${c.name}${badge}</span>`;
             }).join(" ");
 
+            // Schema Table rows for drawer
+            const schemaRows = tbl.columns.map(c => {
+                const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
+                const isPk = c.tags && c.tags.includes("PK");
+                const isFk = c.tags && c.tags.includes("FK");
+
+                let tagBadges = [];
+                if (isPk) tagBadges.push(`<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1.5 py-0.5 rounded">PK</span>`);
+                if (isFk) tagBadges.push(`<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1.5 py-0.5 rounded">FK</span>`);
+                if (isPii) tagBadges.push(`<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.5 rounded">PII / Masking</span>`);
+                if (c.tags) {
+                    c.tags.filter(t => !["PK", "FK", "PII"].includes(t)).forEach(t => {
+                        tagBadges.push(`<span class="bg-slate-100 text-slate-600 text-[9px] px-1.5 py-0.5 rounded">${t}</span>`);
+                    });
+                }
+
+                return `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50/70 transition">
+                        <td class="py-2 px-3 font-mono text-xs font-bold text-slate-900">${c.name}</td>
+                        <td class="py-2 px-3 font-mono text-[11px] text-blue-700">${c.data_type || 'VARCHAR'}</td>
+                        <td class="py-2 px-3 text-xs text-slate-600">${c.description || '-'}</td>
+                        <td class="py-2 px-3 flex flex-wrap gap-1 items-center">${tagBadges.join(" ")}</td>
+                    </tr>
+                `;
+            }).join("");
+
+            const drawerId = `catalog-drawer-${idx}`;
+
             card.innerHTML = `
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                    <span class="font-mono text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-bold">${tbl.fqn}</span>
-                    <span class="text-[10px] bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded font-medium">${tbl.tier || 'Tier 1'}</span>
-                </div>
-                <h4 class="text-xs font-bold text-slate-900">${tbl.table_name}</h4>
-                <p class="text-xs text-slate-600">${tbl.description}</p>
-                <div class="text-[11px] text-slate-500 pt-2 border-t border-slate-100 space-y-1.5">
-                    <div class="flex items-center justify-between">
-                        <span><strong class="text-slate-700">Owner:</strong> ${tbl.owner || 'DJBC Data Governance'}</span>
-                        <span><strong class="text-slate-700">Service:</strong> ${tbl.service_name || 'CEISA-DWH'}</span>
+                <!-- Top Row: FQN, Tier, and Action Buttons -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-100">
+                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                        <span class="font-mono text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-md font-bold flex items-center space-x-1.5">
+                            <i data-lucide="table" class="w-3.5 h-3.5 text-blue-600"></i>
+                            <span>${tbl.fqn}</span>
+                        </span>
+                        <span class="text-[10px] bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full font-medium">${tbl.tier || 'Tier 1'}</span>
+                        <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">Schema: ${tbl.schema_name || 'public'}</span>
+                        ${piiCount > 0 ? `<span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-semibold flex items-center space-x-1"><i data-lucide="shield-alert" class="w-3 h-3 text-amber-600"></i><span>${piiCount} PII</span></span>` : ''}
                     </div>
-                    <div class="flex flex-wrap gap-1 pt-1">
-                        ${colTags}
+
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        <button class="btn-copy-catalog-fqn text-[11px] font-medium text-slate-600 hover:text-blue-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-lg transition flex items-center space-x-1" data-fqn="${tbl.fqn}">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>Salin FQN</span>
+                        </button>
+                        <button class="btn-use-catalog-table text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 px-3 py-1 rounded-lg transition shadow-2xs flex items-center space-x-1" data-fqn="${tbl.fqn}" data-table="${tbl.table_name}">
+                            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+                            <span>Kueri di Studio</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Description & Ownership Details -->
+                <div class="space-y-1.5">
+                    <h4 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                        <span>${tbl.table_name}</span>
+                        <span class="text-[11px] text-slate-400 font-normal">(${tbl.columns.length} kolom, PK: ${pkCols})</span>
+                    </h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">${tbl.description}</p>
+                </div>
+
+                <!-- Metadata Properties & Lineage -->
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2 text-[11px]">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
+                        <div><strong class="text-slate-800">Data Owner:</strong> ${tbl.owner || 'DJBC Subdit Pengelolaan Data'}</div>
+                        <div><strong class="text-slate-800">DWH Service:</strong> ${tbl.service_name || 'CEISA40-PostgreSQL-DWH'}</div>
+                    </div>
+
+                    <!-- Lineage Path (Upstream ➔ Table ➔ Downstream) -->
+                    <div class="pt-2 border-t border-slate-200 flex flex-col gap-1.5">
+                        <div class="flex items-center space-x-1.5 font-semibold text-slate-700">
+                            <i data-lucide="git-branch" class="w-3.5 h-3.5 text-blue-600"></i>
+                            <span>Data Lineage & Aliran ETL:</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 pt-0.5 text-[10px]">
+                            <div class="flex items-center space-x-1">${upstreamBadges}</div>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <span class="px-2 py-0.5 rounded bg-blue-600 text-white font-mono font-bold">${tbl.table_name}</span>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <div class="flex items-center space-x-1">${downstreams.length > 0 ? downstreamBadges : '<span class="text-slate-400 italic">Analitik Ad-hoc</span>'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column Preview & Expand Toggle -->
+                <div class="space-y-2 pt-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="font-semibold text-slate-700">Pratinjau Atribut Kolom:</span>
+                        <button class="btn-toggle-schema-drawer text-blue-600 hover:text-blue-800 font-semibold flex items-center space-x-1" data-drawer="${drawerId}">
+                            <span>Buka Glosarium Lengkap (${tbl.columns.length})</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-200" id="icon-${drawerId}"></i>
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${previewCols}
+                        ${tbl.columns.length > 8 ? `<span class="text-[11px] text-slate-400 font-mono self-center pl-1">+${tbl.columns.length - 8} lainnya</span>` : ''}
+                    </div>
+                </div>
+
+                <!-- Expandable Full Schema Drawer -->
+                <div id="${drawerId}" class="hidden pt-3 border-t border-slate-200">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-[11px]">
+                                <tr>
+                                    <th class="py-2 px-3">Nama Kolom</th>
+                                    <th class="py-2 px-3">Tipe Data</th>
+                                    <th class="py-2 px-3">Deskripsi Glosarium Bisnis</th>
+                                    <th class="py-2 px-3">Tag Tata Kelola</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${schemaRows}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             `;
             content.appendChild(card);
         });
+
+        // Wire Event Listeners inside cards
+        document.querySelectorAll(".btn-copy-catalog-fqn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const fqn = btn.getAttribute("data-fqn");
+                navigator.clipboard.writeText(fqn).then(() => {
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i><span class="text-emerald-700">Tersalin!</span>`;
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                        lucide.createIcons();
+                    }, 1800);
+                });
+            });
+        });
+
+        document.querySelectorAll(".btn-use-catalog-table").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const fqn = btn.getAttribute("data-fqn");
+                const tblName = btn.getAttribute("data-table");
+                modal.classList.add("hidden");
+
+                // Switch to SQL Studio tab
+                const tabBtn = document.querySelector('[data-tab="tab-sql"]');
+                if (tabBtn) tabBtn.click();
+
+                // Put sample query into SQL editor
+                const sampleSql = `-- Kueri Eksplorasi Katalog: ${fqn}\nSELECT *\nFROM ${fqn}\nLIMIT 20;`;
+                const editorInput = document.getElementById("sql-editor-input");
+                if (editorInput) {
+                    editorInput.value = sampleSql;
+                    const editGutter = document.getElementById("sql-edit-gutter");
+                    if (editGutter) updateSqlGutter(editGutter, sampleSql);
+                    updateSqlStats(sampleSql);
+                }
+
+                // If in view mode, also update code block
+                const sqlCode = document.getElementById("sql-code-block");
+                if (sqlCode) {
+                    sqlCode.textContent = sampleSql;
+                    if (window.Prism) Prism.highlightElement(sqlCode);
+                }
+                const viewGutter = document.getElementById("sql-view-gutter");
+                if (viewGutter) updateSqlGutter(viewGutter, sampleSql);
+
+                const filenameElem = document.getElementById("sql-window-filename");
+                if (filenameElem) filenameElem.innerText = `explore_${tblName}.sql`;
+
+                // Alert user
+                console.log(`[Catalog] Loaded ${fqn} into SQL Studio.`);
+            });
+        });
+
+        document.querySelectorAll(".btn-toggle-schema-drawer").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const drawerId = btn.getAttribute("data-drawer");
+                const drawer = document.getElementById(drawerId);
+                const icon = document.getElementById(`icon-${drawerId}`);
+                if (!drawer) return;
+
+                if (drawer.classList.contains("hidden")) {
+                    drawer.classList.remove("hidden");
+                    btn.querySelector("span").innerText = "Tutup Glosarium";
+                    if (icon) icon.classList.add("rotate-180");
+                } else {
+                    drawer.classList.add("hidden");
+                    btn.querySelector("span").innerText = `Buka Glosarium Lengkap`;
+                    if (icon) icon.classList.remove("rotate-180");
+                }
+            });
+        });
+
         lucide.createIcons();
+    }
+
+    // Filter Buttons (Skema)
+    schemaFilterBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            schemaFilterBtns.forEach(b => {
+                b.className = "catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700";
+            });
+            btn.className = "catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-blue-600 text-white shadow-2xs";
+            activeCatalogSchemaFilter = btn.getAttribute("data-filter");
+            renderModalTables();
+        });
+    });
+
+    // Tier Select
+    if (tierSelect) {
+        tierSelect.addEventListener("change", (e) => {
+            activeCatalogTierFilter = e.target.value;
+            renderModalTables();
+        });
     }
 
     openBtn.addEventListener("click", async () => {
@@ -2099,26 +2377,15 @@ function setupCatalogModal() {
             const res = await fetch("/api/catalog");
             const data = await res.json();
             allCatalogTablesCache = data.tables || [];
-            renderModalTables(allCatalogTablesCache);
+            renderModalTables();
         } catch (err) {
             content.innerHTML = `<div class="p-8 text-center text-xs text-red-500">Gagal memuat katalog: ${err.message}</div>`;
         }
     });
 
     if (searchInput) {
-        searchInput.addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            if (!query) {
-                renderModalTables(allCatalogTablesCache);
-                return;
-            }
-            const filtered = allCatalogTablesCache.filter(tbl => {
-                const nameMatch = tbl.fqn.toLowerCase().includes(query) || tbl.table_name.toLowerCase().includes(query);
-                const descMatch = (tbl.description || "").toLowerCase().includes(query);
-                const colMatch = (tbl.columns || []).some(c => c.name.toLowerCase().includes(query) || (c.description || "").toLowerCase().includes(query));
-                return nameMatch || descMatch || colMatch;
-            });
-            renderModalTables(filtered);
+        searchInput.addEventListener("input", () => {
+            renderModalTables();
         });
     }
 

@@ -1747,26 +1747,80 @@
 
     <!-- Catalog Browser Modal -->
     <div id="catalog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 flex-shrink-0 shadow-xs">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                    </div>
                     <div>
-                        <h3 class="font-bold text-sm text-slate-900">Katalog Enterprise OpenMetadata</h3>
-                        <p class="text-[11px] text-slate-500">Daftar tabel resmi DWH CEISA & Kementerian Keuangan</p>
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-bold text-sm text-slate-900">Katalog Enterprise OpenMetadata</h3>
+                            <span id="catalog-badge-total" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">0 Tabel</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">Kamus metadata resmi DWH CEISA 4.0, Klasifikasi PII, dan Data Lineage</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
                     <div class="relative">
                         <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
-                        <input type="text" id="input-catalog-modal-search" placeholder="Cari tabel / atribut..." class="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 w-44 sm:w-60">
+                        <input type="text" id="input-catalog-modal-search" placeholder="Cari nama tabel, FQN, atau atribut..." class="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 w-52 sm:w-72 shadow-2xs">
                     </div>
                     <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4" id="modal-catalog-content"></div>
+
+            <!-- Filter Bar: Skema Kepabeanan & Governance Tier -->
+            <div class="px-5 py-2.5 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center space-x-1.5 overflow-x-auto py-1" id="catalog-schema-filters">
+                    <span class="text-[11px] font-semibold text-slate-500 mr-1 flex items-center space-x-1">
+                        <i data-lucide="layers" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>Skema:</span>
+                    </span>
+                    <button class="catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-blue-600 text-white shadow-2xs" data-filter="all">Semua</button>
+                    <button class="catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700" data-filter="ekspor">Ekspor (PEB)</button>
+                    <button class="catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700" data-filter="impor">Impor (PIB)</button>
+                    <button class="catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700" data-filter="cukai">Cukai</button>
+                    <button class="catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700" data-filter="manifest">Manifest</button>
+                    <button class="catalog-filter-btn px-2.5 py-1 rounded-lg font-medium text-xs transition bg-slate-100 hover:bg-slate-200 text-slate-700" data-filter="master">Master Data</button>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <span class="text-[11px] text-slate-500 font-medium">Tier:</span>
+                    <select id="select-catalog-tier-filter" class="bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500 text-slate-700">
+                        <option value="all">Semua Tingkat</option>
+                        <option value="tier1">Tier 1 (Mission Critical)</option>
+                        <option value="tier2">Tier 2</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Content Container -->
+            <div class="p-6 overflow-y-auto space-y-4 bg-slate-50/50 flex-1" id="modal-catalog-content"></div>
+
+            <!-- Modal Footer -->
+            <div class="px-5 py-3 border-t border-slate-200 bg-white flex flex-wrap items-center justify-between text-[11px] text-slate-500">
+                <div class="flex items-center space-x-4">
+                    <span class="flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span>PK = Primary Key</span>
+                    </span>
+                    <span class="flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                        <span>FK = Foreign Key</span>
+                    </span>
+                    <span class="flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>PII = Wajib Masking</span>
+                    </span>
+                </div>
+                <div class="text-slate-400">
+                    Klik <span class="font-semibold text-slate-600">"Kueri di Studio"</span> untuk langsung menggunakan tabel di SQL Editor.
+                </div>
+            </div>
         </div>
     </div>
 
