@@ -3286,9 +3286,15 @@ function openSpecConfirmationModal(spec) {
         bProcSelect.value = spec.business_process || "Lainnya";
     }
 
+    function normalizeDateInput(val, fallback) {
+        if (!val) return fallback;
+        const match = String(val).match(/\d{4}-\d{2}-\d{2}/);
+        return match ? match[0] : fallback;
+    }
+
     document.getElementById("conf-purpose").value = spec.business_purpose || "";
-    document.getElementById("conf-date-start").value = spec.time_range_start || "2026-07-01";
-    document.getElementById("conf-date-end").value = spec.time_range_end || "2026-09-30";
+    document.getElementById("conf-date-start").value = normalizeDateInput(spec.time_range_start, "2026-07-01");
+    document.getElementById("conf-date-end").value = normalizeDateInput(spec.time_range_end, "2026-09-30");
 
     // Render Kolom yang Diminta
     const fieldsContainer = document.getElementById("conf-fields-container");
@@ -3351,6 +3357,22 @@ function setupSpecConfirmationModal() {
     cancelBtn.addEventListener("click", () => modal.classList.add("hidden"));
     modal.addEventListener("click", (e) => {
         if (e.target === modal) modal.classList.add("hidden");
+    });
+
+    // Otomatis buka popup kalender saat kolom input tanggal diklik
+    const dateStartInput = document.getElementById("conf-date-start");
+    const dateEndInput = document.getElementById("conf-date-end");
+    [dateStartInput, dateEndInput].forEach(inp => {
+        if (!inp) return;
+        inp.addEventListener("click", () => {
+            if (typeof inp.showPicker === "function") {
+                try {
+                    inp.showPicker();
+                } catch (e) {
+                    // Fallback jika picker sudah aktif
+                }
+            }
+        });
     });
 
     confirmBtn.addEventListener("click", async () => {

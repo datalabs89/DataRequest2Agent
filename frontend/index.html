@@ -1660,14 +1660,18 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block font-medium text-slate-600 mb-1">Tanggal Mulai:</label>
-                                    <input type="text" id="conf-date-start" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono font-semibold" placeholder="YYYY-MM-DD">
+                                    <div class="relative flex items-center">
+                                        <input type="date" id="conf-date-start" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono font-semibold cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block font-medium text-slate-600 mb-1">Tanggal Selesai:</label>
-                                    <input type="text" id="conf-date-end" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono font-semibold" placeholder="YYYY-MM-DD">
+                                    <div class="relative flex items-center">
+                                        <input type="date" id="conf-date-end" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono font-semibold cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs">
+                                    </div>
                                 </div>
                             </div>
-                            <span class="text-[11px] text-slate-500 block">Query SQL akan membatasi data berdasarkan rentang tanggal ini.</span>
+                            <span class="text-[11px] text-slate-500 block">Query SQL akan membatasi data berdasarkan rentang tanggal ini. Klik kolom untuk memilih tanggal dari kalender.</span>
                         </div>
 
                         <!-- 2. Tingkat Granularitas -->
