@@ -82,11 +82,83 @@ class EnterpriseDatabaseEngine:
         );
         """)
 
+        # 5. Tabel DJBC Master: dim_perusahaan (Eksportir, Importir, PPJK, Pengusaha Cukai)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS dim_perusahaan (
+            npwp_perusahaan TEXT PRIMARY KEY,
+            nama_perusahaan TEXT,
+            alamat_domisili TEXT,
+            nik_penanggung_jawab TEXT,
+            email_korespondensi TEXT,
+            nomor_telepon TEXT,
+            status_registrasi TEXT,
+            kategori_layanan_aeo TEXT,
+            tanggal_terdaftar DATE
+        );
+        """)
+
+        # 6. Tabel DJBC Fakta Ekspor: fct_peb_ekspor
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fct_peb_ekspor (
+            nomor_peb TEXT PRIMARY KEY,
+            tanggal_peb TEXT,
+            npwp_eksportir TEXT,
+            nama_eksportir TEXT,
+            alamat_eksportir TEXT,
+            kode_kantor TEXT,
+            negara_tujuan TEXT,
+            nilai_fob_usd NUMERIC,
+            nilai_devisa_idr NUMERIC,
+            status_pabean TEXT,
+            created_at TEXT,
+            FOREIGN KEY (npwp_eksportir) REFERENCES dim_perusahaan(npwp_perusahaan)
+        );
+        """)
+
+        # 7. Tabel DJBC Fakta Impor: fct_pib_impor
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fct_pib_impor (
+            nomor_pib TEXT PRIMARY KEY,
+            tanggal_pib TEXT,
+            npwp_importir TEXT,
+            nama_importir TEXT,
+            kode_kantor TEXT,
+            negara_asal TEXT,
+            nilai_cif_usd NUMERIC,
+            bea_masuk_idr NUMERIC,
+            ppn_impor_idr NUMERIC,
+            status_jalur TEXT,
+            created_at TEXT,
+            FOREIGN KEY (npwp_importir) REFERENCES dim_perusahaan(npwp_perusahaan)
+        );
+        """)
+
+        # 8. Tabel DJBC Fakta Cukai: fct_billing_cukai
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fct_billing_cukai (
+            billing_id TEXT PRIMARY KEY,
+            nomor_dokumen_cukai TEXT,
+            tanggal_billing TEXT,
+            npwp_pengusaha_cukai TEXT,
+            nama_pabrik TEXT,
+            jenis_hasil_tembakau TEXT,
+            jumlah_tarif_spesifik NUMERIC,
+            nilai_penerimaan_cukai NUMERIC,
+            status_pelunasan TEXT,
+            FOREIGN KEY (npwp_pengusaha_cukai) REFERENCES dim_perusahaan(npwp_perusahaan)
+        );
+        """)
+
         cursor.execute("SELECT COUNT(*) FROM dim_customers")
         count = cursor.fetchone()[0]
 
+        cursor.execute("SELECT COUNT(*) FROM dim_perusahaan")
+        p_count = cursor.fetchone()[0]
+
         if count == 0:
             self._seed_mock_data(cursor)
+        elif p_count == 0:
+            self._seed_djbc_mock_data(cursor)
 
         conn.commit()
         conn.close()
@@ -162,6 +234,72 @@ class EnterpriseDatabaseEngine:
             """, (t_id, c_id, s_id, t_datetime_str, random.choice(channels), amount, discount, tax,
                   random.choice(payment_methods), status, t_datetime_str))
 
+        self._seed_djbc_mock_data(cursor)
+
+    def _seed_djbc_mock_data(self, cursor: sqlite3.Cursor):
+        """Seed data mock DJBC realistis: Profil Perusahaan, Dokumen PEB Ekspor, PIB Impor, dan Billing Cukai."""
+        companies = [
+            ("0123456789012000", "PT Nusantara Exportindo Global", "Kawasan Industri MM2100, Cikarang", "3275012345670001", "customs@nusantara-export.co.id", "021-8901234", "AKTIF", "AEO", "2020-01-15"),
+            ("0234567890123000", "PT Sumber Berkah Sejahtera Mandiri", "Jl. Margomulyo Indah No. 45, Surabaya", "3578023456780002", "logistik@sumberberkah.com", "031-7489123", "AKTIF", "MITA_PRIORITAS", "2019-05-20"),
+            ("0345678901234000", "PT Indo Pasifik Perkasa Industri", "Kawasan Berikat Nusantara, Cakung, Jakarta", "3172034567890003", "exim@indopasifik.co.id", "021-4405678", "AKTIF", "AEO", "2018-11-10"),
+            ("0456789012345000", "CV Lautan Mas Jaya Utama", "Pelabuhan Tanjung Emas, Semarang", "3374045678900004", "info@lautanmas.id", "024-3512345", "AKTIF", "REGULER", "2021-03-12"),
+            ("0567890123456000", "PT Djarum Mahakarya Tbk", "Jl. Jend. A. Yani No. 28, Kudus", "3319056789010005", "tax_cukai@djarum-corp.com", "0291-431234", "AKTIF", "AEO", "2015-08-01"),
+            ("0678901234567000", "PT Gudang Garam Sentosa Utama", "Jl. Semampir II/1, Kediri", "3571067890120006", "cukai@gudanggaram-sentosa.co.id", "0354-681234", "AKTIF", "AEO", "2016-04-18"),
+            ("0789012345678000", "PT Asia Pulp & Logistics Terminal", "Jl. Hang Tuah, Belawan, Medan", "1271078901230007", "customs.medan@asiapulp.co.id", "061-6941234", "AKTIF", "MITA_PRIORITAS", "2017-09-25"),
+            ("0890123456789000", "PT Astra Agro Lestari Perkasa", "Jl. Pulo Buaran Raya, Jakarta Timur", "3175089012340008", "exim@astra-agro.co.id", "021-4616555", "AKTIF", "AEO", "2017-01-10")
+        ]
+        for comp in companies:
+            cursor.execute("INSERT OR REPLACE INTO dim_perusahaan VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", comp)
+
+        start_date = datetime.date(2026, 7, 1)
+        end_date = datetime.date(2026, 9, 30)
+        days_span = (end_date - start_date).days
+        kantor_list = ["040300", "070100", "060100", "010700", "050100"]
+        negara_ekspor = ["US - Amerika Serikat", "CN - Tiongkok", "JP - Jepang", "SG - Singapura", "NL - Belanda", "IN - India"]
+        negara_impor = ["CN - Tiongkok", "JP - Jepang", "DE - Jerman", "US - Amerika Serikat", "KR - Korea Selatan"]
+
+        # Seed 60 PEB Ekspor
+        for i in range(1, 61):
+            nopen = f"0{10000 + i}"
+            comp = random.choice(companies[:4] + [companies[7]])
+            delta = random.randint(0, days_span)
+            t_date = start_date + datetime.timedelta(days=delta)
+            t_str = f"{t_date.strftime('%Y-%m-%d')} {random.randint(8, 17):02d}:{random.randint(0, 59):02d}:00"
+            fob_usd = random.choice([25000, 48000, 85000, 140000, 290000, 520000, 950000])
+            devisa_idr = round(fob_usd * 16200, 2)
+            status = "NPE" if random.random() > 0.08 else "PERIKSA_FISIK"
+            cursor.execute("INSERT OR REPLACE INTO fct_peb_ekspor VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (f"PEB-{t_date.strftime('%Y%m%d')}-{nopen}", t_str, comp[0], comp[1], comp[2],
+                            random.choice(kantor_list), random.choice(negara_ekspor), fob_usd, devisa_idr, status, t_str))
+
+        # Seed 50 PIB Impor
+        for i in range(1, 51):
+            nopen = f"0{20000 + i}"
+            comp = random.choice(companies[:4] + [companies[6]])
+            delta = random.randint(0, days_span)
+            t_date = start_date + datetime.timedelta(days=delta)
+            t_str = f"{t_date.strftime('%Y-%m-%d')} {random.randint(8, 17):02d}:{random.randint(0, 59):02d}:00"
+            cif_usd = random.choice([18000, 35000, 72000, 115000, 240000, 480000])
+            bm_idr = round(cif_usd * 16200 * random.choice([0.05, 0.075, 0.1, 0.15]), 2)
+            ppn_idr = round((cif_usd * 16200 + bm_idr) * 0.11, 2)
+            jalur = random.choice(["HIJAU", "HIJAU", "HIJAU", "KUNING", "MERAH", "MITA"])
+            cursor.execute("INSERT OR REPLACE INTO fct_pib_impor VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (f"PIB-{t_date.strftime('%Y%m%d')}-{nopen}", t_str, comp[0], comp[1],
+                            random.choice(kantor_list), random.choice(negara_impor), cif_usd, bm_idr, ppn_idr, jalur, t_str))
+
+        # Seed 40 Billing Cukai
+        for i in range(1, 41):
+            bid = f"BILL-CK-{20260700 + i}"
+            doc_cukai = f"CK1-{2026000 + i}"
+            comp = random.choice([companies[4], companies[5]])
+            delta = random.randint(0, days_span)
+            t_date = start_date + datetime.timedelta(days=delta)
+            t_str = f"{t_date.strftime('%Y-%m-%d')} {random.randint(9, 15):02d}:{random.randint(0, 59):02d}:00"
+            penerimaan = random.choice([250000000, 480000000, 850000000, 1400000000, 3200000000])
+            cursor.execute("INSERT OR REPLACE INTO fct_billing_cukai VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (bid, doc_cukai, t_str, comp[0], comp[1], random.choice(["SKT", "SKM", "SPM"]),
+                            random.choice([665.0, 985.0, 1150.0]), penerimaan, "LUNAS"))
+
     def execute_query(self, sql_query: str) -> Tuple[List[str], List[Dict[str, Any]]]:
         """
         Mengeksekusi query SQL dengan Circuit Breaker dan Read-Only Security Guard.
@@ -180,9 +318,13 @@ class EnterpriseDatabaseEngine:
             if f" {word} " in f" {upper_sql} ":
                 raise PermissionError(f"Operasi mencurigakan terdeteksi: '{word}' tidak diizinkan.")
 
-        # Adaptasi FQN schema untuk SQLite (hilangkan prefix skema seperti dwh_production.sales.)
+        # Adaptasi FQN schema untuk SQLite (hilangkan prefix skema)
         adapted_sql = clean_sql
-        for prefix in ["dwh_production.sales.", "dwh_production.logistics.", "dwh_production.finance.", "dwh_production."]:
+        prefixes_to_strip = [
+            "dwh_ceisa.ekspor.", "dwh_ceisa.impor.", "dwh_ceisa.cukai.", "dwh_ceisa.manifest.", "dwh_ceisa.master.", "dwh_ceisa.",
+            "dwh_production.sales.", "dwh_production.logistics.", "dwh_production.finance.", "dwh_production."
+        ]
+        for prefix in prefixes_to_strip:
             adapted_sql = adapted_sql.replace(prefix, "")
 
         # Normalisasi klausa Oracle FETCH FIRST n ROWS ONLY ke SQLite LIMIT n

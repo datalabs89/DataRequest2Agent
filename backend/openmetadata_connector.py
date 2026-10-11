@@ -17,8 +17,134 @@ class OpenMetadataConnector:
         self.offline_catalog = self._init_offline_catalog()
 
     def _init_offline_catalog(self) -> List[OpenMetadataTable]:
-        """Built-in Enterprise DWH Catalog for realistic banking, retail, and logistics."""
+        """Built-in Enterprise DWH Catalog for DJBC Customs, Excise, Banking, and Logistics."""
         return [
+            # 1. TABEL UTAMA KEPABEANAN: fct_peb_ekspor (Fakta Dokumen Ekspor PEB)
+            OpenMetadataTable(
+                fqn="dwh_ceisa.ekspor.fct_peb_ekspor",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="ekspor",
+                table_name="fct_peb_ekspor",
+                description="Tabel fakta transaksi ekspor barang, devisa hasil ekspor, dan dokumen PEB (Pemberitahuan Ekspor Barang BC 3.0).",
+                tier="Tier 1 - Mission Critical",
+                owner="Direktorat Teknis Kepabeanan & Subdit Ekspor",
+                lineage_upstream=["staging_ceisa.stg_peb_header", "staging_ceisa.stg_nopen_online"],
+                lineage_downstream=["datamart_ceisa.dm_kinerja_ekspor_bulanan", "datamart_ceisa.dm_devisa_ekspor"],
+                columns=[
+                    OpenMetadataColumn(name="nomor_peb", data_type="VARCHAR(32)", description="Nomor pendaftaran PEB (6 digit nopen + tanggal)", tags=["PK", "Core"]),
+                    OpenMetadataColumn(name="tanggal_peb", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen ekspor", tags=["Temporal", "PartitionKey"]),
+                    OpenMetadataColumn(name="npwp_eksportir", data_type="VARCHAR(20)", description="NPWP 16 digit perusahaan eksportir", tags=["FK", "Restricted"]),
+                    OpenMetadataColumn(name="nama_eksportir", data_type="VARCHAR(128)", description="Nama entitas badan usaha eksportir", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="alamat_eksportir", data_type="VARCHAR(256)", description="Alamat domisili eksportir", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="kode_kantor", data_type="VARCHAR(8)", description="Kode kantor pabean pemuatan (contoh: 040300 - Tanjung Priok)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="negara_tujuan", data_type="VARCHAR(64)", description="Negara tujuan ekspor barang", tags=["Dimension", "Geography"]),
+                    OpenMetadataColumn(name="nilai_fob_usd", data_type="NUMERIC(18,2)", description="Nilai Free on Board dalam valuta USD", tags=["Metric"]),
+                    OpenMetadataColumn(name="nilai_devisa_idr", data_type="NUMERIC(20,2)", description="Nilai devisa hasil ekspor ekuivalen Rupiah", tags=["Metric"]),
+                    OpenMetadataColumn(name="status_pabean", data_type="VARCHAR(32)", description="Status persetujuan pabean: NPE, PERIKSA_FISIK, REVISI, BATAL", tags=["Dimension", "Filter"]),
+                    OpenMetadataColumn(name="created_at", data_type="TIMESTAMP", description="Waktu data tersinkronisasi ke DWH CEISA", tags=["System"])
+                ]
+            ),
+            # 2. TABEL UTAMA KEPABEANAN: fct_pib_impor (Fakta Dokumen Impor PIB)
+            OpenMetadataTable(
+                fqn="dwh_ceisa.impor.fct_pib_impor",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="impor",
+                table_name="fct_pib_impor",
+                description="Tabel fakta arus barang impor, nilai pabean CIF, pungutan bea masuk, dan jalur pelayanan PIB (BC 2.0).",
+                tier="Tier 1 - Mission Critical",
+                owner="Direktorat Teknis Kepabeanan & Subdit Impor",
+                lineage_upstream=["staging_ceisa.stg_pib_header", "staging_ceisa.stg_billing_mpn"],
+                lineage_downstream=["datamart_ceisa.dm_penerimaan_pabean", "datamart_ceisa.dm_profiling_komoditas"],
+                columns=[
+                    OpenMetadataColumn(name="nomor_pib", data_type="VARCHAR(32)", description="Nomor pendaftaran PIB resmi", tags=["PK", "Core"]),
+                    OpenMetadataColumn(name="tanggal_pib", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen PIB", tags=["Temporal", "PartitionKey"]),
+                    OpenMetadataColumn(name="npwp_importir", data_type="VARCHAR(20)", description="NPWP perusahaan importir", tags=["FK", "Restricted"]),
+                    OpenMetadataColumn(name="nama_importir", data_type="VARCHAR(128)", description="Nama entitas importir", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="kode_kantor", data_type="VARCHAR(8)", description="Kode kantor pabean kedatangan", tags=["Dimension"]),
+                    OpenMetadataColumn(name="negara_asal", data_type="VARCHAR(64)", description="Negara asal pengiriman barang", tags=["Dimension", "Geography"]),
+                    OpenMetadataColumn(name="nilai_cif_usd", data_type="NUMERIC(18,2)", description="Nilai CIF (Cost, Insurance, Freight) USD", tags=["Metric"]),
+                    OpenMetadataColumn(name="bea_masuk_idr", data_type="NUMERIC(18,2)", description="Nominal pungutan Bea Masuk (Rupiah)", tags=["Metric"]),
+                    OpenMetadataColumn(name="ppn_impor_idr", data_type="NUMERIC(18,2)", description="Nilai PPN Impor (Rupiah)", tags=["Metric"]),
+                    OpenMetadataColumn(name="status_jalur", data_type="VARCHAR(32)", description="Jalur pelayanan: HIJAU, KUNING, MERAH, MITA, AEO", tags=["Dimension", "Filter"]),
+                    OpenMetadataColumn(name="created_at", data_type="TIMESTAMP", description="Waktu sinkronisasi DWH", tags=["System"])
+                ]
+            ),
+            # 3. TABEL UTAMA CUKAI: fct_billing_cukai (Fakta Penerimaan Cukai)
+            OpenMetadataTable(
+                fqn="dwh_ceisa.cukai.fct_billing_cukai",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="cukai",
+                table_name="fct_billing_cukai",
+                description="Tabel fakta penagihan, billing MPN, dan pelunasan cukai hasil tembakau (HT), MMEA, serta etil alkohol.",
+                tier="Tier 1 - Mission Critical",
+                owner="Direktorat Teknis dan Fasilitas Cukai",
+                lineage_upstream=["staging_ceisa.stg_billing_cukai", "staging_ceisa.stg_pesanan_pita_cukai"],
+                lineage_downstream=["datamart_ceisa.dm_target_realisasi_cukai"],
+                columns=[
+                    OpenMetadataColumn(name="billing_id", data_type="VARCHAR(32)", description="Kode billing MPN G2/G3 perbendaharaan", tags=["PK", "Core"]),
+                    OpenMetadataColumn(name="nomor_dokumen_cukai", data_type="VARCHAR(32)", description="Nomor dokumen pemesanan pita cukai (CK-1)", tags=["FK"]),
+                    OpenMetadataColumn(name="tanggal_billing", data_type="TIMESTAMP", description="Waktu penerbitan billing cukai", tags=["Temporal", "PartitionKey"]),
+                    OpenMetadataColumn(name="npwp_pengusaha_cukai", data_type="VARCHAR(20)", description="NPWP pabrik/pengusaha BKC", tags=["FK"]),
+                    OpenMetadataColumn(name="nama_pabrik", data_type="VARCHAR(128)", description="Nama pabrik / entitas wajib cukai", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="jenis_hasil_tembakau", data_type="VARCHAR(32)", description="Kategori komoditas: SKT, SKM, SPM, MMEA, EA", tags=["Dimension"]),
+                    OpenMetadataColumn(name="jumlah_tarif_spesifik", data_type="NUMERIC(15,2)", description="Tarif cukai per batang/liter", tags=["Metric"]),
+                    OpenMetadataColumn(name="nilai_penerimaan_cukai", data_type="NUMERIC(20,2)", description="Total penerimaan cukai disetor (Rupiah)", tags=["Metric"]),
+                    OpenMetadataColumn(name="status_pelunasan", data_type="VARCHAR(32)", description="Status pembayaran: LUNAS, MENUNGGU_BAYAR, KEDALUWARSA", tags=["Dimension", "Filter"])
+                ]
+            ),
+            # 4. TABEL MANIFEST: fct_manifest_bc11 (Fakta Manifest Kedatangan/Keberangkatan)
+            OpenMetadataTable(
+                fqn="dwh_ceisa.manifest.fct_manifest_bc11",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="manifest",
+                table_name="fct_manifest_bc11",
+                description="Tabel pengawasan sarana pengangkut, manifest inward/outward kapal dan pesawat (BC 1.1).",
+                tier="Tier 2",
+                owner="Direktorat Penindakan dan Penyidikan (P2)",
+                lineage_upstream=["staging_ceisa.stg_manifest_inward_outward"],
+                lineage_downstream=["datamart_ceisa.dm_pengawasan_manifest"],
+                columns=[
+                    OpenMetadataColumn(name="nomor_bc11", data_type="VARCHAR(32)", description="Nomor registrasi manifest BC 1.1", tags=["PK", "Core"]),
+                    OpenMetadataColumn(name="tanggal_bc11", data_type="TIMESTAMP", description="Tanggal pendaftaran manifest", tags=["Temporal", "PartitionKey"]),
+                    OpenMetadataColumn(name="nomor_pos", data_type="VARCHAR(16)", description="Nomor pos manifest kedatangan", tags=["Dimension"]),
+                    OpenMetadataColumn(name="nama_sarana_pengangkut", data_type="VARCHAR(128)", description="Nama kapal atau nomor penerbangan pesawat", tags=["Dimension"]),
+                    OpenMetadataColumn(name="nama_nahkoda_pilot", data_type="VARCHAR(128)", description="Nama nahkoda atau pilot penanggung jawab", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="pelabuhan_muat", data_type="VARCHAR(64)", description="Pelabuhan keberangkatan/asal muat", tags=["Geography"]),
+                    OpenMetadataColumn(name="pelabuhan_tujuan", data_type="VARCHAR(64)", description="Pelabuhan tujuan pembongkaran", tags=["Geography"]),
+                    OpenMetadataColumn(name="jumlah_kemasan", data_type="INTEGER", description="Jumlah koli kemasan barang kargo", tags=["Metric"]),
+                    OpenMetadataColumn(name="berat_kotor_kg", data_type="NUMERIC(15,2)", description="Berat kotor / gross weight (Kg)", tags=["Metric"]),
+                    OpenMetadataColumn(name="status_segel", data_type="VARCHAR(32)", description="Status segel bea cukai: AMAN, DIPERIKSA, DIBONGKAR", tags=["Dimension", "Filter"])
+                ]
+            ),
+            # 5. TABEL DIMENSI PERUSAHAAN KEPABEANAN & CUKAI: dim_perusahaan
+            OpenMetadataTable(
+                fqn="dwh_ceisa.master.dim_perusahaan",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="master",
+                table_name="dim_perusahaan",
+                description="Master data profil eksportir, importir, PPJK, dan pengusaha barang kena cukai terdaftar di CEISA & DJP.",
+                tier="Tier 1 - Master Data",
+                owner="Subdit Pengelolaan Data & Layanan Informasi",
+                lineage_upstream=["staging_ceisa.stg_profil_perusahaan_kemenkeu"],
+                lineage_downstream=["dwh_ceisa.ekspor.fct_peb_ekspor", "dwh_ceisa.impor.fct_pib_impor", "dwh_ceisa.cukai.fct_billing_cukai"],
+                columns=[
+                    OpenMetadataColumn(name="npwp_perusahaan", data_type="VARCHAR(20)", description="Nomor Pokok Wajib Pajak 16 digit", tags=["PK"]),
+                    OpenMetadataColumn(name="nama_perusahaan", data_type="VARCHAR(128)", description="Nama resmi badan hukum perusahaan", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="alamat_domisili", data_type="VARCHAR(256)", description="Alamat kantor pusat", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="nik_penanggung_jawab", data_type="VARCHAR(16)", description="NIK pimpinan/penanggung jawab", tags=["PII", "Restricted"], is_pii=True),
+                    OpenMetadataColumn(name="email_korespondensi", data_type="VARCHAR(128)", description="Email resmi perusahaan", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="nomor_telepon", data_type="VARCHAR(32)", description="Nomor kontak telepon", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="status_registrasi", data_type="VARCHAR(32)", description="Status registrasi kepabeanan: AKTIF, BLOKIR, DIBEKUKAN", tags=["Dimension", "Filter"]),
+                    OpenMetadataColumn(name="kategori_layanan_aeo", data_type="VARCHAR(32)", description="Kategori fasilitas: AEO, MITA_PRIORITAS, REGULER", tags=["Dimension", "Classification"]),
+                    OpenMetadataColumn(name="tanggal_terdaftar", data_type="DATE", description="Tanggal perolehan NIB/Akses Kepabeanan", tags=["Temporal"])
+                ]
+            ),
+            # 6. TABEL FAKTA KEUANGAN & TRANSAKSI RETAIL UMUM
             OpenMetadataTable(
                 fqn="dwh_production.sales.fct_transactions",
                 service_name="PostgreSQL-DWH",
@@ -191,7 +317,13 @@ class OpenMetadataConnector:
             score = 0.0
             reasons = []
 
-            # Evaluasi deskripsi dan nama tabel
+            # 1. Evaluasi kesesuaian domain entitas utama (Bobot Utama)
+            p_low = primary_entity.lower().strip()
+            if p_low and (p_low in tbl.table_name.lower() or p_low in tbl.schema_name.lower()):
+                score += 0.50
+                reasons.append(f"Kesesuaian domain entitas permohonan: '{primary_entity}'")
+
+            # 2. Evaluasi deskripsi dan nama tabel
             tbl_text = f"{tbl.table_name} {tbl.schema_name} {tbl.description}".lower()
             for kw in keywords:
                 if kw in tbl_text:
@@ -217,8 +349,29 @@ class OpenMetadataConnector:
         # Batasi ke tabel paling relevan (1-3 tabel)
         final_selected = selected[:3] if selected else [self.offline_catalog[0]]
 
-        # Identifikasi strategi join berdasarkan foreign keys
+        # Identifikasi strategi join berdasarkan foreign keys resmi katalog
         selected_names = [t.table_name for t in final_selected]
+        if "fct_peb_ekspor" in selected_names and "dim_perusahaan" in selected_names:
+            join_strategies.append({
+                "left_table": "fct_peb_ekspor",
+                "right_table": "dim_perusahaan",
+                "join_type": "INNER JOIN",
+                "on_condition": "fct_peb_ekspor.npwp_eksportir = dim_perusahaan.npwp_perusahaan"
+            })
+        if "fct_pib_impor" in selected_names and "dim_perusahaan" in selected_names:
+            join_strategies.append({
+                "left_table": "fct_pib_impor",
+                "right_table": "dim_perusahaan",
+                "join_type": "INNER JOIN",
+                "on_condition": "fct_pib_impor.npwp_importir = dim_perusahaan.npwp_perusahaan"
+            })
+        if "fct_billing_cukai" in selected_names and "dim_perusahaan" in selected_names:
+            join_strategies.append({
+                "left_table": "fct_billing_cukai",
+                "right_table": "dim_perusahaan",
+                "join_type": "INNER JOIN",
+                "on_condition": "fct_billing_cukai.npwp_pengusaha_cukai = dim_perusahaan.npwp_perusahaan"
+            })
         if "fct_transactions" in selected_names and "dim_customers" in selected_names:
             join_strategies.append({
                 "left_table": "fct_transactions",

@@ -481,26 +481,154 @@ function renderResults(data) {
         fldContainer.appendChild(item);
     });
 
-    // TAB 2: CATALOG
+    // TAB 2: CATALOG GROUNDING STUDIO
     document.getElementById("catalog-summary-text").innerText = data.catalog_match.match_summary;
+
+    // Render Dynamic Lineage Flow
+    const lineageFlow = document.getElementById("catalog-lineage-flow");
+    if (lineageFlow) {
+        lineageFlow.innerHTML = "";
+        const primaryTbl = data.catalog_match.selected_tables[0];
+        if (primaryTbl) {
+            // 1. Upstream nodes
+            const upstreams = primaryTbl.lineage_upstream && primaryTbl.lineage_upstream.length > 0 
+                ? primaryTbl.lineage_upstream 
+                : ["staging_ceisa.stg_raw_feed"];
+            upstreams.forEach(u => {
+                const node = document.createElement("span");
+                node.className = "px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 font-semibold border border-amber-300 text-[11px] shadow-2xs";
+                node.innerText = u;
+                lineageFlow.appendChild(node);
+
+                const arr = document.createElement("i");
+                arr.setAttribute("data-lucide", "arrow-right");
+                arr.className = "w-3.5 h-3.5 text-slate-400";
+                lineageFlow.appendChild(arr);
+            });
+
+            // 2. Primary Table Node
+            const primNode = document.createElement("span");
+            primNode.className = "px-2.5 py-1 rounded-md bg-blue-100 text-blue-900 font-bold border border-blue-300 text-[11px] shadow-xs";
+            primNode.innerText = primaryTbl.fqn;
+            lineageFlow.appendChild(primNode);
+
+            // 3. Joined tables if any
+            if (data.catalog_match.selected_tables.length > 1) {
+                for (let i = 1; i < data.catalog_match.selected_tables.length; i++) {
+                    const arr = document.createElement("i");
+                    arr.setAttribute("data-lucide", "arrow-right");
+                    arr.className = "w-3.5 h-3.5 text-slate-400";
+                    lineageFlow.appendChild(arr);
+
+                    const joinNode = document.createElement("span");
+                    joinNode.className = "px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-900 font-semibold border border-indigo-300 text-[11px] shadow-2xs";
+                    joinNode.innerText = `${data.catalog_match.selected_tables[i].table_name} (JOIN)`;
+                    lineageFlow.appendChild(joinNode);
+                }
+            }
+
+            // 4. Downstream nodes
+            const downstreams = primaryTbl.lineage_downstream && primaryTbl.lineage_downstream.length > 0
+                ? primaryTbl.lineage_downstream
+                : ["datamart.dm_fulfillment_export"];
+            downstreams.forEach(d => {
+                const arr = document.createElement("i");
+                arr.setAttribute("data-lucide", "arrow-right");
+                arr.className = "w-3.5 h-3.5 text-slate-400";
+                lineageFlow.appendChild(arr);
+
+                const downNode = document.createElement("span");
+                downNode.className = "px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-900 font-semibold border border-emerald-300 text-[11px] shadow-2xs";
+                downNode.innerText = d;
+                lineageFlow.appendChild(downNode);
+            });
+        }
+    }
+
+    // Render Join Strategy Recommendation
+    const joinStrategyContent = document.getElementById("catalog-join-strategy-content");
+    if (joinStrategyContent) {
+        joinStrategyContent.innerHTML = "";
+        if (data.catalog_match.join_strategy && data.catalog_match.join_strategy.length > 0) {
+            data.catalog_match.join_strategy.forEach(j => {
+                const item = document.createElement("div");
+                item.className = "flex flex-wrap items-center gap-2 p-2 rounded-lg bg-white border border-indigo-200 text-xs shadow-2xs";
+                item.innerHTML = `
+                    <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold text-[11px] border border-indigo-200">${j.join_type}</span>
+                    <span class="font-bold text-slate-900">${j.left_table}</span>
+                    <span class="text-slate-400">🔗</span>
+                    <span class="font-bold text-indigo-700">${j.right_table}</span>
+                    <span class="text-slate-500 font-sans">Kunci Relasi:</span>
+                    <code class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-[11px] font-mono border border-slate-200 font-semibold">${j.on_condition}</code>
+                `;
+                joinStrategyContent.appendChild(item);
+            });
+        } else {
+            const item = document.createElement("div");
+            item.className = "p-2 rounded-lg bg-white border border-indigo-100 text-xs text-slate-600";
+            item.innerHTML = `<span class="text-emerald-700 font-bold">✓ Kueri Tabel Tunggal Terisolasi:</span> Seluruh atribut terpenuhi dari tabel fakta utama tanpa perlu operasi JOIN antar-tabel.`;
+            joinStrategyContent.appendChild(item);
+        }
+    }
+
+    // Render Rich Table Cards
     const catContainer = document.getElementById("catalog-tables-container");
     catContainer.innerHTML = "";
     data.catalog_match.selected_tables.forEach(tbl => {
         const card = document.createElement("div");
-        card.className = "p-4 rounded-xl border border-slate-200 bg-white shadow-xs space-y-3";
+        card.className = "p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3.5 hover:border-blue-300 transition";
+
+        // Generate column pills with tags
+        const colPills = tbl.columns.slice(0, 8).map(c => {
+            const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
+            const isPk = c.tags && c.tags.includes("PK");
+            const isFk = c.tags && c.tags.includes("FK");
+            
+            let tagBadge = "";
+            if (isPk) tagBadge = `<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1 rounded">PK</span>`;
+            else if (isFk) tagBadge = `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1 rounded">FK</span>`;
+            else if (isPii) tagBadge = `<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1 rounded">PII</span>`;
+
+            return `<span class="inline-flex items-center space-x-1 bg-slate-100 border border-slate-200 text-slate-700 text-[11px] px-2 py-0.5 rounded-md font-mono">${c.name} ${tagBadge}</span>`;
+        }).join(" ");
+
         card.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div>
-                    <span class="text-[11px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-semibold">${tbl.fqn}</span>
-                    <h4 class="text-xs font-bold text-slate-900 mt-1">${tbl.table_name}</h4>
+            <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                        <span class="text-[11px] font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-bold">${tbl.fqn}</span>
+                        <span class="text-[10px] bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full font-semibold">${tbl.tier || 'Tier 1'}</span>
+                    </div>
+                    <h4 class="text-sm font-bold text-slate-900">${tbl.table_name}</h4>
                 </div>
-                <div class="text-right">
-                    <span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-full">Kecocokan: ${Math.round(tbl.match_score * 100)}%</span>
+                <div class="text-right flex-shrink-0">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200 flex items-center space-x-1">
+                        <i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i>
+                        <span>Kecocokan: ${Math.round(tbl.match_score * 100)}%</span>
+                    </span>
                 </div>
             </div>
-            <p class="text-xs text-slate-600">${tbl.description}</p>
-            <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-                <span class="font-semibold text-slate-700">Atribut Skema:</span> ${tbl.columns.map(c => c.name).slice(0, 7).join(", ")}...
+
+            <p class="text-xs text-slate-600 leading-relaxed">${tbl.description}</p>
+
+            ${tbl.match_rationale ? `
+            <div class="p-2.5 rounded-xl bg-blue-50/60 border border-blue-200/80 text-[11px] text-blue-900 flex items-start space-x-2">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-600 mt-0.5 flex-shrink-0"></i>
+                <div>
+                    <span class="font-bold">Alasan Pencocokan AI:</span> ${tbl.match_rationale}
+                </div>
+            </div>
+            ` : ''}
+
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+                <div class="flex items-center justify-between text-[11px] text-slate-500">
+                    <span><strong class="text-slate-700">Data Owner:</strong> ${tbl.owner || 'Subdit Pengelolaan Data'}</span>
+                    <span><strong class="text-slate-700">Total Atribut:</strong> ${tbl.columns.length} kolom</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                    ${colPills}
+                    ${tbl.columns.length > 8 ? `<span class="text-[11px] text-slate-400 font-mono self-center pl-1">+${tbl.columns.length - 8} lainnya</span>` : ''}
+                </div>
             </div>
         `;
         catContainer.appendChild(card);
@@ -1106,42 +1234,90 @@ function copySql() {
     });
 }
 
-// 13. Catalog Modal
+// 13. Catalog Modal (Search & Filter Enhanced)
+let allCatalogTablesCache = [];
+
 function setupCatalogModal() {
     const modal = document.getElementById("catalog-modal");
     const openBtn = document.getElementById("btn-browse-catalog");
     const closeBtn = document.getElementById("btn-close-modal");
+    const searchInput = document.getElementById("input-catalog-modal-search");
+
+    function renderModalTables(tablesToRender) {
+        const content = document.getElementById("modal-catalog-content");
+        content.innerHTML = "";
+
+        if (!tablesToRender || tablesToRender.length === 0) {
+            content.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Tidak ada tabel katalog yang sesuai dengan kata kunci pencarian.</div>`;
+            return;
+        }
+
+        tablesToRender.forEach(tbl => {
+            const card = document.createElement("div");
+            card.className = "p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-2 hover:border-blue-300 transition";
+
+            const colTags = tbl.columns.map(c => {
+                const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
+                const isPk = c.tags && c.tags.includes("PK");
+                let badge = "";
+                if (isPk) badge = `<span class="bg-blue-100 text-blue-800 text-[9px] font-bold px-1 rounded ml-1">PK</span>`;
+                else if (isPii) badge = `<span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-1 rounded ml-1">PII</span>`;
+                return `<span class="inline-flex items-center bg-slate-100 px-2 py-0.5 rounded text-[11px] font-mono text-slate-700">${c.name}${badge}</span>`;
+            }).join(" ");
+
+            card.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="font-mono text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-bold">${tbl.fqn}</span>
+                    <span class="text-[10px] bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded font-medium">${tbl.tier || 'Tier 1'}</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-900">${tbl.table_name}</h4>
+                <p class="text-xs text-slate-600">${tbl.description}</p>
+                <div class="text-[11px] text-slate-500 pt-2 border-t border-slate-100 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span><strong class="text-slate-700">Owner:</strong> ${tbl.owner || 'DJBC Data Governance'}</span>
+                        <span><strong class="text-slate-700">Service:</strong> ${tbl.service_name || 'CEISA-DWH'}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1 pt-1">
+                        ${colTags}
+                    </div>
+                </div>
+            `;
+            content.appendChild(card);
+        });
+        lucide.createIcons();
+    }
 
     openBtn.addEventListener("click", async () => {
         modal.classList.remove("hidden");
         const content = document.getElementById("modal-catalog-content");
-        content.innerHTML = `<div class="text-xs text-slate-400">Memuat katalog...</div>`;
+        content.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Memuat katalog OpenMetadata...</div>`;
 
         try {
             const res = await fetch("/api/catalog");
             const data = await res.json();
-            content.innerHTML = "";
-
-            data.tables.forEach(tbl => {
-                const card = document.createElement("div");
-                card.className = "p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2";
-                card.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="font-mono text-xs text-blue-700 font-bold">${tbl.fqn}</span>
-                        <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium">${tbl.tier}</span>
-                    </div>
-                    <p class="text-xs text-slate-600">${tbl.description}</p>
-                    <div class="text-[11px] text-slate-500 pt-1 border-t border-slate-200">
-                        <span class="font-semibold text-slate-700">Owner:</span> ${tbl.owner} | 
-                        <span class="font-semibold text-slate-700">Kolom (${tbl.columns.length}):</span> ${tbl.columns.map(c => c.name).join(", ")}
-                    </div>
-                `;
-                content.appendChild(card);
-            });
+            allCatalogTablesCache = data.tables || [];
+            renderModalTables(allCatalogTablesCache);
         } catch (err) {
-            content.innerHTML = `<div class="text-xs text-red-500">Gagal memuat katalog.</div>`;
+            content.innerHTML = `<div class="p-8 text-center text-xs text-red-500">Gagal memuat katalog: ${err.message}</div>`;
         }
     });
+
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+                renderModalTables(allCatalogTablesCache);
+                return;
+            }
+            const filtered = allCatalogTablesCache.filter(tbl => {
+                const nameMatch = tbl.fqn.toLowerCase().includes(query) || tbl.table_name.toLowerCase().includes(query);
+                const descMatch = (tbl.description || "").toLowerCase().includes(query);
+                const colMatch = (tbl.columns || []).some(c => c.name.toLowerCase().includes(query) || (c.description || "").toLowerCase().includes(query));
+                return nameMatch || descMatch || colMatch;
+            });
+            renderModalTables(filtered);
+        });
+    }
 
     closeBtn.addEventListener("click", () => {
         modal.classList.add("hidden");

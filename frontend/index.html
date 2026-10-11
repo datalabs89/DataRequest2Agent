@@ -316,28 +316,44 @@
 
             <!-- Tab 2: Catalog Content -->
             <div id="tab-catalog" class="tab-content hidden p-6 space-y-6">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900">Tabel & Skema Terpilih dari OpenMetadata</h3>
-                        <p class="text-xs text-slate-500" id="catalog-summary-text">-</p>
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                            <i data-lucide="layers" class="w-4 h-4 text-blue-600"></i>
+                            <span>Tabel & Skema Terpilih dari OpenMetadata</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5" id="catalog-summary-text">-</p>
                     </div>
-                    <span class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-full font-medium">Verified DWH Catalog</span>
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        <span id="catalog-tier-badge" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-full font-medium flex items-center space-x-1">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <span>Verified DWH Catalog</span>
+                        </span>
+                    </div>
                 </div>
 
-                <!-- Visual Lineage Graph Bar -->
+                <!-- Dynamic Visual Lineage Graph Bar -->
                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                    <span class="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
-                        <i data-lucide="git-fork" class="w-3.5 h-3.5 text-blue-600"></i>
-                        <span>Visualisasi Alur Data Lineage DWH:</span>
-                    </span>
-                    <div class="flex flex-wrap items-center gap-2 text-xs font-mono py-2">
-                        <span class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">Staging CRM/POS</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400"></i>
-                        <span class="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">dwh_production.sales.fct_transactions</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400"></i>
-                        <span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-semibold border border-indigo-200">dim_customers (JOIN)</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400"></i>
-                        <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">Datamart Analytics Q3</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                            <i data-lucide="git-fork" class="w-3.5 h-3.5 text-blue-600"></i>
+                            <span>Visualisasi Alur Data Lineage DWH (Upstream & Downstream):</span>
+                        </span>
+                        <span class="text-[10px] text-slate-500 font-mono bg-white border border-slate-200 px-2 py-0.5 rounded-md">OpenMetadata Directed Acyclic Graph</span>
+                    </div>
+                    <div id="catalog-lineage-flow" class="flex flex-wrap items-center gap-2 text-xs font-mono py-2">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Rekomendasi Join Strategy & Foreign Keys -->
+                <div id="catalog-join-strategy-box" class="p-4 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-2">
+                    <div class="flex items-center space-x-1.5 text-xs font-bold text-indigo-950">
+                        <i data-lucide="network" class="w-3.5 h-3.5 text-indigo-600"></i>
+                        <span>Rekomendasi Relasi & Join Path (Katalog OpenMetadata):</span>
+                    </div>
+                    <div id="catalog-join-strategy-content" class="text-xs text-indigo-900 font-mono space-y-1">
+                        <!-- Populated dynamically via JS -->
                     </div>
                 </div>
 
@@ -1004,14 +1020,23 @@
     <!-- Catalog Browser Modal -->
     <div id="catalog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center space-x-2">
                     <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
-                    <h3 class="font-bold text-base text-slate-900">Katalog Enterprise OpenMetadata</h3>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-900">Katalog Enterprise OpenMetadata</h3>
+                        <p class="text-[11px] text-slate-500">Daftar tabel resmi DWH CEISA & Kementerian Keuangan</p>
+                    </div>
                 </div>
-                <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+                        <input type="text" id="input-catalog-modal-search" placeholder="Cari tabel / atribut..." class="pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 w-44 sm:w-60">
+                    </div>
+                    <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
             <div class="p-6 overflow-y-auto space-y-4" id="modal-catalog-content"></div>
         </div>

@@ -139,18 +139,50 @@ class PDFRequestParser:
             time_end = "2026-09-30"
 
         # 7. Identifikasi Entitas Utama
-        primary_entity = "transaksi"
         lower_text = text.lower()
-        if "pinjaman" in lower_text or "kredit" in lower_text or "loan" in lower_text:
+        if "ekspor" in lower_text or "peb" in lower_text or "devisa" in lower_text:
+            primary_entity = "ekspor"
+        elif "impor" in lower_text or "pib" in lower_text or "bea masuk" in lower_text:
+            primary_entity = "impor"
+        elif "cukai" in lower_text or "tembakau" in lower_text or "mmea" in lower_text or "pita cukai" in lower_text:
+            primary_entity = "cukai"
+        elif "manifest" in lower_text or "bc 1.1" in lower_text or "bc11" in lower_text:
+            primary_entity = "manifest"
+        elif "pinjaman" in lower_text or "kredit" in lower_text or "loan" in lower_text:
             primary_entity = "kredit"
         elif "pengiriman" in lower_text or "logistik" in lower_text or "kurir" in lower_text:
             primary_entity = "pengiriman"
-        elif "nasabah" in lower_text or "pelanggan" in lower_text or "transaksi" in lower_text:
+        else:
             primary_entity = "transaksi"
 
         # 8. Fields yang diminta
         requested_fields = []
         field_keywords = [
+            # Kepabeanan Ekspor & Impor
+            ("Nomor PEB", "nomor_peb", False),
+            ("Tanggal PEB", "tanggal_peb", False),
+            ("Nama Eksportir", "nama_eksportir", True),
+            ("Alamat Eksportir", "alamat_eksportir", True),
+            ("NPWP Eksportir", "npwp_eksportir", True),
+            ("Negara Tujuan", "negara_tujuan", False),
+            ("Nilai FOB USD", "nilai_fob_usd", False),
+            ("Nilai Devisa IDR", "nilai_devisa_idr", False),
+            ("Status Pabean", "status_pabean", False),
+            ("Nomor PIB", "nomor_pib", False),
+            ("Tanggal PIB", "tanggal_pib", False),
+            ("Nama Importir", "nama_importir", True),
+            ("Negara Asal", "negara_asal", False),
+            ("Nilai CIF USD", "nilai_cif_usd", False),
+            ("Bea Masuk IDR", "bea_masuk_idr", False),
+            ("Status Jalur", "status_jalur", False),
+            # Cukai
+            ("Billing ID", "billing_id", False),
+            ("Nomor Dokumen Cukai", "nomor_dokumen_cukai", False),
+            ("Nama Pabrik Cukai", "nama_pabrik", True),
+            ("Jenis Hasil Tembakau", "jenis_hasil_tembakau", False),
+            ("Nilai Penerimaan Cukai", "nilai_penerimaan_cukai", False),
+            ("Status Pelunasan", "status_pelunasan", False),
+            # Transaksi Umum / Retail
             ("ID Transaksi", "transaction_id", False),
             ("Tanggal Transaksi", "transaction_date", False),
             ("Nama Nasabah", "customer_name", True),
