@@ -448,7 +448,7 @@
                             <!-- Populated with line numbers 1, 2, 3... via JS -->
                         </div>
                         <div class="flex-1 p-4 bg-slate-950/50">
-                            <textarea id="sql-editor-input" rows="14" spellcheck="false" class="w-full h-full sql-textarea-editor font-mono text-xs sm:text-[13px] leading-relaxed p-0 border-0 bg-transparent outline-none focus:ring-0" placeholder="Ketik kueri SQL di sini..."></textarea>
+                            <textarea id="sql-editor-input" rows="14" spellcheck="false" class="w-full h-full sql-textarea-editor font-mono text-xs sm:text-[13px] leading-relaxed p-0 border-0 bg-transparent outline-none focus:ring-0" placeholder="Ketik query SQL di sini..."></textarea>
                         </div>
                     </div>
 
@@ -480,8 +480,8 @@
                     <div class="flex items-start space-x-3">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0"></i>
                         <div>
-                            <h4 class="text-xs font-bold text-indigo-950">Mode Kueri Kustom Terbuka (Human-in-the-Loop)</h4>
-                            <p class="text-[11px] text-indigo-800 mt-0.5">Perubahan kueri akan diverifikasi secara independen terhadap katalog OpenMetadata dan aturan kepatuhan PDP.</p>
+                            <h4 class="text-xs font-bold text-indigo-950">Mode Query Kustom Terbuka (Human-in-the-Loop)</h4>
+                            <p class="text-[11px] text-indigo-800 mt-0.5">Perubahan query akan diverifikasi secara independen terhadap katalog OpenMetadata dan aturan kepatuhan PDP.</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2 flex-shrink-0">
@@ -490,7 +490,7 @@
                         </button>
                         <button id="btn-reverify-sql" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-2 transition shadow-indigo-600/20">
                             <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                            <span>Audit Ulang & Eksekusi Kueri</span>
+                            <span>Audit Ulang & Eksekusi Query</span>
                         </button>
                     </div>
                 </div>
@@ -672,7 +672,7 @@
                                 SHA256: Menunggu kalkulasi pipeline...
                             </div>
                             <p class="text-[10px] text-slate-500 leading-normal">
-                                Hash ini mengikat spesifikasi permintaan data, naskah kueri SQL, dan catatan verifikator untuk menjamin integritas data terhadap perubahan liar.
+                                Hash ini mengikat spesifikasi permintaan data, naskah query SQL, dan catatan verifikator untuk menjamin integritas data terhadap perubahan liar.
                             </p>
                         </div>
                     </div>
@@ -857,7 +857,7 @@
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">Paket Arsip</span>
                                 </div>
                                 <h5 class="text-xs font-bold text-slate-900">Paket Lengkap (.ZIP)</h5>
-                                <p class="text-[11px] text-slate-500 mt-1">Arsip komprehensif berisi Excel, CSV, JSON, Kueri SQL, Spesifikasi JSON, dan README_MANIFEST.</p>
+                                <p class="text-[11px] text-slate-500 mt-1">Arsip komprehensif berisi Excel, CSV, JSON, Query SQL, Spesifikasi JSON, dan README_MANIFEST.</p>
                             </div>
                             <a id="btn-download-zip" href="#" download class="w-full text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition shadow-2xs">
                                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
@@ -927,7 +927,7 @@
                     <!-- Container Sheet 1: DATA_HASIL -->
                     <div id="container-sheet-data" class="p-4 space-y-2">
                         <div class="flex items-center justify-between text-[11px] text-slate-500 pb-1">
-                            <span>Menampilkan baris hasil kueri dengan penyamaran PII dinamis (UU PDP).</span>
+                            <span>Menampilkan baris hasil query dengan penyamaran PII dinamis (UU PDP).</span>
                             <span id="delivery-row-counter" class="font-semibold text-slate-700">10 baris ditampilkan</span>
                         </div>
                         <div class="border border-slate-200 rounded-xl overflow-x-auto">
@@ -1225,7 +1225,7 @@
                             <span id="detail-row-count" class="font-bold font-mono text-slate-900 text-sm">0</span>
                         </div>
                         <div class="bg-white p-2 rounded-lg border border-slate-200">
-                            <span class="text-[10px] text-slate-400 uppercase block">Latensi Kueri</span>
+                            <span class="text-[10px] text-slate-400 uppercase block">Latensi Query</span>
                             <span id="detail-latency" class="font-bold font-mono text-indigo-700 text-sm">0 ms</span>
                         </div>
                         <div class="bg-white p-2 rounded-lg border border-slate-200">
@@ -1578,7 +1578,7 @@
                             <h3 class="font-bold text-base text-slate-900">Konfirmasi Spesifikasi Permohonan Data</h3>
                             <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Human-in-the-Loop</span>
                         </div>
-                        <p class="text-xs text-slate-500">Tinjau dan sesuaikan parameter hasil ekstraksi sebelum kueri SQL dirumuskan dan dieksekusi di database.</p>
+                        <p class="text-xs text-slate-500">Tinjau dan sesuaikan parameter hasil ekstraksi sebelum query SQL dirumuskan dan dieksekusi di database.</p>
                     </div>
                 </div>
                 <button id="btn-close-spec-conf" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
@@ -1667,7 +1667,7 @@
                                     <input type="text" id="conf-date-end" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono font-semibold" placeholder="YYYY-MM-DD">
                                 </div>
                             </div>
-                            <span class="text-[11px] text-slate-500 block">Kueri SQL akan membatasi data berdasarkan rentang tanggal ini.</span>
+                            <span class="text-[11px] text-slate-500 block">Query SQL akan membatasi data berdasarkan rentang tanggal ini.</span>
                         </div>
 
                         <!-- 2. Tingkat Granularitas -->
@@ -1831,7 +1831,7 @@
                     </span>
                 </div>
                 <div class="text-slate-400">
-                    Klik <span class="font-semibold text-slate-600">"Kueri di Studio"</span> untuk langsung menggunakan tabel di SQL Editor.
+                    Klik <span class="font-semibold text-slate-600">"Query di Studio"</span> untuk langsung menggunakan tabel di SQL Editor.
                 </div>
             </div>
         </div>

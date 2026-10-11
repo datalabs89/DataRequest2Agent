@@ -13,7 +13,7 @@ from certificate_generator import CertificateGenerator
 
 class DataExporter:
     """
-    Eksekutor kueri dan generator output Excel (.xlsx), CSV (.csv), dan Sertifikat PDF
+    Eksekutor query dan generator output Excel (.xlsx), CSV (.csv), dan Sertifikat PDF
     dengan 3 sheet terstandarisasi: Data Hasil, Provenance/Audit, dan Kamus Data.
     """
 
@@ -197,7 +197,7 @@ BERKAS DALAM PAKET INI:
 2. {os.path.basename(csv_path)}    - Raw Data CSV (UTF-8)
 3. {os.path.basename(json_path)}   - Raw Data JSON (Machine-Readable Records)
 4. {os.path.basename(cert_path)}   - Sertifikat Otorisasi & Tata Kelola Data (PDF)
-5. query_audit.sql                  - Kueri SQL yang dieksekusi
+5. query_audit.sql                  - Query SQL yang dieksekusi
 6. request_specification.json       - Struktur spesifikasi kebutuhan hasil ekstraksi PDF
 7. audit_verification_report.json   - Checklist kepatuhan dan jaminan keamanan
 ================================================================================
@@ -407,7 +407,7 @@ BERKAS DALAM PAKET INI:
         )
 
         # -------------------------------------------------------------
-        # SHEET 1: DATA HASIL KUERI
+        # SHEET 1: DATA HASIL QUERY
         # -------------------------------------------------------------
         ws_data = wb.active
         ws_data.title = "DATA_HASIL"
@@ -498,7 +498,7 @@ BERKAS DALAM PAKET INI:
             c_val.font = Font(name="Calibri", size=10)
 
         # Lampirkan Query SQL
-        sql_header = ws_audit.cell(row=len(audit_items) + 4, column=1, value="KUERI SQL YANG DIJALANKAN:")
+        sql_header = ws_audit.cell(row=len(audit_items) + 4, column=1, value="QUERY SQL YANG DIJALANKAN:")
         sql_header.font = Font(name="Calibri", size=11, bold=True, color="1E3A8A")
 
         sql_cell = ws_audit.cell(row=len(audit_items) + 5, column=1, value=sql_result.query)

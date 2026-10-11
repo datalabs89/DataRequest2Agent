@@ -567,7 +567,7 @@ function renderResults(data) {
         } else {
             const item = document.createElement("div");
             item.className = "p-2 rounded-lg bg-white border border-indigo-100 text-xs text-slate-600";
-            item.innerHTML = `<span class="text-emerald-700 font-bold">✓ Kueri Tabel Tunggal Terisolasi:</span> Seluruh atribut terpenuhi dari tabel fakta utama tanpa perlu operasi JOIN antar-tabel.`;
+            item.innerHTML = `<span class="text-emerald-700 font-bold">✓ Query Tabel Tunggal Terisolasi:</span> Seluruh atribut terpenuhi dari tabel fakta utama tanpa perlu operasi JOIN antar-tabel.`;
             joinStrategyContent.appendChild(item);
         }
     }
@@ -579,7 +579,7 @@ function renderResults(data) {
 
     // TAB 3: SQL Studio
     originalGeneratedSqlQuery = data.generated_sql.query;
-    document.getElementById("sql-explanation-text").innerText = data.generated_sql.explanation || "Kueri SQL diekstrak dan divalidasi sesuai spesifikasi kebutuhan.";
+    document.getElementById("sql-explanation-text").innerText = data.generated_sql.explanation || "Query SQL diekstrak dan divalidasi sesuai spesifikasi kebutuhan.";
     
     const reqId = (data.spec && data.spec.request_id) ? data.spec.request_id.replace(/[^a-zA-Z0-9_-]/g, "_") : "data_request";
     const filenameElem = document.getElementById("sql-window-filename");
@@ -919,11 +919,11 @@ function renderDeliveryAuditSheet(data) {
         tbody.appendChild(tr);
     });
 
-    // Tambahkan Kueri SQL di bawah tabel audit
+    // Tambahkan Query SQL di bawah tabel audit
     if (data.generated_sql && data.generated_sql.query) {
         const trSql = document.createElement("tr");
         trSql.innerHTML = `
-            <td class="w-1/3 px-4 py-3 font-bold text-slate-700 bg-slate-50 border-r border-slate-200 text-xs align-top">Kueri SQL Resmi</td>
+            <td class="w-1/3 px-4 py-3 font-bold text-slate-700 bg-slate-50 border-r border-slate-200 text-xs align-top">Query SQL Resmi</td>
             <td class="px-4 py-3 text-xs">
                 <pre class="bg-slate-900 text-indigo-300 p-3 rounded-xl font-mono text-[11px] overflow-x-auto leading-relaxed border border-slate-800 max-h-40">${data.generated_sql.query}</pre>
             </td>
@@ -1135,7 +1135,7 @@ function setupSqlEditor() {
                 : (currentPipelineData && currentPipelineData.generated_sql ? currentPipelineData.generated_sql.query : (editorInput ? editorInput.value : ""));
 
             if (!queryToDownload) {
-                alert("Tidak ada kueri SQL untuk diunduh.");
+                alert("Tidak ada query SQL untuk diunduh.");
                 return;
             }
 
@@ -1168,7 +1168,7 @@ function setupSqlEditor() {
             reverifyBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Mengaudit Ulang...</span>`;
             lucide.createIcons();
 
-            appendConsoleLog("Human-in-the-Loop", "Data Analyst mengubah kueri SQL. Mengirimkan ke Auditor Independen...");
+            appendConsoleLog("Human-in-the-Loop", "Data Analyst mengubah query SQL. Mengirimkan ke Auditor Independen...");
 
             try {
                 const res = await fetch("/api/reverify-sql", {
@@ -1187,7 +1187,7 @@ function setupSqlEditor() {
 
                 if (!res.ok) {
                     const err = await res.json();
-                    throw new Error(err.detail || "Gagal mengaudit kueri.");
+                    throw new Error(err.detail || "Gagal mengaudit query.");
                 }
 
                 const updatedData = await res.json();
@@ -1195,7 +1195,7 @@ function setupSqlEditor() {
                 originalGeneratedSqlQuery = modifiedSql;
                 renderResults(updatedData);
 
-                appendConsoleLog("Independent Verifier", `Audit Kueri Custom Selesai: Status=${updatedData.verification.status}. Output data diperbarui.`);
+                appendConsoleLog("Independent Verifier", `Audit Query Custom Selesai: Status=${updatedData.verification.status}. Output data diperbarui.`);
 
                 isSqlEditMode = false;
                 viewContainer.classList.remove("hidden");
@@ -1206,11 +1206,11 @@ function setupSqlEditor() {
                 toggleBtn.classList.replace("text-blue-800", "text-slate-700");
                 toggleBtn.classList.remove("border-blue-300");
             } catch (err) {
-                alert("Error audit kueri: " + err.message);
+                alert("Error audit query: " + err.message);
                 appendConsoleLog("Error", err.message);
             } finally {
                 reverifyBtn.disabled = false;
-                reverifyBtn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span>Audit Ulang & Eksekusi Kueri</span>`;
+                reverifyBtn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span>Audit Ulang & Eksekusi Query</span>`;
                 lucide.createIcons();
             }
         });
@@ -1328,7 +1328,7 @@ function setupVerifierFeedback() {
 
     if (presetInternal && commentsInput) {
         presetInternal.addEventListener("click", () => {
-            commentsInput.value = "Disetujui penuh untuk analisis kedinasan internal DJBC. Kueri telah diaudit dan memenuhi seluruh batasan keamanan DWH.";
+            commentsInput.value = "Disetujui penuh untuk analisis kedinasan internal DJBC. Query telah diaudit dan memenuhi seluruh batasan keamanan DWH.";
             commentsInput.focus();
         });
     }
@@ -2470,7 +2470,7 @@ function setupCatalogModal() {
                         </button>
                         <button class="btn-use-catalog-table text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 px-3 py-1 rounded-lg transition shadow-2xs flex items-center space-x-1" data-fqn="${tbl.fqn}" data-table="${tbl.table_name}">
                             <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
-                            <span>Kueri di Studio</span>
+                            <span>Query di Studio</span>
                         </button>
                     </div>
                 </div>
@@ -2582,7 +2582,7 @@ function setupCatalogModal() {
                 if (tabBtn) tabBtn.click();
 
                 // Put sample query into SQL editor
-                const sampleSql = `-- Kueri Eksplorasi Katalog: ${fqn}\nSELECT *\nFROM ${fqn}\nLIMIT 20;`;
+                const sampleSql = `-- Query Eksplorasi Katalog: ${fqn}\nSELECT *\nFROM ${fqn}\nLIMIT 20;`;
                 const editorInput = document.getElementById("sql-editor-input");
                 if (editorInput) {
                     editorInput.value = sampleSql;
@@ -2795,7 +2795,7 @@ function applyPersona(persona) {
                     <i data-lucide="settings-2" class="w-4 h-4 text-slate-700 flex-shrink-0"></i>
                     <div>
                         <span class="font-bold">Mode Rekayasa Data & Administrator (Data Engineer)</span>
-                        <p class="text-[11px] text-slate-600">Akses penuh ke konfigurasi koneksi OpenMetadata, target database, serta penyesuaian kueri DWH tingkat lanjut.</p>
+                        <p class="text-[11px] text-slate-600">Akses penuh ke konfigurasi koneksi OpenMetadata, target database, serta penyesuaian query DWH tingkat lanjut.</p>
                     </div>
                 </div>
                 <span class="bg-slate-300 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Admin Access</span>

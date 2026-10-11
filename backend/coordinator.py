@@ -225,7 +225,7 @@ class PipelineCoordinator:
 
         return PipelineResponse(
             success=True,
-            message="Kueri berhasil diaudit ulang dan dieksekusi.",
+            message="Query berhasil diaudit ulang dan dieksekusi.",
             spec=spec,
             catalog_match=catalog_match,
             generated_sql=sql_result,

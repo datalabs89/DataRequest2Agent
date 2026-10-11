@@ -209,8 +209,8 @@ class ReverifyRequest(BaseModel):
 
 @app.post("/api/reverify-sql")
 def reverify_sql(req: ReverifyRequest, x_user_role: Optional[str] = Header(None, alias="X-User-Role")):
-    """Audit ulang kueri SQL yang dimodifikasi oleh pengguna."""
-    # Kontrol Keamanan IT: Hanya Data Steward atau Admin yang boleh mengaudit ulang kueri
+    """Audit ulang query SQL yang dimodifikasi oleh pengguna."""
+    # Kontrol Keamanan IT: Hanya Data Steward atau Admin yang boleh mengaudit ulang query
     check_role_permission(["steward", "admin"], x_user_role)
     try:
         res = coordinator.reverify_and_execute(
@@ -221,7 +221,7 @@ def reverify_sql(req: ReverifyRequest, x_user_role: Optional[str] = Header(None,
         )
         return res.model_dump()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Gagal mengaudit ulang kueri: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Gagal mengaudit ulang query: {str(e)}")
 
 @app.get("/api/history")
 def get_request_history():

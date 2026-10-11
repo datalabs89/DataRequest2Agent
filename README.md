@@ -11,7 +11,7 @@
 
 1. **Ekstraksi Formulir Permohonan (PDF)** $\to$ Mengekstrak spesifikasi, filter bisnis, periode waktu, pemohon, dan klausul kerahasiaan.
 2. **Koneksi OpenMetadata Catalog** $\to$ Menemukan tabel DWH resmi, tipe data, dan relasi lineage (*Strict Schema Grounding*).
-3. **Sintesis Kueri SQL Teroptimasi** $\to$ Merumuskan SQL (PostgreSQL, Trino, BigQuery, DuckDB) dengan *Dynamic Masking* pada data sensitif PII (NIK, Nama, No Telepon).
+3. **Sintesis Query SQL Teroptimasi** $\to$ Merumuskan SQL (PostgreSQL, Trino, BigQuery, DuckDB) dengan *Dynamic Masking* pada data sensitif PII (NIK, Nama, No Telepon).
 4. **Audit Independen & Feedback Verifikator** $\to$ Mengaudit kesesuaian filter, proteksi anti-Cartesian, dan menyediakan sistem *digital sign-off* resmi bagi Data Steward/Governance.
 5. **Ekspor Data & CMS Repositori** $\to$ Menghasilkan:
    - **Excel (.xlsx 3-Sheet)**: Data tabular berformat rapi, Lembar Audit & Provenance, serta Kamus Data resmi.
@@ -36,7 +36,7 @@
 - **📄 Smart OCR & Structural Fallback**:
   Dukungan untuk dokumen PDF hasil pemindaian/scan fisik (*non-searchable*). Sistem mendeteksi ketiadaan stream teks dan otomatis mengaktifkan fallback metadata & template pemohon agar alur kerja tidak terhenti.
 - **🛡️ SQLite DWH Engine dengan Circuit Breaker Read-Only**:
-  Database warehouse lokal (`outputs/dwh_enterprise.db`) dengan 250+ baris data transaksi terstruktur. Sistem mengisolasi eksekusi dalam mode *read-only URI* (`file:...mode=ro`) yang secara fisik memblokir kueri perusak (DROP, DELETE, UPDATE, INSERT).
+  Database warehouse lokal (`outputs/dwh_enterprise.db`) dengan 250+ baris data transaksi terstruktur. Sistem mengisolasi eksekusi dalam mode *read-only URI* (`file:...mode=ro`) yang secara fisik memblokir query perusak (DROP, DELETE, UPDATE, INSERT).
 - **🔐 Keamanan & Kontrol Akses Ketat (Server-Side RBAC & Segregation of Duties)**:
   Pemisahan wewenang 4 peran (*Pemohon Data / Analyst*, *Data Steward*, *Data Engineer*, dan *Auditor IT*). Endpoint otorisasi diproteksi di lapisan backend FastAPI dengan header `X-User-Role`, mencegah *self-approval* secara absolut.
 - **🔏 Integritas Kriptografis Anti-Manipulasi (SHA-256 Digital Fingerprint)**:

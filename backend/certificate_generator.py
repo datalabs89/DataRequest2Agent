@@ -114,8 +114,8 @@ class CertificateGenerator:
         story.append(t_req)
         story.append(Spacer(1, 12))
 
-        # Bagian 2: Hasil Audit & Keamanan Kueri
-        story.append(Paragraph("<b>II. HASIL AUDIT & INTEGRITAS KUERI</b>", label_style))
+        # Bagian 2: Hasil Audit & Keamanan Query
+        story.append(Paragraph("<b>II. HASIL AUDIT & INTEGRITAS QUERY</b>", label_style))
         story.append(Spacer(1, 4))
         audit_data = [
             [Paragraph("Mesin Verifikator", label_style), Paragraph(f": {verification.verifier_id}", val_style)],
@@ -187,7 +187,7 @@ class CertificateGenerator:
         story.append(Paragraph(f"<b>KODE OTORISASI DIGITAL & INTEGRITAS ANTI-TAMPERING (SHA-256):</b>", sec_note))
         story.append(Paragraph(f"<font color='#0284C7'>HMAC-SHA256:</font> {dig_hash}", hash_style))
         story.append(Spacer(1, 4))
-        story.append(Paragraph("Sertifikat ini sah dan diterbitkan secara otomatis oleh sistem DataRequest Studio Enterprise. Integritas isi data, kueri SQL, dan catatan verifikator dilindungi dengan enkripsi tanda tangan digital satu arah. Verifikasi keabsahan dapat ditelusuri melalui CMS Repositori Riwayat Permohonan Data.", sec_note))
+        story.append(Paragraph("Sertifikat ini sah dan diterbitkan secara otomatis oleh sistem DataRequest Studio Enterprise. Integritas isi data, query SQL, dan catatan verifikator dilindungi dengan enkripsi tanda tangan digital satu arah. Verifikasi keabsahan dapat ditelusuri melalui CMS Repositori Riwayat Permohonan Data.", sec_note))
 
         doc.build(story)
         return output_path
