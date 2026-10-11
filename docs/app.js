@@ -1632,6 +1632,12 @@ function setupDarkModeToggle() {
                 renderDeliveryCharts(sel ? sel.value : "bar");
             }
 
+            // Refresh analytics charts jika modal analitik sedang terbuka
+            const analyticsModal = document.getElementById("analytics-modal");
+            if (analyticsModal && !analyticsModal.classList.contains("hidden")) {
+                fetchAndRenderAnalytics(currentAnalyticsPeriod);
+            }
+
             appendConsoleLog("UI Controller", `Beralih ke tampilan ${isDark ? "Dark Mode (Mode Gelap)" : "Light Mode (Mode Terang)"}. Preferensi tersimpan.`);
         });
     }
@@ -3713,6 +3719,17 @@ async function fetchAndRenderAnalytics(period = "all") {
         if (namaElem) namaElem.innerText = `${(pii.nama_masked ?? reqCount * 2).toLocaleString()} Rekor`;
         if (phoneElem) phoneElem.innerText = `${(pii.phone_masked ?? reqCount).toLocaleString()} Rekor`;
 
+        // Dark Mode Configuration for Analytics Charts
+        const isDark = document.documentElement.classList.contains("dark");
+        const chartGridColor = isDark ? "rgba(51, 65, 85, 0.45)" : "#f1f5f9";
+        const chartTickColor = isDark ? "#cbd5e1" : "#64748b";
+        const chartLegendColor = isDark ? "#e2e8f0" : "#475569";
+        const chartTooltipBg = isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.95)";
+        const chartTooltipTitle = isDark ? "#f8fafc" : "#0f172a";
+        const chartTooltipBody = isDark ? "#cbd5e1" : "#334155";
+        const chartTooltipBorder = isDark ? "rgba(51, 65, 85, 0.8)" : "rgba(226, 232, 240, 0.8)";
+        const donutBorderColor = isDark ? "#1e293b" : "#ffffff";
+
         // 4. Render Chart 1: Donut Status Keputusan Verifikator
         if (typeof Chart !== "undefined") {
             const donutCtx = document.getElementById("chart-status-donut");
@@ -3730,7 +3747,7 @@ async function fetchAndRenderAnalytics(period = "all") {
                             backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
                             hoverBackgroundColor: ["#059669", "#d97706", "#dc2626"],
                             borderWidth: 2,
-                            borderColor: "#ffffff"
+                            borderColor: donutBorderColor
                         }]
                     },
                     options: {
@@ -3743,8 +3760,17 @@ async function fetchAndRenderAnalytics(period = "all") {
                                 labels: {
                                     boxWidth: 12,
                                     font: { size: 11, family: "inherit" },
-                                    color: "#475569"
+                                    color: chartLegendColor
                                 }
+                            },
+                            tooltip: {
+                                backgroundColor: chartTooltipBg,
+                                titleColor: chartTooltipTitle,
+                                bodyColor: chartTooltipBody,
+                                borderColor: chartTooltipBorder,
+                                borderWidth: 1,
+                                padding: 10,
+                                boxPadding: 4
                             }
                         }
                     }
@@ -3782,7 +3808,9 @@ async function fetchAndRenderAnalytics(period = "all") {
                         datasets: [{
                             label: "Jumlah Permohonan",
                             data: bizValues,
-                            backgroundColor: ["#2563eb", "#0d9488", "#d97706", "#7c3aed", "#64748b"],
+                            backgroundColor: isDark 
+                                ? ["#3b82f6", "#14b8a6", "#f59e0b", "#a855f7", "#94a3b8"]
+                                : ["#2563eb", "#0d9488", "#d97706", "#7c3aed", "#64748b"],
                             borderRadius: 6
                         }]
                     },
@@ -3793,16 +3821,25 @@ async function fetchAndRenderAnalytics(period = "all") {
                         scales: {
                             x: {
                                 beginAtZero: true,
-                                grid: { color: "#f1f5f9" },
-                                ticks: { precision: 0, font: { size: 10 } }
+                                grid: { color: chartGridColor },
+                                ticks: { precision: 0, font: { size: 10 }, color: chartTickColor }
                             },
                             y: {
                                 grid: { display: false },
-                                ticks: { font: { size: 10 } }
+                                ticks: { font: { size: 10 }, color: chartTickColor }
                             }
                         },
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: chartTooltipBg,
+                                titleColor: chartTooltipTitle,
+                                bodyColor: chartTooltipBody,
+                                borderColor: chartTooltipBorder,
+                                borderWidth: 1,
+                                padding: 10,
+                                boxPadding: 4
+                            }
                         }
                     }
                 });
@@ -3831,20 +3868,26 @@ async function fetchAndRenderAnalytics(period = "all") {
                             {
                                 label: "Total Permohonan Masuk",
                                 data: timeTotals,
-                                borderColor: "#4f46e5",
-                                backgroundColor: "rgba(79, 70, 229, 0.1)",
+                                borderColor: isDark ? "#818cf8" : "#4f46e5",
+                                backgroundColor: isDark ? "rgba(129, 140, 248, 0.15)" : "rgba(79, 70, 229, 0.1)",
                                 tension: 0.3,
                                 fill: true,
-                                pointRadius: 4
+                                pointRadius: 4,
+                                pointBackgroundColor: isDark ? "#818cf8" : "#4f46e5",
+                                pointBorderColor: donutBorderColor,
+                                pointBorderWidth: 1.5
                             },
                             {
                                 label: "Disetujui Resmi (Fulfillment)",
                                 data: timeApproved,
-                                borderColor: "#10b981",
-                                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                                borderColor: isDark ? "#34d399" : "#10b981",
+                                backgroundColor: isDark ? "rgba(52, 211, 153, 0.15)" : "rgba(16, 185, 129, 0.1)",
                                 tension: 0.3,
                                 fill: false,
-                                pointRadius: 4
+                                pointRadius: 4,
+                                pointBackgroundColor: isDark ? "#34d399" : "#10b981",
+                                pointBorderColor: donutBorderColor,
+                                pointBorderWidth: 1.5
                             }
                         ]
                     },
@@ -3854,18 +3897,27 @@ async function fetchAndRenderAnalytics(period = "all") {
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grid: { color: "#f1f5f9" },
-                                ticks: { precision: 0, font: { size: 10 } }
+                                grid: { color: chartGridColor },
+                                ticks: { precision: 0, font: { size: 10 }, color: chartTickColor }
                             },
                             x: {
                                 grid: { display: false },
-                                ticks: { font: { size: 10 } }
+                                ticks: { font: { size: 10 }, color: chartTickColor }
                             }
                         },
                         plugins: {
                             legend: {
                                 position: "top",
-                                labels: { boxWidth: 10, font: { size: 10 } }
+                                labels: { boxWidth: 10, font: { size: 10 }, color: chartLegendColor }
+                            },
+                            tooltip: {
+                                backgroundColor: chartTooltipBg,
+                                titleColor: chartTooltipTitle,
+                                bodyColor: chartTooltipBody,
+                                borderColor: chartTooltipBorder,
+                                borderWidth: 1,
+                                padding: 10,
+                                boxPadding: 4
                             }
                         }
                     }
@@ -3884,26 +3936,26 @@ async function fetchAndRenderAnalytics(period = "all") {
                 for (const [dept, count] of Object.entries(depts)) {
                     const pct = reqCount > 0 ? Math.round((count / reqCount) * 100) : 0;
                     let barColor = "bg-blue-600";
-                    let badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
+                    let badgeColor = "bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800";
                     if (dept.includes("Bea dan Cukai")) {
-                        barColor = "bg-blue-700";
-                        badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
+                        barColor = "bg-blue-700 dark:bg-blue-500";
+                        badgeColor = "bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800";
                     } else if (dept.includes("Internal Kemenkeu")) {
-                        barColor = "bg-amber-600";
-                        badgeColor = "bg-amber-50 text-amber-900 border-amber-200";
+                        barColor = "bg-amber-600 dark:bg-amber-500";
+                        badgeColor = "bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800";
                     } else if (dept.includes("Eksternal")) {
-                        barColor = "bg-teal-600";
-                        badgeColor = "bg-teal-50 text-teal-900 border-teal-200";
+                        barColor = "bg-teal-600 dark:bg-teal-500";
+                        badgeColor = "bg-teal-50 text-teal-900 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800";
                     }
 
                     const item = document.createElement("div");
-                    item.className = "space-y-1 bg-white p-2 rounded-lg border border-slate-200";
+                    item.className = "space-y-1 bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-slate-200 dark:border-slate-700/80";
                     item.innerHTML = `
                         <div class="flex justify-between items-center text-xs">
                             <span class="font-semibold px-2 py-0.5 rounded text-[10px] border ${badgeColor}">${dept}</span>
-                            <span class="text-slate-600 font-mono font-bold">${count} req (${pct}%)</span>
+                            <span class="text-slate-600 dark:text-slate-300 font-mono font-bold">${count} req (${pct}%)</span>
                         </div>
-                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1">
+                        <div class="w-full bg-slate-100 dark:bg-slate-700/70 h-1.5 rounded-full overflow-hidden mt-1">
                             <div class="${barColor} h-1.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
                         </div>
                     `;
@@ -3919,10 +3971,10 @@ async function fetchAndRenderAnalytics(period = "all") {
             const dialects = data.dialect_distribution || { "PostgreSQL": reqCount, "Oracle": 0, "SQLite": 0 };
             for (const [dName, dCount] of Object.entries(dialects)) {
                 const card = document.createElement("div");
-                card.className = "bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs";
+                card.className = "bg-white dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 shadow-2xs";
                 card.innerHTML = `
-                    <span class="text-[10px] text-slate-500 font-bold block uppercase">${dName}</span>
-                    <span class="text-sm font-bold text-slate-900 font-mono mt-0.5 block">${dCount}</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold block uppercase">${dName}</span>
+                    <span class="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">${dCount}</span>
                 `;
                 dialectList.appendChild(card);
             }

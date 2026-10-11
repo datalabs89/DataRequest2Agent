@@ -1369,49 +1369,49 @@
 
     <!-- Analytics & Compliance Insights Modal -->
     <div id="analytics-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
-        <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <!-- Modal Header -->
-            <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-850">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 flex-shrink-0">
                         <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h3 class="font-bold text-base sm:text-lg text-slate-900">Dashboard Analitik & Tata Kelola Data</h3>
-                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 uppercase tracking-wider">Live Metrik</span>
+                            <h3 class="font-bold text-base sm:text-lg text-slate-900 dark:text-white">Dashboard Analitik & Tata Kelola Data</h3>
+                            <span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">Live Metrik</span>
                         </div>
-                        <p class="text-xs text-slate-500">SLA Pemenuhan, Audit Kepatuhan UU PDP No. 27/2022, Latensi DWH CEISA & Distribusi Permohonan.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">SLA Pemenuhan, Audit Kepatuhan UU PDP No. 27/2022, Latensi DWH CEISA & Distribusi Permohonan.</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button id="btn-export-analytics-csv" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 transition shadow-2xs">
-                        <i data-lucide="download" class="w-3.5 h-3.5 text-blue-600"></i>
+                    <button id="btn-export-analytics-csv" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 transition shadow-2xs">
+                        <i data-lucide="download" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"></i>
                         <span>Ekspor CSV</span>
                     </button>
-                    <button id="btn-print-analytics" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 transition shadow-2xs">
-                        <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-600"></i>
+                    <button id="btn-print-analytics" class="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 transition shadow-2xs">
+                        <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400"></i>
                         <span>Cetak</span>
                     </button>
-                    <button id="btn-close-analytics" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                    <button id="btn-close-analytics" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 transition">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Period Filter Bar -->
-            <div class="px-4 sm:px-6 py-2.5 bg-slate-100/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="px-4 sm:px-6 py-2.5 bg-slate-100/80 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div class="flex items-center space-x-1.5 overflow-x-auto">
-                    <span class="text-slate-500 font-semibold mr-1 flex items-center space-x-1">
-                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600"></i>
+                    <span class="text-slate-500 dark:text-slate-400 font-semibold mr-1 flex items-center space-x-1">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"></i>
                         <span>Rentang Periode:</span>
                     </span>
                     <button type="button" data-period="all" class="btn-period-filter px-3 py-1 rounded-lg font-semibold transition bg-blue-600 text-white shadow-2xs">Semua Waktu</button>
-                    <button type="button" data-period="today" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">Hari Ini</button>
-                    <button type="button" data-period="7d" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">7 Hari Terakhir</button>
-                    <button type="button" data-period="30d" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition">30 Hari Terakhir</button>
+                    <button type="button" data-period="today" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">Hari Ini</button>
+                    <button type="button" data-period="7d" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">7 Hari Terakhir</button>
+                    <button type="button" data-period="30d" class="btn-period-filter px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">30 Hari Terakhir</button>
                 </div>
-                <div class="flex items-center space-x-1 text-[11px] text-slate-500">
+                <div class="flex items-center space-x-1 text-[11px] text-slate-500 dark:text-slate-400">
                     <i data-lucide="trending-up" class="w-3 h-3 text-slate-400"></i>
                     <span id="period-comparison-label">Membandingkan dengan periode historis sebelumnya</span>
                 </div>
@@ -1421,58 +1421,58 @@
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6">
                 <!-- 6 KPI Stat Cards -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                    <div class="bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl p-3 text-center flex flex-col justify-between">
                         <div>
-                            <span class="text-[11px] text-blue-700 font-semibold uppercase tracking-wider block">Total Permohonan</span>
-                            <span id="stat-total-requests" class="text-xl sm:text-2xl font-bold text-blue-950 mt-1 block font-mono">-</span>
+                            <span class="text-[11px] text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wider block">Total Permohonan</span>
+                            <span id="stat-total-requests" class="text-xl sm:text-2xl font-bold text-blue-950 dark:text-white mt-1 block font-mono">-</span>
                         </div>
-                        <div class="mt-2 pt-1.5 border-t border-blue-200/60 flex items-center justify-center">
-                            <span id="delta-total-requests" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">...</span>
+                        <div class="mt-2 pt-1.5 border-t border-blue-200/60 dark:border-blue-800/40 flex items-center justify-center">
+                            <span id="delta-total-requests" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">...</span>
                         </div>
                     </div>
-                    <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                    <div class="bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-3 text-center flex flex-col justify-between">
                         <div>
-                            <span class="text-[11px] text-emerald-700 font-semibold uppercase tracking-wider block">Kepatuhan SLA</span>
-                            <span id="stat-compliance-rate" class="text-xl sm:text-2xl font-bold text-emerald-950 mt-1 block font-mono">-</span>
+                            <span class="text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold uppercase tracking-wider block">Kepatuhan SLA</span>
+                            <span id="stat-compliance-rate" class="text-xl sm:text-2xl font-bold text-emerald-950 dark:text-white mt-1 block font-mono">-</span>
                         </div>
-                        <div class="mt-2 pt-1.5 border-t border-emerald-200/60 flex items-center justify-center">
-                            <span id="delta-compliance-rate" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">...</span>
+                        <div class="mt-2 pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/40 flex items-center justify-center">
+                            <span id="delta-compliance-rate" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200">...</span>
                         </div>
                     </div>
-                    <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                    <div class="bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 rounded-xl p-3 text-center flex flex-col justify-between">
                         <div>
-                            <span class="text-[11px] text-purple-700 font-semibold uppercase tracking-wider block">Baris Diserahkan</span>
-                            <span id="stat-total-rows" class="text-xl sm:text-2xl font-bold text-purple-950 mt-1 block font-mono">-</span>
+                            <span class="text-[11px] text-purple-700 dark:text-purple-300 font-semibold uppercase tracking-wider block">Baris Diserahkan</span>
+                            <span id="stat-total-rows" class="text-xl sm:text-2xl font-bold text-purple-950 dark:text-white mt-1 block font-mono">-</span>
                         </div>
-                        <div class="mt-2 pt-1.5 border-t border-purple-200/60 flex items-center justify-center">
-                            <span id="delta-total-rows" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">...</span>
+                        <div class="mt-2 pt-1.5 border-t border-purple-200/60 dark:border-purple-800/40 flex items-center justify-center">
+                            <span id="delta-total-rows" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">...</span>
                         </div>
                     </div>
-                    <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                    <div class="bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl p-3 text-center flex flex-col justify-between">
                         <div>
-                            <span class="text-[11px] text-amber-700 font-semibold uppercase tracking-wider block">Atribut PII Masked</span>
-                            <span id="stat-pii-columns" class="text-xl sm:text-2xl font-bold text-amber-950 mt-1 block font-mono">-</span>
+                            <span class="text-[11px] text-amber-700 dark:text-amber-300 font-semibold uppercase tracking-wider block">Atribut PII Masked</span>
+                            <span id="stat-pii-columns" class="text-xl sm:text-2xl font-bold text-amber-950 dark:text-white mt-1 block font-mono">-</span>
                         </div>
-                        <div class="mt-2 pt-1.5 border-t border-amber-200/60 flex items-center justify-center">
-                            <span id="delta-pii-columns" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">...</span>
+                        <div class="mt-2 pt-1.5 border-t border-amber-200/60 dark:border-amber-800/40 flex items-center justify-center">
+                            <span id="delta-pii-columns" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200">...</span>
                         </div>
                     </div>
-                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                    <div class="bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 rounded-xl p-3 text-center flex flex-col justify-between">
                         <div>
-                            <span class="text-[11px] text-indigo-700 font-semibold uppercase tracking-wider block">Rata-rata Latensi</span>
-                            <span id="stat-avg-latency" class="text-xl sm:text-2xl font-bold text-indigo-950 mt-1 block font-mono">-</span>
+                            <span class="text-[11px] text-indigo-700 dark:text-indigo-300 font-semibold uppercase tracking-wider block">Rata-rata Latensi</span>
+                            <span id="stat-avg-latency" class="text-xl sm:text-2xl font-bold text-indigo-950 dark:text-white mt-1 block font-mono">-</span>
                         </div>
-                        <div class="mt-2 pt-1.5 border-t border-indigo-200/60 flex items-center justify-center">
-                            <span id="delta-avg-latency" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">...</span>
+                        <div class="mt-2 pt-1.5 border-t border-indigo-200/60 dark:border-indigo-800/40 flex items-center justify-center">
+                            <span id="delta-avg-latency" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200">...</span>
                         </div>
                     </div>
-                    <div class="bg-teal-50/80 border border-teal-200 rounded-xl p-3 text-center flex flex-col justify-between">
+                    <div class="bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 rounded-xl p-3 text-center flex flex-col justify-between">
                         <div>
-                            <span class="text-[11px] text-teal-700 font-semibold uppercase tracking-wider block">Digital Seal Rate</span>
-                            <span id="stat-digital-seal" class="text-xl sm:text-2xl font-bold text-teal-950 mt-1 block font-mono">-</span>
+                            <span class="text-[11px] text-teal-700 dark:text-teal-300 font-semibold uppercase tracking-wider block">Digital Seal Rate</span>
+                            <span id="stat-digital-seal" class="text-xl sm:text-2xl font-bold text-teal-950 dark:text-white mt-1 block font-mono">-</span>
                         </div>
-                        <div class="mt-2 pt-1.5 border-t border-teal-200/60 flex items-center justify-center">
-                            <span id="delta-digital-seal" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">...</span>
+                        <div class="mt-2 pt-1.5 border-t border-teal-200/60 dark:border-teal-800/40 flex items-center justify-center">
+                            <span id="delta-digital-seal" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-200">...</span>
                         </div>
                     </div>
                 </div>
@@ -1480,52 +1480,52 @@
                 <!-- Row 1 Charts: Donut Verifier Status & Bar Business Process -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     <!-- Chart 1: Status Keputusan Verifikator -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 shadow-2xs space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700/60">
                             <div>
-                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                                    <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600"></i>
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center space-x-1.5">
+                                    <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
                                     <span>Keputusan Verifikator (Data Steward)</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-500">Distribusi status permohonan resmi dan audit tata kelola.</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Distribusi status permohonan resmi dan audit tata kelola.</p>
                             </div>
                         </div>
                         <div class="relative h-56 flex items-center justify-center">
                             <canvas id="chart-status-donut"></canvas>
                         </div>
-                        <div class="flex items-center justify-around pt-2 border-t border-slate-100 text-xs">
+                        <div class="flex items-center justify-around pt-2 border-t border-slate-100 dark:border-slate-700/60 text-xs">
                             <div class="text-center">
-                                <span class="text-[10px] text-emerald-600 font-semibold uppercase block">Disetujui</span>
-                                <span id="pill-approved-count" class="font-bold font-mono text-emerald-700 text-sm">0</span>
+                                <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase block">Disetujui</span>
+                                <span id="pill-approved-count" class="font-bold font-mono text-emerald-700 dark:text-emerald-300 text-sm">0</span>
                             </div>
                             <div class="text-center">
-                                <span class="text-[10px] text-amber-600 font-semibold uppercase block">Perlu Revisi</span>
-                                <span id="pill-revision-count" class="font-bold font-mono text-amber-700 text-sm">0</span>
+                                <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold uppercase block">Perlu Revisi</span>
+                                <span id="pill-revision-count" class="font-bold font-mono text-amber-700 dark:text-amber-300 text-sm">0</span>
                             </div>
                             <div class="text-center">
-                                <span class="text-[10px] text-red-600 font-semibold uppercase block">Ditolak</span>
-                                <span id="pill-rejected-count" class="font-bold font-mono text-red-700 text-sm">0</span>
+                                <span class="text-[10px] text-red-600 dark:text-red-400 font-semibold uppercase block">Ditolak</span>
+                                <span id="pill-rejected-count" class="font-bold font-mono text-red-700 dark:text-red-300 text-sm">0</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Chart 2: Distribusi Proses Bisnis Kepabeanan -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 shadow-2xs space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700/60">
                             <div>
-                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                                    <i data-lucide="layers" class="w-4 h-4 text-blue-600"></i>
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center space-x-1.5">
+                                    <i data-lucide="layers" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
                                     <span>Distribusi Proses Bisnis Kepabeanan</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-500">Volume permohonan data berdasarkan rezim kepabeanan dan cukai.</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Volume permohonan data berdasarkan rezim kepabeanan dan cukai.</p>
                             </div>
                         </div>
                         <div class="relative h-56 flex items-center justify-center">
                             <canvas id="chart-biz-process"></canvas>
                         </div>
-                        <div class="pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
-                            <span>Dominasi: <strong id="lead-biz-process" class="text-slate-800">Ekspor (PEB BC 3.0)</strong></span>
-                            <span class="text-slate-400">Klasifikasi CEISA DWH</span>
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                            <span>Dominasi: <strong id="lead-biz-process" class="text-slate-800 dark:text-slate-200">Ekspor (PEB BC 3.0)</strong></span>
+                            <span class="text-slate-400 dark:text-slate-500">Klasifikasi CEISA DWH</span>
                         </div>
                     </div>
                 </div>
@@ -1533,14 +1533,14 @@
                 <!-- Row 2 Charts & Breakdown: Timeline & Departemen -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     <!-- Chart 3: Timeline Aktivitas Pemenuhan Data -->
-                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
-                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 shadow-2xs space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700/60">
                             <div>
-                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                                    <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i>
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center space-x-1.5">
+                                    <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
                                     <span>Tren Aktivitas Permohonan & Pemenuhan Data</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-500">Volume permohonan harian dan tingkat persetujuan.</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Volume permohonan harian dan tingkat persetujuan.</p>
                             </div>
                         </div>
                         <div class="relative h-52 flex items-center justify-center">
@@ -1551,9 +1551,9 @@
                     <!-- Departemen & Database Dialect Breakdown -->
                     <div class="space-y-4">
                         <!-- Departemen -->
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                                <i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i data-lucide="building-2" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
                                 <span>Distribusi Pemohon per Unit Kerja</span>
                             </h4>
                             <div id="analytics-dept-list" class="space-y-2 text-xs">
@@ -1562,9 +1562,9 @@
                         </div>
 
                         <!-- Engine Dialect Database -->
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
-                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                                <i data-lucide="database" class="w-4 h-4 text-emerald-600"></i>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-4 space-y-2">
+                            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i data-lucide="database" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
                                 <span>Distribusi Target Engine Database DWH</span>
                             </h4>
                             <div id="analytics-dialect-list" class="grid grid-cols-3 gap-2 text-center text-xs">
