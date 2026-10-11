@@ -669,40 +669,112 @@ function renderResults(data) {
     const badge = document.getElementById("verif-status-badge");
     badge.innerText = data.verification.status;
     badge.className = (data.verification.status.includes("APPROVED")) 
-        ? "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800"
-        : (data.verification.status.includes("REVISION") ? "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800" : "px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800");
+        ? "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
+        : (data.verification.status.includes("REVISION") ? "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200" : "px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200");
     
-    document.getElementById("verif-timestamp").innerText = `Waktu: ${new Date(data.verification.verifier_timestamp).toLocaleString("id-ID")}`;
-    document.getElementById("verif-auditor-id").innerText = `Auditor: ${data.verification.verifier_id}`;
-
-    if (data.verification.verifier_feedback) {
-        document.getElementById("verifier-name-input").value = data.verification.verifier_feedback.reviewer_name;
-        document.getElementById("verifier-role-input").value = data.verification.verifier_feedback.reviewer_role;
-        document.getElementById("verifier-comments-input").value = data.verification.verifier_feedback.comments;
-        document.getElementById("feedback-signed-badge").classList.remove("hidden");
+    const verifTimeElem = document.getElementById("verif-timestamp");
+    if (verifTimeElem) {
+        verifTimeElem.innerHTML = `
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>Waktu Audit: ${new Date(data.verification.verifier_timestamp).toLocaleString("id-ID")}</span>
+        `;
+    }
+    const verifAuditorElem = document.getElementById("verif-auditor-id");
+    if (verifAuditorElem) {
+        verifAuditorElem.innerText = `Auditor: ${data.verification.verifier_id}`;
     }
 
-    const checksList = document.getElementById("verif-checks-list");
-    checksList.innerHTML = "";
-    data.verification.checks.forEach(c => {
-        const cItem = document.createElement("div");
-        cItem.className = `p-3 rounded-xl border text-xs flex items-start space-x-3 ${
-            c.passed ? "bg-emerald-50/50 border-emerald-200" : "bg-red-50/50 border-red-200"
-        }`;
-        const iconColor = c.passed ? "text-emerald-600" : "text-red-600";
-        const iconName = c.passed ? "check-circle" : "alert-triangle";
-        cItem.innerHTML = `
-            <i data-lucide="${iconName}" class="w-4 h-4 ${iconColor} mt-0.5 flex-shrink-0"></i>
-            <div class="flex-1">
-                <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-900">${c.item}</span>
-                    <span class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">${c.category}</span>
-                </div>
-                <p class="text-slate-600 text-[11px] mt-0.5">${c.details}</p>
-            </div>
-        `;
-        checksList.appendChild(cItem);
-    });
+    // Compliance Scorecard Meter & Calculations
+    const totalChecks = data.verification.checks.length;
+    const passedChecks = data.verification.checks.filter(c => c.passed).length;
+    const scorePercent = data.verification.compliance_score || (totalChecks > 0 ? Math.round((passedChecks / totalChecks) * 100) : 100);
+
+    const scorePercentElem = document.getElementById("verif-score-percent");
+    const scoreBarElem = document.getElementById("verif-score-bar");
+    const scoreSubtextElem = document.getElementById("verif-score-subtext");
+
+    if (scorePercentElem) scorePercentElem.innerText = `${scorePercent}%`;
+    if (scoreBarElem) {
+        scoreBarElem.style.width = `${scorePercent}%`;
+        if (scorePercent === 100) {
+            scoreBarElem.className = "bg-emerald-600 h-2 rounded-full transition-all duration-500";
+        } else if (scorePercent >= 80) {
+            scoreBarElem.className = "bg-indigo-600 h-2 rounded-full transition-all duration-500";
+        } else {
+            scoreBarElem.className = "bg-amber-500 h-2 rounded-full transition-all duration-500";
+        }
+    }
+    if (scoreSubtextElem) {
+        scoreSubtextElem.innerText = `${passedChecks} dari ${totalChecks} parameter uji lolos verifikasi ${scorePercent === 100 ? 'tanpa pelanggaran.' : 'dengan catatan.'}`;
+    }
+
+    // Domain Breakdown Counts
+    const safetyChecks = data.verification.checks.filter(c => c.category === "Safety");
+    const fidelityChecks = data.verification.checks.filter(c => c.category === "Fidelity");
+    const piiChecks = data.verification.checks.filter(c => c.category === "PII/Governance");
+    const schemaChecks = data.verification.checks.filter(c => c.category === "Syntax/Schema");
+
+    const safetyPassed = safetyChecks.filter(c => c.passed).length;
+    const fidelityPassed = fidelityChecks.filter(c => c.passed).length;
+    const piiPassed = piiChecks.filter(c => c.passed).length;
+    const schemaPassed = schemaChecks.filter(c => c.passed).length;
+
+    const elSafety = document.getElementById("verif-domain-safety");
+    const elFidelity = document.getElementById("verif-domain-fidelity");
+    const elPii = document.getElementById("verif-domain-pii");
+    const elSchema = document.getElementById("verif-domain-schema");
+
+    if (elSafety) elSafety.innerText = `${safetyPassed}/${safetyChecks.length} Lolos`;
+    if (elFidelity) elFidelity.innerText = `${fidelityPassed}/${fidelityChecks.length} Lolos`;
+    if (elPii) elPii.innerText = `${piiPassed}/${piiChecks.length} Lolos`;
+    if (elSchema) elSchema.innerText = `${schemaPassed}/${schemaChecks.length} Lolos`;
+
+    // Render Categorized Checks
+    currentVerificationChecks = data.verification.checks;
+    renderCategorizedVerificationChecks();
+
+    // Digital Signature Seal Preview Card
+    const sealVerifierName = document.getElementById("seal-verifier-name");
+    const sealVerifierRole = document.getElementById("seal-verifier-role");
+    const sealStatusText = document.getElementById("seal-status-text");
+    const sealTimestampText = document.getElementById("seal-timestamp-text");
+    const sealHashDisplay = document.getElementById("seal-hash-display");
+
+    const activeFeedback = data.verification.verifier_feedback;
+    const activeHash = (activeFeedback && activeFeedback.digital_signature_hash) 
+        ? activeFeedback.digital_signature_hash 
+        : (data.verification.digital_fingerprint || "SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+
+    if (activeFeedback) {
+        document.getElementById("verifier-name-input").value = activeFeedback.reviewer_name;
+        document.getElementById("verifier-role-input").value = activeFeedback.reviewer_role;
+        document.getElementById("verifier-comments-input").value = activeFeedback.comments;
+        document.getElementById("feedback-signed-badge").classList.remove("hidden");
+
+        if (sealVerifierName) sealVerifierName.innerText = activeFeedback.reviewer_name;
+        if (sealVerifierRole) sealVerifierRole.innerText = activeFeedback.reviewer_role;
+        if (sealStatusText) {
+            sealStatusText.innerText = activeFeedback.action === "APPROVE" ? "Telah Disahkan (APPROVED)" : (activeFeedback.action === "REVISION_REQUESTED" ? "Meminta Revisi" : "Ditolak");
+            sealStatusText.className = activeFeedback.action === "APPROVE" ? "text-emerald-400 font-semibold" : (activeFeedback.action === "REVISION_REQUESTED" ? "text-amber-400 font-semibold" : "text-rose-400 font-semibold");
+        }
+        if (sealTimestampText) {
+            sealTimestampText.innerText = activeFeedback.signature_timestamp ? new Date(activeFeedback.signature_timestamp).toLocaleString("id-ID") : "-";
+        }
+    } else {
+        const inputName = document.getElementById("verifier-name-input").value || "Hendra Gunawan, S.Kom";
+        const inputRole = document.getElementById("verifier-role-input").value || "Kepala Seksi Analisa dan Layanan Data";
+        if (sealVerifierName) sealVerifierName.innerText = inputName;
+        if (sealVerifierRole) sealVerifierRole.innerText = inputRole;
+        if (sealStatusText) {
+            sealStatusText.innerText = "Menunggu Sign-off";
+            sealStatusText.className = "text-amber-300 font-semibold";
+        }
+        if (sealTimestampText) sealTimestampText.innerText = "Belum Disahkan";
+    }
+
+    if (sealHashDisplay) {
+        sealHashDisplay.innerText = activeHash.startsWith("SHA256:") ? activeHash : `SHA256: ${activeHash}`;
+    }
 
     // TAB 5: DELIVERY
     if (data.execution) {
@@ -952,12 +1024,170 @@ function getCurrentPersona() {
 }
 
 // 9. Verifier Sign-off & Feedback Handlers
+let currentVerifFilter = "ALL";
+let currentVerificationChecks = [];
+
+function renderCategorizedVerificationChecks() {
+    const checksList = document.getElementById("verif-checks-list");
+    if (!checksList) return;
+    checksList.innerHTML = "";
+
+    const filtered = currentVerificationChecks.filter(c => {
+        if (currentVerifFilter === "ALL") return true;
+        return c.category === currentVerifFilter;
+    });
+
+    if (filtered.length === 0) {
+        checksList.innerHTML = `<div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 text-center">Tidak ada parameter uji untuk kategori ini.</div>`;
+        return;
+    }
+
+    filtered.forEach(c => {
+        const cItem = document.createElement("div");
+        const isPassed = c.passed;
+        const iconColor = isPassed ? "text-emerald-600" : "text-rose-600";
+        const iconName = isPassed ? "check-circle-2" : "alert-triangle";
+        const borderBg = isPassed ? "bg-white border-slate-200 hover:border-emerald-300" : "bg-rose-50/40 border-rose-200";
+
+        // Severity styling
+        let severityBadge = "";
+        const sev = (c.severity || "HIGH").toUpperCase();
+        if (sev === "HIGH") {
+            severityBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">RISIKO TINGGI</span>`;
+        } else if (sev === "MEDIUM") {
+            severityBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">RISIKO SEDANG</span>`;
+        } else {
+            severityBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">INFO</span>`;
+        }
+
+        // Domain icon
+        let domainIcon = "🛡️";
+        if (c.category === "Fidelity") domainIcon = "🎯";
+        else if (c.category === "PII/Governance") domainIcon = "🔒";
+        else if (c.category === "Syntax/Schema") domainIcon = "🏛️";
+
+        cItem.className = `p-3.5 rounded-xl border text-xs flex items-start space-x-3.5 transition shadow-2xs ${borderBg}`;
+        cItem.innerHTML = `
+            <div class="mt-0.5 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg ${isPassed ? 'bg-emerald-50' : 'bg-rose-100'}">
+                <i data-lucide="${iconName}" class="w-4 h-4 ${iconColor}"></i>
+            </div>
+            <div class="flex-1 space-y-1">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-bold text-slate-900">${c.item}</span>
+                        ${severityBadge}
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                            ${domainIcon} ${c.category}
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${isPassed ? 'Lolos Audit' : 'Pelanggaran'}
+                        </span>
+                    </div>
+                </div>
+                <p class="text-slate-600 text-[11px] leading-relaxed">${c.details}</p>
+            </div>
+        `;
+        checksList.appendChild(cItem);
+    });
+
+    lucide.createIcons();
+}
+
 function setupVerifierFeedback() {
     const btnApprove = document.getElementById("btn-feedback-approve");
     const btnRevision = document.getElementById("btn-feedback-revision");
     const btnReject = document.getElementById("btn-feedback-reject");
     const revisionBox = document.getElementById("revision-action-box");
     const btnReopenSpec = document.getElementById("btn-reopen-spec-for-revision");
+
+    // Real-time update for verifier seal card inputs
+    const nameInput = document.getElementById("verifier-name-input");
+    const roleInput = document.getElementById("verifier-role-input");
+    const commentsInput = document.getElementById("verifier-comments-input");
+    const sealVerifierName = document.getElementById("seal-verifier-name");
+    const sealVerifierRole = document.getElementById("seal-verifier-role");
+
+    if (nameInput && sealVerifierName) {
+        nameInput.addEventListener("input", (e) => {
+            sealVerifierName.innerText = e.target.value || "Petugas Verifikator";
+        });
+    }
+
+    if (roleInput && sealVerifierRole) {
+        roleInput.addEventListener("input", (e) => {
+            sealVerifierRole.innerText = e.target.value || "Kepala Seksi Analisa dan Layanan Data";
+        });
+    }
+
+    // Quick Preset Directives Handlers
+    const presetInternal = document.getElementById("btn-preset-internal");
+    const presetPdp = document.getElementById("btn-preset-pdp");
+    const presetEksternal = document.getElementById("btn-preset-eksternal");
+    const presetRevisi = document.getElementById("btn-preset-revisi");
+
+    if (presetInternal && commentsInput) {
+        presetInternal.addEventListener("click", () => {
+            commentsInput.value = "Disetujui penuh untuk analisis kedinasan internal DJBC. Kueri telah diaudit dan memenuhi seluruh batasan keamanan DWH.";
+            commentsInput.focus();
+        });
+    }
+
+    if (presetPdp && commentsInput) {
+        presetPdp.addEventListener("click", () => {
+            commentsInput.value = "Disetujui bersyarat sesuai UU No. 27/2022 (PDP). Kolom identitas (NIK & Kontak) wajib tersamarkan secara permanen dan dilarang diserahkan ke pihak luar tanpa izin DPO.";
+            commentsInput.focus();
+        });
+    }
+
+    if (presetEksternal && commentsInput) {
+        presetEksternal.addEventListener("click", () => {
+            commentsInput.value = "Disetujui untuk pemenuhan data eksternal dengan catatan data wajib diagregasikan per bulan sebelum diserahkan ke pihak pemohon.";
+            commentsInput.focus();
+        });
+    }
+
+    if (presetRevisi && commentsInput) {
+        presetRevisi.addEventListener("click", () => {
+            commentsInput.value = "Mohon sesuaikan rentang waktu permohonan ke kuartal aktif berjalan untuk menghindari beban eksekusi query DWH yang berlebih.";
+            commentsInput.focus();
+        });
+    }
+
+    // Copy Seal Hash Button
+    const btnCopySealHash = document.getElementById("btn-copy-seal-hash");
+    const copyHashBtnText = document.getElementById("copy-hash-btn-text");
+    const sealHashDisplay = document.getElementById("seal-hash-display");
+
+    if (btnCopySealHash && sealHashDisplay) {
+        btnCopySealHash.addEventListener("click", () => {
+            const hashText = sealHashDisplay.innerText.replace("SHA256: ", "").trim();
+            if (!hashText || hashText.includes("Menunggu")) return;
+
+            navigator.clipboard.writeText(hashText).then(() => {
+                if (copyHashBtnText) copyHashBtnText.innerText = "Tersalin!";
+                btnCopySealHash.classList.add("text-emerald-300");
+                setTimeout(() => {
+                    if (copyHashBtnText) copyHashBtnText.innerText = "Salin Hash";
+                    btnCopySealHash.classList.remove("text-emerald-300");
+                }, 2000);
+            });
+        });
+    }
+
+    // Category Filter Buttons
+    const filterBtns = document.querySelectorAll(".verif-filter-btn");
+    filterBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            filterBtns.forEach(b => {
+                b.className = "verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition";
+            });
+            btn.className = "verif-filter-btn px-2.5 py-1 rounded-md bg-indigo-600 text-white font-semibold transition";
+            currentVerifFilter = btn.dataset.category || "ALL";
+            renderCategorizedVerificationChecks();
+        });
+    });
 
     if (btnReopenSpec) {
         btnReopenSpec.addEventListener("click", () => {
@@ -974,7 +1204,7 @@ function setupVerifierFeedback() {
             return;
         }
 
-        const reviewerName = document.getElementById("verifier-name-input").value.trim() || "Data Steward";
+        const reviewerName = document.getElementById("verifier-name-input").value.trim() || "Hendra Gunawan, S.Kom";
         const reviewerRole = document.getElementById("verifier-role-input").value.trim() || "Kepala Seksi Analisa dan Layanan Data";
         const comments = document.getElementById("verifier-comments-input").value.trim() || "Persetujuan pemenuhan data resmi.";
 

@@ -108,9 +108,17 @@ class IndependentVerifier:
         all_passed = all(c.passed for c in checks)
         status = "APPROVED" if all_passed else ("APPROVED_WITH_WARNINGS" if all(c.passed for c in checks if c.severity == "HIGH") else "REJECTED")
 
+        passed_count = sum(1 for c in checks if c.passed)
+        total_count = len(checks)
+        compliance_score = int(round((passed_count / total_count) * 100)) if total_count > 0 else 100
+
+        import hashlib
+        fingerprint_raw = f"{spec.request_id}|{sql_result.query}|{datetime.datetime.now(datetime.timezone.utc).isoformat()}"
+        digital_fingerprint = hashlib.sha256(fingerprint_raw.encode("utf-8")).hexdigest()
+
         summary = (
             f"Verifikasi independen selesai dengan status {status}. "
-            f"Total {len(checks)} parameter kepatuhan diuji. "
+            f"Total {len(checks)} parameter kepatuhan diuji ({passed_count}/{total_count} lolos - {compliance_score}% kepatuhan). "
             f"Query memenuhi standar fidelity permohonan data dan proteksi keamanan DWH."
         )
 
@@ -120,5 +128,7 @@ class IndependentVerifier:
             verifier_id="Agent-Independent-Auditor-v2",
             verifier_timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             executive_summary=summary,
+            compliance_score=compliance_score,
+            digital_fingerprint=digital_fingerprint,
             repair_actions_taken=["Applied Dynamic String Concat Masking for NIK and Customer Name"]
         )
