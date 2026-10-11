@@ -48,6 +48,23 @@ class DataExporter:
                     if "phone_number" in r:
                         raw_p = str(r["phone_number"])
                         r["phone_masked"] = f"{raw_p[:4]}****{raw_p[-3:]}" if len(raw_p) >= 7 else "0812****123"
+                    # Masking NPWP columns jika ada
+                    for npwp_col in ["npwp", "npwp_eksportir", "npwp_importir", "npwp_pengusaha_cukai", "npwp_perusahaan"]:
+                        if npwp_col in r:
+                            raw_npwp = str(r[npwp_col])
+                            if "*" not in raw_npwp and "[TERLINDUNGI" not in raw_npwp:
+                                masked_npwp_val = f"{raw_npwp[:6]}******{raw_npwp[-4:]}" if len(raw_npwp) >= 10 else "01.234.***.*-054.000"
+                                r[f"{npwp_col}_masked"] = masked_npwp_val
+                                r[npwp_col] = masked_npwp_val
+                    # Masking Nama Perusahaan jika ada
+                    for comp_col in ["nama_eksportir", "nama_importir", "nama_perusahaan", "nama_pabrik"]:
+                        if comp_col in r:
+                            raw_comp = str(r[comp_col])
+                            if "*" not in raw_comp and "[TERLINDUNGI" not in raw_comp:
+                                parts = raw_comp.split(" ")
+                                masked_comp = f"{parts[0]} {parts[1][:3]}*** {' '.join(parts[2:]) if len(parts) > 2 else ''}" if len(parts) >= 2 else f"{raw_comp[:6]}***"
+                                r[f"{comp_col}_masked"] = masked_comp
+                                r[comp_col] = masked_comp
                 rows = db_rows
         except Exception as e:
             # Fallback jika dialek query mengandung syntax spesifik
@@ -215,7 +232,7 @@ BERKAS DALAM PAKET INI:
                 raw_company = random.choice(eksportir_list)
                 comp_parts = raw_company.split(" ")
                 masked_company = f"{comp_parts[0]} {comp_parts[1][:3]}*** {' '.join(comp_parts[2:])}" if len(comp_parts) >= 3 else f"{raw_company[:6]}***"
-                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(1,9)}-{random.randint(100,999)}.000"
+                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.***.*-{random.randint(100,999)}.000"
 
                 devisa_usd = random.choice([25000, 48000, 75000, 120000, 185000, 240000, 310000, 520000])
                 bea_keluar = random.choice([0, 0, 0, 12500000, 24000000, 45000000])
@@ -250,7 +267,7 @@ BERKAS DALAM PAKET INI:
                 raw_company = random.choice(importir_list)
                 comp_parts = raw_company.split(" ")
                 masked_company = f"{comp_parts[0]} {comp_parts[1][:3]}***"
-                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(1,9)}-{random.randint(100,999)}.000"
+                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.***.*-{random.randint(100,999)}.000"
 
                 cif_usd = random.choice([35000, 68000, 110000, 175000, 260000, 410000])
                 bm_idr = int(cif_usd * 15500 * random.choice([0.05, 0.075, 0.10]))
@@ -284,7 +301,7 @@ BERKAS DALAM PAKET INI:
 
                 raw_company = random.choice(pabrik_list)
                 masked_company = f"{raw_company[:6]}*** {' '.join(raw_company.split(' ')[2:]) if len(raw_company.split(' ')) > 2 else ''}"
-                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(1,9)}-{random.randint(100,999)}.000"
+                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.***.*-{random.randint(100,999)}.000"
 
                 tagihan = random.choice([150000000, 320000000, 750000000, 1250000000, 2400000000])
 
@@ -427,7 +444,7 @@ BERKAS DALAM PAKET INI:
             ("Status Verifikasi", f"{verification.status} ({verification.verifier_id})"),
             ("Waktu Verifikasi", verification.verifier_timestamp),
             ("Jumlah Baris Diekstrak", len(df)),
-            ("Proteksi PII / PDP", "Aktif (Masking Dinamis NIK, Nama, dan No HP)")
+            ("Proteksi PII / PDP", "Aktif (Masking Dinamis NPWP, NIK, Nama, dan No HP sesuai UU PDP No. 27/2022)")
         ]
 
         # Tambahkan Digital Signature Hash Anti-Tampering

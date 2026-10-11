@@ -77,19 +77,24 @@ class IndependentVerifier:
         pii_masked = True
         pii_details = []
         has_string_manip = any(fn in sql for fn in ["SUBSTRING", "SUBSTR", "CONCAT", "||", "RANDOMBLOB", "TERLINDUNGI_UU_PDP"])
-        if any(f.name.lower() in ["nik", "phone_number", "customer_name", "phone", "nama"] for f in spec.requested_fields):
+        pii_field_names = [f.name.lower() for f in spec.requested_fields]
+
+        if any(any(k in f_name for k in ["nik", "phone", "nama", "customer_name", "npwp"]) for f_name in pii_field_names):
             if "NIK" in sql and not has_string_manip:
                 pii_masked = False
                 pii_details.append("Kolom NIK belum dimasking secara aman.")
             if ("PHONE_NUMBER" in sql or "PHONE" in sql) and not has_string_manip:
                 pii_masked = False
                 pii_details.append("Nomor telepon nasabah belum dimasking.")
+            if "NPWP" in sql and not has_string_manip and "MASKED" not in sql and "PSEUDONYM" not in sql:
+                pii_masked = False
+                pii_details.append("Kolom NPWP (Wajib Pajak/Eksportir/Importir) belum dimasking sesuai standar perlindungan data kepabeanan.")
 
         checks.append(VerificationCheck(
             category="PII/Governance",
             item="Data Privacy & Dynamic Masking Guard",
             passed=pii_masked,
-            details="Atribut PII (Nama, NIK, No Telepon) telah diproteksi dengan masking parsial/pseudonim." if pii_masked else "; ".join(pii_details),
+            details="Atribut PII (Nama, NIK, NPWP, No Telepon) telah diproteksi dengan masking dinamis/pseudonim." if pii_masked else "; ".join(pii_details),
             severity="HIGH"
         ))
 

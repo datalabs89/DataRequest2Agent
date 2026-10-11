@@ -34,7 +34,7 @@ class OpenMetadataConnector:
                 columns=[
                     OpenMetadataColumn(name="nomor_peb", data_type="VARCHAR(32)", description="Nomor pendaftaran PEB (6 digit nopen + tanggal)", tags=["PK", "Core"]),
                     OpenMetadataColumn(name="tanggal_peb", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen ekspor", tags=["Temporal", "PartitionKey"]),
-                    OpenMetadataColumn(name="npwp_eksportir", data_type="VARCHAR(20)", description="NPWP 16 digit perusahaan eksportir", tags=["FK", "Restricted"]),
+                    OpenMetadataColumn(name="npwp_eksportir", data_type="VARCHAR(20)", description="NPWP 16 digit perusahaan eksportir", tags=["FK", "PII", "Restricted"], is_pii=True),
                     OpenMetadataColumn(name="nama_eksportir", data_type="VARCHAR(128)", description="Nama entitas badan usaha eksportir", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="alamat_eksportir", data_type="VARCHAR(256)", description="Alamat domisili eksportir", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="kode_kantor", data_type="VARCHAR(8)", description="Kode kantor pabean pemuatan (contoh: 040300 - Tanjung Priok)", tags=["Dimension"]),
@@ -60,7 +60,7 @@ class OpenMetadataConnector:
                 columns=[
                     OpenMetadataColumn(name="nomor_pib", data_type="VARCHAR(32)", description="Nomor pendaftaran PIB resmi", tags=["PK", "Core"]),
                     OpenMetadataColumn(name="tanggal_pib", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen PIB", tags=["Temporal", "PartitionKey"]),
-                    OpenMetadataColumn(name="npwp_importir", data_type="VARCHAR(20)", description="NPWP perusahaan importir", tags=["FK", "Restricted"]),
+                    OpenMetadataColumn(name="npwp_importir", data_type="VARCHAR(20)", description="NPWP perusahaan importir", tags=["FK", "PII", "Restricted"], is_pii=True),
                     OpenMetadataColumn(name="nama_importir", data_type="VARCHAR(128)", description="Nama entitas importir", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="kode_kantor", data_type="VARCHAR(8)", description="Kode kantor pabean kedatangan", tags=["Dimension"]),
                     OpenMetadataColumn(name="negara_asal", data_type="VARCHAR(64)", description="Negara asal pengiriman barang", tags=["Dimension", "Geography"]),
@@ -87,7 +87,7 @@ class OpenMetadataConnector:
                     OpenMetadataColumn(name="billing_id", data_type="VARCHAR(32)", description="Kode billing MPN G2/G3 perbendaharaan", tags=["PK", "Core"]),
                     OpenMetadataColumn(name="nomor_dokumen_cukai", data_type="VARCHAR(32)", description="Nomor dokumen pemesanan pita cukai (CK-1)", tags=["FK"]),
                     OpenMetadataColumn(name="tanggal_billing", data_type="TIMESTAMP", description="Waktu penerbitan billing cukai", tags=["Temporal", "PartitionKey"]),
-                    OpenMetadataColumn(name="npwp_pengusaha_cukai", data_type="VARCHAR(20)", description="NPWP pabrik/pengusaha BKC", tags=["FK"]),
+                    OpenMetadataColumn(name="npwp_pengusaha_cukai", data_type="VARCHAR(20)", description="NPWP pabrik/pengusaha BKC", tags=["FK", "PII", "Restricted"], is_pii=True),
                     OpenMetadataColumn(name="nama_pabrik", data_type="VARCHAR(128)", description="Nama pabrik / entitas wajib cukai", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="jenis_hasil_tembakau", data_type="VARCHAR(32)", description="Kategori komoditas: SKT, SKM, SPM, MMEA, EA", tags=["Dimension"]),
                     OpenMetadataColumn(name="jumlah_tarif_spesifik", data_type="NUMERIC(15,2)", description="Tarif cukai per batang/liter", tags=["Metric"]),
@@ -133,7 +133,7 @@ class OpenMetadataConnector:
                 lineage_upstream=["staging_ceisa.stg_profil_perusahaan_kemenkeu"],
                 lineage_downstream=["dwh_ceisa.ekspor.fct_peb_ekspor", "dwh_ceisa.impor.fct_pib_impor", "dwh_ceisa.cukai.fct_billing_cukai"],
                 columns=[
-                    OpenMetadataColumn(name="npwp_perusahaan", data_type="VARCHAR(20)", description="Nomor Pokok Wajib Pajak 16 digit", tags=["PK"]),
+                    OpenMetadataColumn(name="npwp_perusahaan", data_type="VARCHAR(20)", description="Nomor Pokok Wajib Pajak 16 digit", tags=["PK", "PII", "Restricted"], is_pii=True),
                     OpenMetadataColumn(name="nama_perusahaan", data_type="VARCHAR(128)", description="Nama resmi badan hukum perusahaan", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="alamat_domisili", data_type="VARCHAR(256)", description="Alamat kantor pusat", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="nik_penanggung_jawab", data_type="VARCHAR(16)", description="NIK pimpinan/penanggung jawab", tags=["PII", "Restricted"], is_pii=True),

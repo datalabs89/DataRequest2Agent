@@ -56,8 +56,19 @@ class SQLGenerator:
                 select_clauses.append(f"{t_alias}.tanggal_peb")
                 selected_col_names.append("tanggal_peb")
 
-            select_clauses.append(f"{t_alias}.npwp_eksportir")
-            selected_col_names.append("npwp_eksportir")
+            # Proteksi Kolom NPWP Eksportir (UU PDP No. 27/2022: Wajib Masking Dinamis)
+            if masking_mode == "HASH":
+                select_clauses.append(f"HEX(RANDOMBLOB(16)) AS npwp_eksportir_pseudonym")
+                selected_col_names.append("npwp_eksportir_pseudonym")
+            elif masking_mode == "FULL_REDACT":
+                select_clauses.append(f"'[TERLINDUNGI_UU_PDP]' AS npwp_eksportir_masked")
+                selected_col_names.append("npwp_eksportir_masked")
+            else:
+                if is_oracle:
+                    select_clauses.append(f"SUBSTR({t_alias}.npwp_eksportir, 1, 6) || '******' || SUBSTR({t_alias}.npwp_eksportir, -4) AS npwp_eksportir_masked")
+                else:
+                    select_clauses.append(f"CONCAT(SUBSTRING({t_alias}.npwp_eksportir, 1, 6), '******', SUBSTRING({t_alias}.npwp_eksportir, LENGTH({t_alias}.npwp_eksportir)-3, 4)) AS npwp_eksportir_masked")
+                selected_col_names.append("npwp_eksportir_masked")
 
             # Proteksi Nama Eksportir
             if is_field_requested("nama") or is_field_requested("nama_eksportir"):
@@ -109,8 +120,20 @@ class SQLGenerator:
             selected_col_names.append("nomor_pib")
             select_clauses.append(f"{t_alias}.tanggal_pib")
             selected_col_names.append("tanggal_pib")
-            select_clauses.append(f"{t_alias}.npwp_importir")
-            selected_col_names.append("npwp_importir")
+
+            # Proteksi Kolom NPWP Importir (UU PDP No. 27/2022: Wajib Masking Dinamis)
+            if masking_mode == "HASH":
+                select_clauses.append(f"HEX(RANDOMBLOB(16)) AS npwp_importir_pseudonym")
+                selected_col_names.append("npwp_importir_pseudonym")
+            elif masking_mode == "FULL_REDACT":
+                select_clauses.append(f"'[TERLINDUNGI_UU_PDP]' AS npwp_importir_masked")
+                selected_col_names.append("npwp_importir_masked")
+            else:
+                if is_oracle:
+                    select_clauses.append(f"SUBSTR({t_alias}.npwp_importir, 1, 6) || '******' || SUBSTR({t_alias}.npwp_importir, -4) AS npwp_importir_masked")
+                else:
+                    select_clauses.append(f"CONCAT(SUBSTRING({t_alias}.npwp_importir, 1, 6), '******', SUBSTRING({t_alias}.npwp_importir, LENGTH({t_alias}.npwp_importir)-3, 4)) AS npwp_importir_masked")
+                selected_col_names.append("npwp_importir_masked")
 
             if is_field_requested("nama") or is_field_requested("nama_importir"):
                 if masking_mode == "HASH":
@@ -138,8 +161,20 @@ class SQLGenerator:
             selected_col_names.append("nomor_dokumen_cukai")
             select_clauses.append(f"{t_alias}.tanggal_billing")
             selected_col_names.append("tanggal_billing")
-            select_clauses.append(f"{t_alias}.npwp_pengusaha_cukai")
-            selected_col_names.append("npwp_pengusaha_cukai")
+
+            # Proteksi Kolom NPWP Pengusaha Cukai (UU PDP No. 27/2022: Wajib Masking Dinamis)
+            if masking_mode == "HASH":
+                select_clauses.append(f"HEX(RANDOMBLOB(16)) AS npwp_pengusaha_cukai_pseudonym")
+                selected_col_names.append("npwp_pengusaha_cukai_pseudonym")
+            elif masking_mode == "FULL_REDACT":
+                select_clauses.append(f"'[TERLINDUNGI_UU_PDP]' AS npwp_pengusaha_cukai_masked")
+                selected_col_names.append("npwp_pengusaha_cukai_masked")
+            else:
+                if is_oracle:
+                    select_clauses.append(f"SUBSTR({t_alias}.npwp_pengusaha_cukai, 1, 6) || '******' || SUBSTR({t_alias}.npwp_pengusaha_cukai, -4) AS npwp_pengusaha_cukai_masked")
+                else:
+                    select_clauses.append(f"CONCAT(SUBSTRING({t_alias}.npwp_pengusaha_cukai, 1, 6), '******', SUBSTRING({t_alias}.npwp_pengusaha_cukai, LENGTH({t_alias}.npwp_pengusaha_cukai)-3, 4)) AS npwp_pengusaha_cukai_masked")
+                selected_col_names.append("npwp_pengusaha_cukai_masked")
 
             if is_field_requested("nama") or is_field_requested("nama_pabrik"):
                 if masking_mode == "HASH":
@@ -300,7 +335,7 @@ ORDER BY
             f"Query disusun untuk database {dialect} dengan menggabungkan tabel fakta "
             f"`{primary_table.table_name}` dan tabel dimensi `{', '.join([t.table_name for t in tables[1:]])}`. "
             f"Filter diaplikasikan secara ketat sesuai spesifikasi dokumen permohonan. "
-            f"Atribut PII (Nama, NIK, No Telepon) telah diproteksi dengan fungsi masking dinamis."
+            f"Atribut PII (Nama, NIK, NPWP, No Telepon) telah diproteksi dengan fungsi masking dinamis sesuai kepatuhan UU PDP & kerahasiaan data kepabeanan/perpajakan."
         )
 
         return SQLGenerationResult(

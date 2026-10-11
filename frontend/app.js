@@ -581,7 +581,7 @@ function renderResults(data) {
 
         // Generate column pills with tags
         const colPills = tbl.columns.slice(0, 8).map(c => {
-            const isPii = c.is_pii || (c.tags && c.tags.includes("PII"));
+            const isPii = c.is_pii || (c.tags && c.tags.includes("PII")) || c.name.toLowerCase().includes("npwp");
             const isPk = c.tags && c.tags.includes("PK");
             const isFk = c.tags && c.tags.includes("FK");
             
@@ -799,7 +799,7 @@ function renderResults(data) {
 
         // Hitung proteksi PII
         const piiCols = (data.execution.column_names || []).filter(c => 
-            c.toLowerCase().includes("masked") || c.toLowerCase().includes("nik") || c.toLowerCase().includes("phone") || c.toLowerCase().includes("name")
+            c.toLowerCase().includes("masked") || c.toLowerCase().includes("nik") || c.toLowerCase().includes("phone") || c.toLowerCase().includes("name") || c.toLowerCase().includes("npwp")
         );
         if (mPii) mPii.innerText = piiCols.length > 0 ? `${piiCols.length} Kolom Terlindungi (PDP)` : "Proteksi Aktif (UU PDP)";
 
@@ -859,7 +859,8 @@ function renderDeliveryDataPreview(query = "") {
     currentDeliveryColumns.forEach(col => {
         const th = document.createElement("th");
         th.className = "px-3.5 py-2.5 font-bold whitespace-nowrap text-slate-700";
-        const isMasked = col.toLowerCase().includes("masked");
+        const colLower = col.toLowerCase();
+        const isMasked = colLower.includes("masked") || colLower.includes("npwp") || colLower.includes("nik");
         if (isMasked) {
             th.innerHTML = `
                 <div class="flex items-center space-x-1.5">
@@ -912,7 +913,7 @@ function renderDeliveryDataPreview(query = "") {
             }
 
             // Highlight masked values
-            if (valStr.includes("***")) {
+            if (valStr.includes("***") || valStr.includes("******") || valStr.includes("[TERLINDUNGI")) {
                 td.innerHTML = `<span class="bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded font-mono font-semibold">${val}</span>`;
             } else if (colLower === "status_jalur") {
                 let badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
