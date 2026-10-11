@@ -847,7 +847,7 @@ function setupVerifierFeedback() {
         }
 
         const reviewerName = document.getElementById("verifier-name-input").value.trim() || "Data Steward";
-        const reviewerRole = document.getElementById("verifier-role-input").value.trim() || "Data Governance Officer";
+        const reviewerRole = document.getElementById("verifier-role-input").value.trim() || "Kepala Seksi Analisa dan Layanan Data";
         const comments = document.getElementById("verifier-comments-input").value.trim() || "Persetujuan pemenuhan data resmi.";
 
         appendConsoleLog("Verifier Sign-Off", `Verifikator (${reviewerName}) menyerahkan keputusan: ${action}...`);

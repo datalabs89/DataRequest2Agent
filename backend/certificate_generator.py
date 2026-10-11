@@ -67,7 +67,7 @@ class CertificateGenerator:
 
         query_hash = hashlib.sha256(sql_result.query.encode('utf-8')).hexdigest()[:24].upper()
         reviewer_name = verification.verifier_feedback.reviewer_name if verification.verifier_feedback else "Hendra Gunawan, S.Kom"
-        reviewer_role = verification.verifier_feedback.reviewer_role if verification.verifier_feedback else "Head of Data Governance & Compliance"
+        reviewer_role = verification.verifier_feedback.reviewer_role if verification.verifier_feedback else "Kepala Seksi Analisa dan Layanan Data"
         comments = verification.verifier_feedback.comments if verification.verifier_feedback else "Data disetujui untuk analisis resmi. Akses terbatas sesuai regulasi PDP."
 
         # Header Institusi

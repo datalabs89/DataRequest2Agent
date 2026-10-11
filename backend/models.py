@@ -116,7 +116,7 @@ class VerificationCheck(BaseModel):
 
 class VerifierFeedback(BaseModel):
     reviewer_name: str = "Hendra Gunawan"
-    reviewer_role: str = "Head of Data Governance & Compliance"
+    reviewer_role: str = "Kepala Seksi Analisa dan Layanan Data"
     action: str = "APPROVE"  # "APPROVE", "REVISION_REQUESTED", "REJECT"
     comments: str = "Data disetujui untuk analisis internal. Akses terbatas sesuai ketentuan PDP."
     signature_timestamp: Optional[str] = None
