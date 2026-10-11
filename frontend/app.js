@@ -2152,6 +2152,13 @@ async function fetchAndRenderAnalytics(period = "all") {
                 const bizLabels = Object.keys(bizData);
                 const bizValues = Object.values(bizData);
 
+                // Update lead biz process label
+                const leadElem = document.getElementById("lead-biz-process");
+                if (leadElem && Object.keys(bizData).length > 0) {
+                    const sortedBiz = Object.entries(bizData).sort((a, b) => b[1] - a[1]);
+                    leadElem.innerText = `${sortedBiz[0][0]} (${sortedBiz[0][1]} req)`;
+                }
+
                 chartBizProcessInstance = new Chart(bizCtx, {
                     type: "bar",
                     data: {

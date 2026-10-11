@@ -1,18 +1,39 @@
 [
   {
+    "id": "REQ-1791725450",
+    "request_id": "REQ-2026-BC-089",
+    "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
+    "requester_name": "Ahmad Fauzi, S.Kom",
+    "department": "Internal Bea dan Cukai",
+    "business_process": "Ekspor",
+    "created_at": "2026-10-11 20:30:00",
+    "status": "APPROVED",
+    "row_count": 35,
+    "execution_time_ms": 32.0,
+    "dialect": "PostgreSQL",
+    "compliance_score": 100,
+    "digital_fingerprint": "76b896847890575d61b24904506d27160a4c0f1026391ae28843e11d33956fe7",
+    "excel_filename": "DataExport_REQ_2026_BC_089_20261011_203050.xlsx",
+    "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_203050.zip",
+    "reviewer_name": null,
+    "reviewer_role": null,
+    "comments": "Menunggu review verifikator"
+  },
+  {
     "id": "REQ-1791724338",
     "request_id": "REQ-2026-BC-089",
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 20:12:18",
+    "created_at": "2026-10-11 18:23:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_201218.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_201218.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 33.8
   },
   {
     "id": "REQ-1791724231",
@@ -21,13 +42,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 20:10:31",
+    "created_at": "2026-10-11 16:16:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_201030.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_201030.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 35.6
   },
   {
     "id": "REQ-1791723328",
@@ -35,14 +57,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:55:28",
-    "status": "APPROVED",
+    "business_process": "Impor",
+    "created_at": "2026-10-11 14:09:00",
+    "status": "MEMBUTUHKAN_REVISI",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_195528.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_195528.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 37.4
   },
   {
     "id": "REQ-1791723247",
@@ -51,13 +74,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:54:07",
+    "created_at": "2026-10-11 12:02:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_195407.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_195407.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 39.2
   },
   {
     "id": "REQ-1791722983",
@@ -65,14 +89,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:49:43",
+    "business_process": "Cukai",
+    "created_at": "2026-10-11 09:55:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_194943.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_194943.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 41.0
   },
   {
     "id": "REQ-1791722870",
@@ -81,13 +106,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:47:50",
-    "status": "APPROVED",
+    "created_at": "2026-10-11 07:48:00",
+    "status": "REJECTED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_194750.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_194750.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 42.8
   },
   {
     "id": "REQ-1791722777",
@@ -95,14 +121,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:46:17",
-    "status": "REJECTED",
+    "business_process": "Manifest",
+    "created_at": "2026-10-11 05:41:00",
+    "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_194617.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_194617.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 44.6
   },
   {
     "id": "REQ-1791721953",
@@ -111,13 +138,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:32:33",
+    "created_at": "2026-10-10 19:34:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_193233.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_193233.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 46.4
   },
   {
     "id": "REQ-1791721792",
@@ -125,14 +153,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:29:52",
+    "business_process": "Impor",
+    "created_at": "2026-10-10 18:27:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_192952.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_192952.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 48.2
   },
   {
     "id": "REQ-1791720287",
@@ -141,13 +170,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:04:47",
+    "created_at": "2026-10-09 16:20:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_190447.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_190447.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 50.0
   },
   {
     "id": "REQ-1791720200",
@@ -156,15 +186,16 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:03:20",
-    "status": "DISETUJUI_RESMI",
+    "created_at": "2026-10-09 14:13:00",
+    "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_190319.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_190319.zip",
     "reviewer_name": "Hendra Gunawan, S.Kom",
     "comments": "Disetujui penuh untuk analisis internal.",
     "reviewer_role": "Kepala Seksi Analisa dan Layanan Data",
-    "signed_at": "2026-10-11 19:03:20"
+    "signed_at": "2026-10-11 19:03:20",
+    "execution_time_ms": 51.8
   },
   {
     "id": "REQ-1791720191",
@@ -172,14 +203,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 19:03:11",
-    "status": "APPROVED",
+    "business_process": "Cukai",
+    "created_at": "2026-10-08 12:06:00",
+    "status": "MEMBUTUHKAN_REVISI",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_190311.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_190311.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 53.6
   },
   {
     "id": "REQ-1791719429",
@@ -188,13 +220,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:50:29",
+    "created_at": "2026-10-08 09:59:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_185029.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_185029.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 55.4
   },
   {
     "id": "REQ-1791719288",
@@ -203,13 +236,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:48:08",
+    "created_at": "2026-10-08 07:52:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_184808.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_184808.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 57.2
   },
   {
     "id": "REQ-1791719238",
@@ -217,14 +251,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:47:18",
-    "status": "APPROVED",
+    "business_process": "Impor",
+    "created_at": "2026-10-07 05:45:00",
+    "status": "REJECTED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_184718.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_184718.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 32.0
   },
   {
     "id": "REQ-1791718405",
@@ -233,13 +268,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:33:25",
+    "created_at": "2026-10-07 19:38:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_183325.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_183325.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 33.8
   },
   {
     "id": "REQ-1791718152",
@@ -247,14 +283,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:29:12",
+    "business_process": "Manifest",
+    "created_at": "2026-10-06 17:31:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_182912.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_182912.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 35.6
   },
   {
     "id": "REQ-1791717971",
@@ -263,13 +300,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:26:11",
+    "created_at": "2026-10-06 16:24:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_182611.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_182611.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 37.4
   },
   {
     "id": "REQ-1791717482",
@@ -278,13 +316,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:18:02",
+    "created_at": "2026-10-05 14:17:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_181802.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_181802.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 39.2
   },
   {
     "id": "REQ-1791717288",
@@ -292,14 +331,15 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:14:48",
+    "business_process": "Impor",
+    "created_at": "2026-10-05 12:10:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_181448.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_181448.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 41.0
   },
   {
     "id": "REQ-1791717264",
@@ -308,13 +348,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:14:24",
-    "status": "APPROVED",
+    "created_at": "2026-10-05 10:03:00",
+    "status": "MEMBUTUHKAN_REVISI",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_181424.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_181424.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 42.8
   },
   {
     "id": "REQ-1791716663",
@@ -323,13 +364,14 @@
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
     "business_process": "Ekspor",
-    "created_at": "2026-10-11 18:04:23",
+    "created_at": "2026-10-03 07:56:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_180422.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_180422.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 44.6
   },
   {
     "id": "REQ-1791716067",
@@ -337,13 +379,14 @@
     "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
     "requester_name": "Bambang Pratama, S.H., M.H.",
     "department": "Eksternal Kemenkeu",
-    "created_at": "2026-10-11 17:54:27",
+    "created_at": "2026-10-02 05:49:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_EKS_042_20261011_175427.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_EKS_042_20261011_175427.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 46.4
   },
   {
     "id": "REQ-1791716067",
@@ -351,13 +394,14 @@
     "document_title": "FORMULIR PERMOHONAN REKONSILIASI DATA TRANSAKSI PENERIMAAN NEGARA",
     "requester_name": "Siti Sarah, S.T.",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 17:54:27",
-    "status": "APPROVED",
+    "created_at": "2026-09-30 19:42:00",
+    "status": "REJECTED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_KMK_114_20261011_175427.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_KMK_114_20261011_175427.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 48.2
   },
   {
     "id": "REQ-1791716067",
@@ -365,13 +409,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 17:54:27",
+    "created_at": "2026-09-29 17:35:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BC_089_20261011_175427.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_175427.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 50.0
   },
   {
     "id": "REQ-1791715568",
@@ -379,13 +424,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "Siti Sarah, S.T.",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 17:46:08",
+    "created_at": "2026-09-27 16:28:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_LOG_114_20261011_174607.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_LOG_114_20261011_174607.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 51.8
   },
   {
     "id": "REQ-1791715144",
@@ -393,13 +439,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "Siti Sarah, S.T.",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 17:39:04",
+    "created_at": "2026-09-26 14:21:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_LOG_114_20261011_173904.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_LOG_114_20261011_173904.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 53.6
   },
   {
     "id": "REQ-1791714432",
@@ -407,15 +454,16 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 17:27:12",
-    "status": "DISETUJUI_RESMI",
+    "created_at": "2026-09-24 12:14:00",
+    "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_172712.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_172712.zip",
     "reviewer_name": "Hendra Gunawan, S.Kom",
     "comments": "Disetujui untuk analisis retensi nasabah Q3. Dilarang mendistribusikan ke pihak ketiga.",
     "reviewer_role": "Head of Data Governance & Compliance",
-    "signed_at": "2026-10-11 17:27:12"
+    "signed_at": "2026-10-11 17:27:12",
+    "execution_time_ms": 55.4
   },
   {
     "id": "REQ-1791713535",
@@ -423,13 +471,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "Siti Sarah, S.T.",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 17:12:15",
+    "created_at": "2026-09-22 10:07:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_LOG_114_20261011_171215.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_LOG_114_20261011_171215.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 57.2
   },
   {
     "id": "REQ-1791712780",
@@ -437,13 +486,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "Siti Sarah, S.T.",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 16:59:40",
-    "status": "APPROVED",
+    "created_at": "2026-09-20 08:00:00",
+    "status": "MEMBUTUHKAN_REVISI",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_LOG_114_20261011_165940.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_LOG_114_20261011_165940.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 32.0
   },
   {
     "id": "REQ-1791701430",
@@ -451,13 +501,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 13:50:30",
+    "created_at": "2026-09-18 05:53:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_135030.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_135030.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 33.8
   },
   {
     "id": "REQ-1791701378",
@@ -465,13 +516,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 13:49:38",
-    "status": "REJECTED",
+    "created_at": "2026-09-16 19:46:00",
+    "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_134938.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_134938.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 35.6
   },
   {
     "id": "REQ-1791701272",
@@ -479,13 +531,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 13:47:52",
-    "status": "APPROVED",
+    "created_at": "2026-09-15 17:39:00",
+    "status": "REJECTED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_134752.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_134752.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 37.4
   },
   {
     "id": "REQ-1791700527",
@@ -493,13 +546,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "Siti Sarah, S.T.",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 13:35:27",
+    "created_at": "2026-09-13 15:32:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_LOG_114_20261011_133527.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_LOG_114_20261011_133527.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 39.2
   },
   {
     "id": "REQ-1791698028",
@@ -507,13 +561,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 12:53:48",
-    "status": "REJECTED",
+    "created_at": "2026-09-12 14:25:00",
+    "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_125348.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_125348.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 41.0
   },
   {
     "id": "REQ-1791698008",
@@ -521,13 +576,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 12:53:28",
+    "created_at": "2026-09-09 12:18:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_125328.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_125328.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 42.8
   },
   {
     "id": "REQ-1791697758",
@@ -535,13 +591,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "Siti Sarah, S.T.",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 12:49:18",
+    "created_at": "2026-09-06 10:11:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_LOG_114_20261011_124918.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_LOG_114_20261011_124918.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 44.6
   },
   {
     "id": "REQ-1791697311",
@@ -549,13 +606,14 @@
     "document_title": "Permohonan Scan Fisik",
     "requester_name": "Data Requester (Pemohon Dokumen Fisik/Scan)",
     "department": "Eksternal Kemenkeu",
-    "created_at": "2026-10-11 12:41:51",
+    "created_at": "2026-09-03 08:04:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_F02F_SCAN_20261011_124151.xlsx",
     "zip_filename": "DataFulfillment_REQ_F02F_SCAN_20261011_124151.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 46.4
   },
   {
     "id": "REQ-1791697275",
@@ -563,13 +621,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 12:41:15",
-    "status": "REJECTED",
+    "created_at": "2026-09-01 05:57:00",
+    "status": "MEMBUTUHKAN_REVISI",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_124115.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_124115.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 48.2
   },
   {
     "id": "REQ-1791697270",
@@ -577,13 +636,14 @@
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA",
     "requester_name": "Ahmad Fauzi, S.Kom",
     "department": "Internal Bea dan Cukai",
-    "created_at": "2026-10-11 12:41:10",
-    "status": "REJECTED",
+    "created_at": "2026-08-30 19:50:00",
+    "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_REQ_2026_BDN_089_20261011_124110.xlsx",
     "zip_filename": "DataFulfillment_REQ_2026_BDN_089_20261011_124110.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 50.0
   },
   {
     "id": "REQ-1791695751",
@@ -591,13 +651,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "(PIC)",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 12:15:51",
+    "created_at": "2026-08-27 17:43:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_Permohonan_20261011_121550.xlsx",
     "zip_filename": "DataFulfillment_Permohonan_20261011_121550.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 51.8
   },
   {
     "id": "REQ-1791695549",
@@ -605,13 +666,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "(PIC)",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 12:12:29",
-    "status": "APPROVED",
+    "created_at": "2026-08-24 15:36:00",
+    "status": "REJECTED",
     "row_count": 35,
     "excel_filename": "DataExport_Permohonan_20261011_121229.xlsx",
     "zip_filename": "DataFulfillment_Permohonan_20261011_121229.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 53.6
   },
   {
     "id": "REQ-1791695544",
@@ -619,13 +681,14 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "(PIC)",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 12:12:24",
+    "created_at": "2026-08-22 14:29:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_Permohonan_20261011_121224.xlsx",
     "zip_filename": "DataFulfillment_Permohonan_20261011_121224.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 55.4
   },
   {
     "id": "REQ-1791695528",
@@ -633,12 +696,13 @@
     "document_title": "FORMULIR PERMOHONAN DATA PENGIRIMAN & EKSPEDISI",
     "requester_name": "(PIC)",
     "department": "Internal Kemenkeu",
-    "created_at": "2026-10-11 12:12:08",
+    "created_at": "2026-08-18 12:22:00",
     "status": "APPROVED",
     "row_count": 35,
     "excel_filename": "DataExport_Permohonan_20261011_121208.xlsx",
     "zip_filename": "DataFulfillment_Permohonan_20261011_121208.zip",
     "reviewer_name": null,
-    "comments": "Menunggu review verifikator"
+    "comments": "Menunggu review verifikator",
+    "execution_time_ms": 57.2
   }
 ]
