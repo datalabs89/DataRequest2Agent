@@ -1247,21 +1247,25 @@ function openSpecConfirmationModal(spec) {
         });
     }
 
-    // Render Filter Bisnis
+    // Render Filter Bisnis dengan Checkbox Interaktif
     const filtersContainer = document.getElementById("conf-filters-container");
     filtersContainer.innerHTML = "";
     if (!spec.filters || spec.filters.length === 0) {
         filtersContainer.innerHTML = `<div class="text-slate-400 italic">Tidak ada filter bisnis khusus terdeteksi.</div>`;
     } else {
-        spec.filters.forEach(filt => {
+        spec.filters.forEach((filt, fIdx) => {
             const item = document.createElement("div");
-            item.className = "p-2 rounded-lg bg-white border border-slate-200 space-y-0.5";
+            item.className = "p-2 rounded-lg bg-white border border-slate-200 space-y-0.5 hover:border-emerald-400 transition";
+            const valDisplay = Array.isArray(filt.value) ? filt.value.join(" s/d ") : filt.value;
             item.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span class="font-semibold text-slate-800">${filt.field_description}</span>
-                    <span class="font-mono text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">${filt.target_column} ${filt.operator} '${filt.value}'</span>
+                    <label class="flex items-center space-x-2 cursor-pointer flex-1 mr-2 truncate">
+                        <input type="checkbox" class="conf-filter-checkbox rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5" data-filter-index="${fIdx}" checked>
+                        <span class="font-semibold text-slate-800 text-xs truncate">${filt.field_description}</span>
+                    </label>
+                    <span class="font-mono text-[10px] bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200 font-semibold">${filt.target_column} ${filt.operator} '${valDisplay}'</span>
                 </div>
-                ${filt.rationale ? `<p class="text-[10px] text-slate-500">${filt.rationale}</p>` : ''}
+                ${filt.rationale ? `<p class="text-[10px] text-slate-500 pl-5.5">${filt.rationale}</p>` : ''}
             `;
             filtersContainer.appendChild(item);
         });
@@ -1298,7 +1302,7 @@ function setupSpecConfirmationModal() {
         extractedSpecForConfirmation.time_range_start = document.getElementById("conf-date-start").value.trim();
         extractedSpecForConfirmation.time_range_end = document.getElementById("conf-date-end").value.trim();
 
-        // Ambil pilihan kolom yang dicentang saja (Data Minimization)
+        // 3. Ambil pilihan kolom yang dicentang saja (Data Minimization)
         const checkboxes = document.querySelectorAll(".conf-field-checkbox");
         const filteredFields = [];
         checkboxes.forEach(cb => {
@@ -1314,6 +1318,24 @@ function setupSpecConfirmationModal() {
         }
 
         extractedSpecForConfirmation.requested_fields = filteredFields;
+
+        // 4. Ambil kriteria filter bisnis yang dicentang
+        const filterCheckboxes = document.querySelectorAll(".conf-filter-checkbox");
+        if (filterCheckboxes.length > 0) {
+            const activeFilters = [];
+            filterCheckboxes.forEach(cb => {
+                if (cb.checked) {
+                    const idx = parseInt(cb.getAttribute("data-filter-index"));
+                    activeFilters.push(extractedSpecForConfirmation.filters[idx]);
+                }
+            });
+            extractedSpecForConfirmation.filters = activeFilters;
+        }
+
+        // Sinkronisasi Kebijakan Masking PII yang dipilih
+        const maskingPolicyVal = document.getElementById("conf-masking-policy")?.value || "PARTIAL";
+        const matchingRadio = document.querySelector(`input[name="masking-mode"][value="${maskingPolicyVal}"]`);
+        if (matchingRadio) matchingRadio.checked = true;
 
         // Ambil granularitas
         const granRadio = document.querySelector('input[name="conf-granularity"]:checked');

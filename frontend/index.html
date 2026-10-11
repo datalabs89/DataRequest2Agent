@@ -828,20 +828,37 @@
                                     <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-600"></i>
                                     <span>3. Kolom yang Diminta & Proteksi PII</span>
                                 </h4>
-                                <span class="text-[10px] text-slate-400">Centang kolom yang diizinkan</span>
+                                <span class="text-[10px] text-slate-400">Pilih kolom (Data Minimization)</span>
                             </div>
-                            <div id="conf-fields-container" class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+
+                            <!-- PII Masking Policy Selector -->
+                            <div class="flex items-center justify-between text-xs bg-rose-50/70 p-2.5 rounded-lg border border-rose-200/80">
+                                <div class="flex items-center space-x-1.5 text-rose-900 font-semibold text-[11px]">
+                                    <i data-lucide="lock" class="w-3.5 h-3.5 text-rose-600"></i>
+                                    <span>Kebijakan Masking PII:</span>
+                                </div>
+                                <select id="conf-masking-policy" class="text-[11px] font-semibold bg-white border border-rose-300 text-rose-900 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-rose-500 shadow-2xs">
+                                    <option value="PARTIAL">Masking Parsial (Ahm***zi & 3201******)</option>
+                                    <option value="HASH">Pseudonimisasi Hash Kriptografis</option>
+                                    <option value="FULL_REDACT">Redaksi Total [TERLINDUNGI_UU_PDP]</option>
+                                </select>
+                            </div>
+
+                            <div id="conf-fields-container" class="space-y-1.5 max-h-52 overflow-y-auto pr-1">
                                 <!-- Populated dynamically -->
                             </div>
                         </div>
 
                         <!-- 4. Konfirmasi Filter Bisnis -->
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                                <i data-lucide="filter" class="w-3.5 h-3.5 text-emerald-600"></i>
-                                <span>4. Kriteria Filter Bisnis</span>
-                            </h4>
-                            <div id="conf-filters-container" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                                    <i data-lucide="filter" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                    <span>4. Kriteria Filter Bisnis</span>
+                                </h4>
+                                <span class="text-[10px] text-slate-400">Aktifkan klausa WHERE</span>
+                            </div>
+                            <div id="conf-filters-container" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                                 <!-- Populated dynamically -->
                             </div>
                         </div>
