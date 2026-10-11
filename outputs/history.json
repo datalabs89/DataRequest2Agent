@@ -1,5 +1,25 @@
 [
   {
+    "id": "REQ-1791736533",
+    "request_id": "REQ-2026-BC-089",
+    "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
+    "requester_name": "Ahmad Fauzi, S.Kom",
+    "department": "Internal Bea dan Cukai",
+    "business_process": "Ekspor",
+    "created_at": "2026-10-11 23:35:33",
+    "status": "APPROVED",
+    "row_count": 35,
+    "execution_time_ms": 178.7,
+    "dialect": "PostgreSQL",
+    "compliance_score": 100,
+    "digital_fingerprint": "7f0da83b97d1ddab27e8b123f0c4527a02d1424a4f27df4032a901ec9d39c69e",
+    "excel_filename": "DataExport_REQ_2026_BC_089_20261011_233532.xlsx",
+    "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261011_233532.zip",
+    "reviewer_name": null,
+    "reviewer_role": null,
+    "comments": "Menunggu review verifikator"
+  },
+  {
     "id": "REQ-1791736080",
     "request_id": "REQ-2026-EKS-042",
     "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
