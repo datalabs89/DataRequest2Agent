@@ -579,7 +579,7 @@ function renderResults(data) {
     // TAB 5: DELIVERY
     if (data.execution) {
         document.getElementById("delivery-stats-text").innerText = 
-            `${data.execution.row_count} baris data berhasil diekstrak dalam ${data.execution.execution_time_ms} ms. Dialek: ${data.execution.dialect}.`;
+            `${data.execution.row_count} baris data berhasil diekstrak dalam ${data.execution.execution_time_ms} ms. Target Database: ${data.execution.dialect}.`;
 
         const excelName = data.execution.excel_path.split(/[\\/]/).pop();
         const csvName = data.execution.csv_path.split(/[\\/]/).pop();
@@ -1246,7 +1246,7 @@ function applyPersona(persona) {
                     <i data-lucide="settings-2" class="w-4 h-4 text-slate-700 flex-shrink-0"></i>
                     <div>
                         <span class="font-bold">Mode Rekayasa Data & Administrator (Data Engineer)</span>
-                        <p class="text-[11px] text-slate-600">Akses penuh ke konfigurasi koneksi OpenMetadata, dialek target database, serta penyesuaian kueri DWH tingkat lanjut.</p>
+                        <p class="text-[11px] text-slate-600">Akses penuh ke konfigurasi koneksi OpenMetadata, target database, serta penyesuaian kueri DWH tingkat lanjut.</p>
                     </div>
                 </div>
                 <span class="bg-slate-300 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Admin Access</span>
