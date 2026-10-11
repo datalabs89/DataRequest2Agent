@@ -317,7 +317,17 @@ function renderResults(data) {
     // TAB 1: SPEC
     document.getElementById("spec-req-id").innerText = data.spec.request_id;
     document.getElementById("spec-requester").innerText = data.spec.requester_name;
-    document.getElementById("spec-department").innerText = data.spec.requester_department;
+    const deptElem = document.getElementById("spec-department");
+    const deptText = data.spec.requester_department || "";
+    let deptBadgeColor = "text-blue-900 bg-blue-50 border-blue-200";
+    if (deptText.includes("Bea dan Cukai")) {
+        deptBadgeColor = "text-blue-900 bg-blue-50 border-blue-200";
+    } else if (deptText.includes("Internal Kemenkeu")) {
+        deptBadgeColor = "text-amber-900 bg-amber-50 border-amber-200";
+    } else if (deptText.includes("Eksternal")) {
+        deptBadgeColor = "text-teal-900 bg-teal-50 border-teal-200";
+    }
+    deptElem.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${deptBadgeColor}">${deptText}</span>`;
     document.getElementById("spec-timerange").innerText = `${data.spec.time_range_start} s/d ${data.spec.time_range_end}`;
     document.getElementById("spec-purpose").innerText = data.spec.business_purpose;
 
@@ -691,10 +701,24 @@ function setupCmsModal() {
                 badgeClass = "bg-rose-100 text-rose-800";
             }
 
+            // Styling badge unit kerja resmi (Bea Cukai, Internal Kemenkeu, Eksternal Kemenkeu)
+            let deptBadgeClass = "bg-slate-100 text-slate-700 border border-slate-200";
+            const deptStr = item.department || "";
+            if (deptStr.includes("Bea dan Cukai")) {
+                deptBadgeClass = "bg-blue-50 text-blue-900 border border-blue-200 font-semibold";
+            } else if (deptStr.includes("Internal Kemenkeu")) {
+                deptBadgeClass = "bg-amber-50 text-amber-900 border border-amber-200 font-semibold";
+            } else if (deptStr.includes("Eksternal")) {
+                deptBadgeClass = "bg-teal-50 text-teal-900 border border-teal-200 font-semibold";
+            }
+
             tr.innerHTML = `
                 <td class="px-3.5 py-3 font-mono font-bold text-blue-700">${item.request_id}</td>
                 <td class="px-3.5 py-3 font-medium text-slate-800">${item.document_title}</td>
-                <td class="px-3.5 py-3">${item.requester_name} <span class="text-[10px] text-slate-400 block">${item.department}</span></td>
+                <td class="px-3.5 py-3">
+                    <span class="font-medium text-slate-800 block">${item.requester_name}</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded mt-0.5 inline-block ${deptBadgeClass}">${deptStr}</span>
+                </td>
                 <td class="px-3.5 py-3 text-slate-500 whitespace-nowrap">${item.created_at}</td>
                 <td class="px-3.5 py-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${item.status}</span></td>
                 <td class="px-3.5 py-3 font-mono">${item.row_count} baris</td>
@@ -710,6 +734,13 @@ function setupCmsModal() {
     function applyFilterAndSearch() {
         const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
         let filtered = allCmsHistoryItems;
+
+        // Filter berdasarkan unit kerja resmi
+        const deptFilterElem = document.getElementById("select-cms-dept-filter");
+        const activeDeptFilter = deptFilterElem ? deptFilterElem.value : "ALL";
+        if (activeDeptFilter !== "ALL") {
+            filtered = filtered.filter(i => (i.department || "").includes(activeDeptFilter));
+        }
 
         // Filter berdasarkan status
         if (activeCmsStatusFilter === "APPROVED") {
@@ -731,6 +762,11 @@ function setupCmsModal() {
         }
 
         renderCmsRows(filtered);
+    }
+
+    const deptFilterElem = document.getElementById("select-cms-dept-filter");
+    if (deptFilterElem) {
+        deptFilterElem.addEventListener("change", applyFilterAndSearch);
     }
 
     if (searchInput) {
@@ -1071,16 +1107,29 @@ function setupAnalyticsModal() {
                 deptList.innerHTML = `<div class="text-slate-400 italic">Belum ada data permohonan.</div>`;
             } else {
                 for (const [dept, count] of Object.entries(depts)) {
-                    const pct = Math.round((count / data.total_requests) * 100);
+                    const pct = data.total_requests > 0 ? Math.round((count / data.total_requests) * 100) : 0;
+                    let barColor = "bg-blue-600";
+                    let badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
+                    if (dept.includes("Bea dan Cukai")) {
+                        barColor = "bg-blue-700";
+                        badgeColor = "bg-blue-50 text-blue-900 border-blue-200";
+                    } else if (dept.includes("Internal Kemenkeu")) {
+                        barColor = "bg-amber-600";
+                        badgeColor = "bg-amber-50 text-amber-900 border-amber-200";
+                    } else if (dept.includes("Eksternal")) {
+                        barColor = "bg-teal-600";
+                        badgeColor = "bg-teal-50 text-teal-900 border-teal-200";
+                    }
+
                     const item = document.createElement("div");
-                    item.className = "space-y-1";
+                    item.className = "space-y-1 bg-white p-2.5 rounded-lg border border-slate-200";
                     item.innerHTML = `
-                        <div class="flex justify-between text-[11px] font-medium text-slate-700">
-                            <span>${dept}</span>
-                            <span class="text-slate-500 font-mono">${count} req (${pct}%)</span>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-semibold px-2 py-0.5 rounded text-[10px] border ${badgeColor}">${dept}</span>
+                            <span class="text-slate-600 font-mono font-bold">${count} req (${pct}%)</span>
                         </div>
-                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                            <div class="bg-indigo-600 h-2 rounded-full" style="width: ${pct}%"></div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1">
+                            <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
                         </div>
                     `;
                     deptList.appendChild(item);
@@ -1126,7 +1175,29 @@ function openSpecConfirmationModal(spec) {
 
     document.getElementById("conf-req-id").value = spec.request_id || "REQ-UNKNOWN";
     document.getElementById("conf-requester").value = spec.requester_name || "";
-    document.getElementById("conf-dept").value = spec.requester_department || "";
+    
+    // Set 3 kategori unit kerja resmi
+    const deptSelect = document.getElementById("conf-dept");
+    const subdeptInput = document.getElementById("conf-subdept");
+    const rawDept = spec.requester_department || "Internal Bea dan Cukai";
+    let baseDept = "Internal Bea dan Cukai";
+    let subDept = "";
+
+    if (rawDept.includes("Bea dan Cukai")) {
+        baseDept = "Internal Bea dan Cukai";
+    } else if (rawDept.includes("Internal Kemenkeu")) {
+        baseDept = "Internal Kemenkeu";
+    } else if (rawDept.includes("Eksternal")) {
+        baseDept = "Eksternal Kemenkeu";
+    }
+
+    const subMatch = rawDept.match(/\(([^)]+)\)/);
+    if (subMatch) {
+        subDept = subMatch[1].trim();
+    }
+    if (deptSelect) deptSelect.value = baseDept;
+    if (subdeptInput) subdeptInput.value = subDept;
+
     document.getElementById("conf-purpose").value = spec.business_purpose || "";
     document.getElementById("conf-date-start").value = spec.time_range_start || "2026-07-01";
     document.getElementById("conf-date-end").value = spec.time_range_end || "2026-09-30";
@@ -1195,7 +1266,9 @@ function setupSpecConfirmationModal() {
 
         // Ambil nilai formulir yang diedit pengguna
         extractedSpecForConfirmation.requester_name = document.getElementById("conf-requester").value.trim();
-        extractedSpecForConfirmation.requester_department = document.getElementById("conf-dept").value.trim();
+        const baseDeptVal = document.getElementById("conf-dept")?.value || "Internal Bea dan Cukai";
+        const subDeptVal = document.getElementById("conf-subdept")?.value.trim();
+        extractedSpecForConfirmation.requester_department = subDeptVal ? `${baseDeptVal} (${subDeptVal})` : baseDeptVal;
         extractedSpecForConfirmation.business_purpose = document.getElementById("conf-purpose").value.trim();
         extractedSpecForConfirmation.time_range_start = document.getElementById("conf-date-start").value.trim();
         extractedSpecForConfirmation.time_range_end = document.getElementById("conf-date-end").value.trim();

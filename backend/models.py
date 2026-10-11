@@ -35,11 +35,17 @@ class RequestedField(BaseModel):
     pii_sensitive: bool = False
     masking_rule: Optional[str] = None
 
+OFFICIAL_DEPARTMENTS = [
+    "Internal Bea dan Cukai",
+    "Internal Kemenkeu",
+    "Eksternal Kemenkeu"
+]
+
 class DataRequestSpec(BaseModel):
     request_id: str = "REQ-UNKNOWN"
     document_title: str
     requester_name: str
-    requester_department: str
+    requester_department: str = "Internal Bea dan Cukai"  # Salah satu dari OFFICIAL_DEPARTMENTS
     request_date: Optional[str] = None
     business_purpose: str
     primary_entity: str

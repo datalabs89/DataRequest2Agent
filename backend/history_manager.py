@@ -4,6 +4,19 @@ import datetime
 from typing import List, Optional
 from models import RequestHistoryItem, DataRequestSpec, VerificationReport, ExecutionResult, VerifierFeedback
 
+def normalize_dept(dept: str) -> str:
+    s = (dept or "").lower()
+    if any(k in s for k in ["bea", "cukai", "djbc", "customs", "kepabeanan", "customer", "bdn"]):
+        return "Internal Bea dan Cukai"
+    elif any(k in s for k in ["kejaksaan", "kejagung", "polri", "kpk", "bpk", "bpkp", "kemendag", "eksternal", "swasta", "scan", "business intelligence"]):
+        return "Eksternal Kemenkeu"
+    elif any(k in s for k in ["kemenkeu", "pajak", "djp", "dja", "djkn", "djpb", "bkf", "itjen", "logistik", "logistic", "operation", "supply chain"]):
+        return "Internal Kemenkeu"
+    for target in ["Internal Bea dan Cukai", "Internal Kemenkeu", "Eksternal Kemenkeu"]:
+        if target.lower() in s:
+            return target
+    return "Internal Bea dan Cukai"
+
 class HistoryManager:
     """Mengelola database riwayat permohonan data (CMS Data Request Repository)."""
 
@@ -36,7 +49,7 @@ class HistoryManager:
             "request_id": spec.request_id,
             "document_title": spec.document_title,
             "requester_name": spec.requester_name,
-            "department": spec.requester_department,
+            "department": normalize_dept(spec.requester_department),
             "created_at": now_str,
             "status": verification.status,
             "row_count": execution.row_count,
@@ -81,7 +94,11 @@ class HistoryManager:
         revision = 0
         rejected = 0
         total_rows = 0
-        dept_dist = {}
+        dept_dist = {
+            "Internal Bea dan Cukai": 0,
+            "Internal Kemenkeu": 0,
+            "Eksternal Kemenkeu": 0
+        }
         status_dist = {}
 
         for item in history:
@@ -98,10 +115,8 @@ class HistoryManager:
                 approved += 1
 
             total_rows += item.get("row_count", 0)
-            dept = item.get("department") or "General Analytics"
-            # Singkatkan nama departemen jika terlalu panjang
-            dept_short = dept.split("&")[0].strip() if "&" in dept else dept
-            dept_dist[dept_short] = dept_dist.get(dept_short, 0) + 1
+            dept = normalize_dept(item.get("department"))
+            dept_dist[dept] = dept_dist.get(dept, 0) + 1
 
         compliance_rate = round((approved / total * 100), 1) if total > 0 else 100.0
 

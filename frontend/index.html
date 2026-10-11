@@ -545,6 +545,12 @@
                         <input type="text" id="input-cms-search" placeholder="Cari nomor ID, nama pemohon, atau judul..." class="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div class="flex items-center space-x-1.5 w-full sm:w-auto overflow-x-auto text-xs">
+                        <select id="select-cms-dept-filter" class="px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-700 border border-slate-300 hover:border-slate-400 transition shadow-2xs outline-none">
+                            <option value="ALL">Semua Unit Kerja</option>
+                            <option value="Internal Bea dan Cukai">Internal Bea dan Cukai</option>
+                            <option value="Internal Kemenkeu">Internal Kemenkeu</option>
+                            <option value="Eksternal Kemenkeu">Eksternal Kemenkeu</option>
+                        </select>
                         <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-blue-600 text-white transition shadow-2xs" data-status="ALL">Semua</button>
                         <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="APPROVED">Disetujui</button>
                         <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="REVISION">Perlu Revisi</button>
@@ -739,7 +745,12 @@
                                     </div>
                                     <div>
                                         <label class="block font-medium text-slate-600 mb-0.5">Divisi / Unit Kerja:</label>
-                                        <input type="text" id="conf-dept" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs">
+                                        <select id="conf-dept" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                                            <option value="Internal Bea dan Cukai">Internal Bea dan Cukai</option>
+                                            <option value="Internal Kemenkeu">Internal Kemenkeu</option>
+                                            <option value="Eksternal Kemenkeu">Eksternal Kemenkeu</option>
+                                        </select>
+                                        <input type="text" id="conf-subdept" placeholder="Sub-Unit / Direktorat (opsional)" class="w-full mt-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 text-[11px] outline-none focus:border-blue-400">
                                     </div>
                                 </div>
                                 <div>

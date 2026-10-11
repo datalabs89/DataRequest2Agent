@@ -42,7 +42,7 @@ class PDFRequestParser:
         [OCR & STRUCTURAL FALLBACK ENGINE AKTIF]
         Dokumen: {clean_name}
         Nomor Permohonan: REQ-{os.urandom(2).hex().upper()}-SCAN
-        Unit Kerja / Divisi: Business Intelligence & Operations
+        Unit Kerja / Divisi: Eksternal Kemenkeu
         Nama Pemohon: Data Requester (Pemohon Dokumen Fisik/Scan)
         Tujuan Penggunaan: Analisis Pemenuhan Data Operasional dan Kinerja Bisnis
         Periode: 2026-07-01 s/d 2026-09-30
@@ -54,21 +54,47 @@ class PDFRequestParser:
             fallback_text += "\n" + "\n".join(doc_info)
         return fallback_text
 
+    def normalize_department(self, raw_dept: str, full_text: str = "") -> str:
+        """
+        Menormalkan Unit Kerja / Divisi ke salah satu dari 3 klasifikasi resmi:
+        1. Internal Bea dan Cukai
+        2. Internal Kemenkeu
+        3. Eksternal Kemenkeu
+        """
+        combined = f"{raw_dept} {full_text}".lower()
+        if any(k in combined for k in ["bea", "cukai", "djbc", "customs", "kepabeanan", "p2", "kpu bc", "kanwil bc"]):
+            return "Internal Bea dan Cukai"
+        elif any(k in combined for k in ["kejaksaan", "kejagung", "polri", "kpk", "bpk", "bpkp", "kemendag", "eksternal", "swasta", "pemda", "pengadilan"]):
+            return "Eksternal Kemenkeu"
+        elif any(k in combined for k in ["kemenkeu", "kementerian keuangan", "pajak", "djp", "dja", "djkn", "djpb", "bkf", "itjen", "bppk", "setjen", "fiskal"]):
+            return "Internal Kemenkeu"
+
+        for target in ["Internal Bea dan Cukai", "Internal Kemenkeu", "Eksternal Kemenkeu"]:
+            if target.lower() in (raw_dept or "").lower():
+                return target
+
+        if "logistik" in combined or "operation" in combined:
+            return "Internal Kemenkeu"
+        if "scan" in combined or "scrap" in combined:
+            return "Eksternal Kemenkeu"
+        return "Internal Bea dan Cukai"
+
     def _extract_spec_from_text(self, text: str) -> DataRequestSpec:
         # 1. Ekstraksi Nomor/ID Dokumen
-        req_id_match = re.search(r"(?:Nomor(?:\s+Permohonan|\s+Dokumen|\s+Surat)?|No\.?|Req(?:uest)?\s*ID)\s*[:=]\s*([A-Z0-9\/\-\.]+)", text, re.IGNORECASE)
-        request_id = req_id_match.group(1).strip() if req_id_match else "REQ-2026-BDN-089"
+        req_id_match = re.search(r"(?:Nomor(?:\s+[A-Za-z]+){0,3}|No\.?|Req(?:uest)?\s*ID)\s*[:=]\s*([A-Z0-9\/\-\.]+)", text, re.IGNORECASE)
+        request_id = req_id_match.group(1).strip() if req_id_match else "REQ-2026-BC-089"
 
         # 2. Judul Dokumen
         title_match = re.search(r"(?:FORMULIR|SURAT|PERMOHONAN)\s+[^\n\r]+", text, re.IGNORECASE)
         document_title = title_match.group(0).strip() if title_match else "Formulir Permohonan Data Analitik"
 
-        # 3. Pemohon & Departemen
+        # 3. Pemohon & Departemen (Dinormalisasi ke 3 Unit Kerja Resmi)
         requester_match = re.search(r"(?:Nama\s+Pemohon(?:\s*\([A-Z]+\))?|Pemohon|PIC)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
         requester_name = requester_match.group(1).strip() if requester_match else "Ahmad Fauzi, S.Kom"
 
         dept_match = re.search(r"(?:Unit\s*Kerja(?:\s*\/\s*Divisi)?|Divisi|Departemen|Bagian)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
-        requester_dept = dept_match.group(1).strip() if dept_match else "Customer Intelligence & Analytics"
+        raw_dept = dept_match.group(1).strip() if dept_match else ""
+        requester_dept = self.normalize_department(raw_dept, text)
 
         # 4. Tanggal Permohonan
         date_match = re.search(r"(?:Tanggal\s*(?:Permohonan|Pengajuan)?|Date)[:\s]+([0-9]{1,2}[\/\-\s][0-9A-Za-z]+[\/\-\s][0-9]{4})", text, re.IGNORECASE)
