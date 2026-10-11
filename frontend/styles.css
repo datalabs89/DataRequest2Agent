@@ -1,5 +1,24 @@
 /* Custom styles for DataRequest2Agent */
 
+/* ================= TYPOGRAPHY (INTER + JETBRAINS MONO) ================= */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
+}
+
+code, pre, .font-mono, #sql-editor-input, #sql-code-block, #sql-edit-gutter, #sql-view-gutter, #console-agent-logs, .sql-stats-badge {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+/* Tabular figures for data tables and financial numbers */
+table, .tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+
 .step-card.active {
     border-color: #3b82f6;
     background-color: #eff6ff;
