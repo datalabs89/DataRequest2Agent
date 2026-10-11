@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -83,6 +84,11 @@
                             <option value="admin">⚙️ Data Engineer</option>
                         </select>
                     </div>
+
+                    <!-- Dark Mode Toggle Button -->
+                    <button id="btn-toggle-dark-mode" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition shadow-2xs hover:text-amber-500 flex-shrink-0" title="Beralih Mode Gelap / Terang">
+                        <i data-lucide="moon" class="w-4 h-4" id="icon-dark-mode"></i>
+                    </button>
 
                     <!-- OpenMetadata Settings Button -->
                     <button id="btn-open-om-settings" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition shadow-2xs hover:text-blue-600 flex-shrink-0" title="Pengaturan Koneksi OpenMetadata">
@@ -399,6 +405,37 @@
                         <button id="btn-download-sql" class="text-xs font-semibold flex items-center space-x-1.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-xl text-blue-800 transition shadow-2xs">
                             <i data-lucide="download" class="w-3.5 h-3.5"></i>
                             <span>Unduh .sql</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Query Refinement Co-Pilot Bar -->
+                <div class="bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-slate-900 text-white rounded-xl p-3.5 border border-blue-500/30 shadow-sm space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold text-xs">
+                                <i data-lucide="bot" class="w-3.5 h-3.5 text-blue-300"></i>
+                            </span>
+                            <div>
+                                <span class="font-bold text-xs text-white">AI Query Refinement Co-Pilot</span>
+                                <span class="text-[10px] text-blue-200/80 ml-1.5 hidden sm:inline">Ubah parameter SQL dengan bahasa alami (Natural Language)</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-1.5 flex-wrap text-[10px]">
+                            <span class="text-blue-300">Quick Prompt:</span>
+                            <button type="button" class="btn-quick-copilot px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-blue-100 transition" data-prompt="Batasi hasil maksimal 50 baris data">LIMIT 50</button>
+                            <button type="button" class="btn-quick-copilot px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-blue-100 transition" data-prompt="Urutkan dari nilai transaksi devisa terbesar (DESC)">Order DESC</button>
+                            <button type="button" class="btn-quick-copilot px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-blue-100 transition" data-prompt="Tambahkan filter devisa_usd > 50000">Filter >$50k</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="relative flex-1">
+                            <input type="text" id="input-copilot-prompt" placeholder="Contoh: 'Tolong batasi data hanya 20 baris dan urutkan tanggal terbaru'..." class="w-full text-xs bg-slate-950/80 border border-slate-700/80 rounded-lg pl-8 pr-3 py-2 text-white placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-400 absolute left-2.5 top-2.5"></i>
+                        </div>
+                        <button id="btn-submit-copilot" type="button" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition shadow-xs flex-shrink-0">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                            <span>Terapkan</span>
                         </button>
                     </div>
                 </div>

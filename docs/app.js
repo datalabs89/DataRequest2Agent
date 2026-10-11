@@ -1,6 +1,11 @@
 // DataRequest Studio — Enterprise Frontend Controller
 
 document.addEventListener("DOMContentLoaded", () => {
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add("dark");
+    }
     lucide.createIcons();
     initApp();
 });
@@ -238,6 +243,8 @@ async function initApp() {
     setupAnalyticsModal();
     setupSpecConfirmationModal();
     setupDeliveryInteractions();
+    setupDarkModeToggle();
+    setupAiCopilot();
 
     document.getElementById("btn-process").addEventListener("click", runStreamingPipeline);
     document.getElementById("btn-copy-sql").addEventListener("click", copySql);
@@ -1567,6 +1574,302 @@ function setupSqlEditor() {
             }
         });
     }
+}
+
+// ==================== DARK MODE CONTROLLER ====================
+function setupDarkModeToggle() {
+    const btn = document.getElementById("btn-toggle-dark-mode");
+    const icon = document.getElementById("icon-dark-mode");
+    
+    // Sinkronisasi status ikon berdasarkan kelas html.dark saat ini
+    const isCurrentlyDark = document.documentElement.classList.contains("dark");
+    if (icon) {
+        icon.setAttribute("data-lucide", isCurrentlyDark ? "sun" : "moon");
+        if (isCurrentlyDark) {
+            icon.classList.add("text-amber-400");
+        } else {
+            icon.classList.remove("text-amber-400");
+        }
+        lucide.createIcons();
+    }
+
+    if (btn) {
+        btn.addEventListener("click", () => {
+            const isDark = document.documentElement.classList.toggle("dark");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            if (icon) {
+                icon.setAttribute("data-lucide", isDark ? "sun" : "moon");
+                if (isDark) {
+                    icon.classList.add("text-amber-400");
+                } else {
+                    icon.classList.remove("text-amber-400");
+                }
+            }
+            lucide.createIcons();
+            appendConsoleLog("UI Controller", `Beralih ke tampilan ${isDark ? "Dark Mode (Mode Gelap)" : "Light Mode (Mode Terang)"}. Preferensi tersimpan.`);
+        });
+    }
+}
+
+// ==================== AI QUERY REFINEMENT CO-PILOT ====================
+function setupAiCopilot() {
+    const inputPrompt = document.getElementById("input-copilot-prompt");
+    const btnSubmit = document.getElementById("btn-submit-copilot");
+    const quickBtns = document.querySelectorAll(".btn-quick-copilot");
+
+    quickBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const prompt = btn.getAttribute("data-prompt");
+            if (inputPrompt && prompt) {
+                inputPrompt.value = prompt;
+                executeAiRefinement(prompt);
+            }
+        });
+    });
+
+    if (btnSubmit) {
+        btnSubmit.addEventListener("click", () => {
+            const prompt = (inputPrompt ? inputPrompt.value : "").trim();
+            if (!prompt) {
+                alert("Silakan masukkan instruksi perbaikan SQL, contoh: 'LIMIT 50' atau 'Urutkan devisa terbesar'.");
+                if (inputPrompt) inputPrompt.focus();
+                return;
+            }
+            executeAiRefinement(prompt);
+        });
+    }
+
+    if (inputPrompt) {
+        inputPrompt.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const prompt = inputPrompt.value.trim();
+                if (prompt) {
+                    executeAiRefinement(prompt);
+                }
+            }
+        });
+    }
+}
+
+async function executeAiRefinement(instruction) {
+    const editorInput = document.getElementById("sql-editor-input");
+    const sqlCodeBlock = document.getElementById("sql-code-block");
+    const editGutter = document.getElementById("sql-edit-gutter");
+    const viewGutter = document.getElementById("sql-view-gutter");
+    const btnSubmit = document.getElementById("btn-submit-copilot");
+    const dialectSelect = document.getElementById("select-dialect");
+    const dialect = dialectSelect ? dialectSelect.value : "PostgreSQL";
+
+    let currentSql = "";
+    if (editorInput && editorInput.value && editorInput.value.trim()) {
+        currentSql = editorInput.value.trim();
+    } else if (sqlCodeBlock && sqlCodeBlock.textContent && sqlCodeBlock.textContent.trim()) {
+        currentSql = sqlCodeBlock.textContent.trim();
+    } else if (currentPipelineData && currentPipelineData.generated_sql && currentPipelineData.generated_sql.query) {
+        currentSql = currentPipelineData.generated_sql.query.trim();
+    }
+
+    if (!currentSql) {
+        alert("Belum ada query SQL yang tersedia. Silakan jalankan simulasi permohonan atau pilih salah satu contoh permohonan terlebih dahulu.");
+        return;
+    }
+
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyempurnakan...</span>`;
+        lucide.createIcons();
+    }
+
+    appendConsoleLog("AI Copilot", `Menganalisis instruksi bahasa alami: "${instruction}"...`);
+
+    try {
+        let refinedSql = null;
+        let explanation = "";
+
+        if (!isGitHubPagesOrOffline()) {
+            try {
+                const res = await fetch("/api/ai-refine-sql", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        current_sql: currentSql,
+                        prompt: instruction,
+                        dialect: dialect
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    refinedSql = data.refined_sql;
+                    explanation = data.explanation || "";
+                }
+            } catch (err) {
+                console.warn("Backend AI endpoint tidak merespons, beralih ke engine client-side offline:", err);
+            }
+        }
+
+        if (!refinedSql) {
+            const result = refineSqlWithAiRules(currentSql, instruction);
+            refinedSql = result.sql;
+            explanation = result.explanation;
+        }
+
+        // Terapkan ke editor dan view
+        if (editorInput) editorInput.value = refinedSql;
+        if (sqlCodeBlock) {
+            sqlCodeBlock.textContent = refinedSql;
+            Prism.highlightElement(sqlCodeBlock);
+        }
+        if (editGutter) updateSqlGutter(editGutter, refinedSql);
+        if (viewGutter) updateSqlGutter(viewGutter, refinedSql);
+        updateSqlStats(refinedSql);
+        if (currentPipelineData && currentPipelineData.spec) {
+            updateSqlBreakdown(refinedSql, currentPipelineData.spec);
+            if (currentPipelineData.generated_sql) {
+                currentPipelineData.generated_sql.query = refinedSql;
+            }
+        }
+
+        // Visual highlight effect
+        const windowFrame = document.querySelector(".sql-window");
+        if (windowFrame) {
+            windowFrame.classList.add("ring-2", "ring-blue-400", "transition-all", "duration-500");
+            setTimeout(() => {
+                windowFrame.classList.remove("ring-2", "ring-blue-400");
+            }, 1200);
+        }
+
+        appendConsoleLog("AI Copilot", `Query berhasil disempurnakan: ${explanation}.`);
+    } catch (err) {
+        console.error("AI Refine Error:", err);
+        appendConsoleLog("AI Copilot Error", `Gagal memodifikasi query: ${err.message}`);
+        alert("Gagal menyempurnakan query: " + err.message);
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i><span>Terapkan</span>`;
+            lucide.createIcons();
+        }
+    }
+}
+
+function refineSqlWithAiRules(sql, prompt) {
+    let newSql = sql;
+    let explanations = [];
+    const pLower = prompt.toLowerCase();
+
+    // 1. LIMIT detection
+    const limitMatch = pLower.match(/(?:limit|batasi|maksimal|hanya|top)\s*(\d+)/i) || pLower.match(/(\d+)\s*(?:baris|rows|data)/i);
+    if (limitMatch) {
+        const limitNum = limitMatch[1];
+        if (/LIMIT\s+\d+/i.test(newSql)) {
+            newSql = newSql.replace(/LIMIT\s+\d+/i, `LIMIT ${limitNum}`);
+        } else {
+            if (newSql.endsWith(";")) {
+                newSql = newSql.slice(0, -1).trim() + `\nLIMIT ${limitNum};`;
+            } else {
+                newSql = newSql + `\nLIMIT ${limitNum};`;
+            }
+        }
+        explanations.push(`Batasan LIMIT disetel ke ${limitNum}`);
+    }
+
+    // 2. ORDER BY detection
+    const isDesc = pLower.includes("desc") || pLower.includes("terbesar") || pLower.includes("menurun") || pLower.includes("tertinggi") || pLower.includes("terbaru");
+    const isAsc = pLower.includes("asc") || pLower.includes("terkecil") || pLower.includes("menaik") || pLower.includes("terendah") || pLower.includes("terlama");
+
+    if (isDesc || isAsc) {
+        let orderCol = "";
+        if (pLower.includes("devisa") || pLower.includes("usd") || pLower.includes("transaksi") || pLower.includes("nilai") || pLower.includes("fob")) {
+            orderCol = "devisa_usd";
+        } else if (pLower.includes("tanggal") || pLower.includes("waktu") || pLower.includes("created") || pLower.includes("date")) {
+            orderCol = /tanggal_transaksi/i.test(newSql) ? "tanggal_transaksi" : "created_at";
+        } else if (pLower.includes("nomor") || pLower.includes("aju")) {
+            orderCol = "nomor_aju";
+        } else if (pLower.includes("nama") || pLower.includes("eksportir")) {
+            orderCol = "nama_eksportir";
+        } else {
+            if (/devisa_usd/i.test(newSql)) orderCol = "devisa_usd";
+            else if (/nilai_transaksi/i.test(newSql)) orderCol = "nilai_transaksi";
+            else if (/created_at/i.test(newSql)) orderCol = "created_at";
+            else orderCol = "1";
+        }
+
+        const dir = isDesc ? "DESC" : "ASC";
+        if (/ORDER\s+BY\s+[^;\n\)]+/i.test(newSql)) {
+            newSql = newSql.replace(/ORDER\s+BY\s+[^;\n\)]+/i, `ORDER BY ${orderCol} ${dir}`);
+        } else {
+            if (/LIMIT\s+\d+/i.test(newSql)) {
+                newSql = newSql.replace(/(\s*)(LIMIT\s+\d+)/i, `\nORDER BY ${orderCol} ${dir}$1$2`);
+            } else if (newSql.endsWith(";")) {
+                newSql = newSql.slice(0, -1).trim() + `\nORDER BY ${orderCol} ${dir};`;
+            } else {
+                newSql = newSql + `\nORDER BY ${orderCol} ${dir};`;
+            }
+        }
+        explanations.push(`Diurutkan berdasarkan ${orderCol} ${dir}`);
+    }
+
+    // 3. FILTER / WHERE conditions
+    const filterNumMatch = pLower.match(/(?:devisa|nilai|usd|fob)?\s*(?:>|lebih\s+dari|di\s+atas)\s*[\$]?\s*(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta|m|miliar)?/i);
+    if (filterNumMatch || pLower.includes(">$50k") || pLower.includes("> 50000") || pLower.includes(">50k")) {
+        let col = "devisa_usd";
+        let val = 50000;
+        if (filterNumMatch) {
+            let rawNum = parseFloat(filterNumMatch[1].replace(",", "."));
+            const unit = (filterNumMatch[2] || "").toLowerCase();
+            if (unit === "k" || unit === "rb" || unit === "ribu") rawNum *= 1000;
+            else if (unit === "jt" || unit === "juta" || unit === "m") rawNum *= 1000000;
+            if (!isNaN(rawNum) && rawNum > 0) val = rawNum;
+        }
+
+        const conditionStr = `${col} > ${val}`;
+        if (!newSql.includes(conditionStr)) {
+            if (/WHERE\s+/i.test(newSql)) {
+                if (/ORDER\s+BY\s+/i.test(newSql)) {
+                    newSql = newSql.replace(/(\s*)(ORDER\s+BY\s+)/i, `\n  AND ${conditionStr}$1$2`);
+                } else if (/GROUP\s+BY\s+/i.test(newSql)) {
+                    newSql = newSql.replace(/(\s*)(GROUP\s+BY\s+)/i, `\n  AND ${conditionStr}$1$2`);
+                } else if (/LIMIT\s+\d+/i.test(newSql)) {
+                    newSql = newSql.replace(/(\s*)(LIMIT\s+\d+)/i, `\n  AND ${conditionStr}$1$2`);
+                } else if (newSql.endsWith(";")) {
+                    newSql = newSql.slice(0, -1).trim() + `\n  AND ${conditionStr};`;
+                } else {
+                    newSql = newSql + `\n  AND ${conditionStr};`;
+                }
+            } else {
+                if (/GROUP\s+BY\s+/i.test(newSql)) {
+                    newSql = newSql.replace(/(\s*)(GROUP\s+BY\s+)/i, `\nWHERE ${conditionStr}$1$2`);
+                } else if (/ORDER\s+BY\s+/i.test(newSql)) {
+                    newSql = newSql.replace(/(\s*)(ORDER\s+BY\s+)/i, `\nWHERE ${conditionStr}$1$2`);
+                } else if (/LIMIT\s+\d+/i.test(newSql)) {
+                    newSql = newSql.replace(/(\s*)(LIMIT\s+\d+)/i, `\nWHERE ${conditionStr}$1$2`);
+                } else if (newSql.endsWith(";")) {
+                    newSql = newSql.slice(0, -1).trim() + `\nWHERE ${conditionStr};`;
+                } else {
+                    newSql = newSql + `\nWHERE ${conditionStr};`;
+                }
+            }
+            explanations.push(`Filter kriteria ditambahkan (${conditionStr})`);
+        }
+    }
+
+    // 4. DISTINCT
+    if (pLower.includes("distinct") || pLower.includes("unik") || pLower.includes("tanpa duplikat")) {
+        if (!/SELECT\s+DISTINCT/i.test(newSql)) {
+            newSql = newSql.replace(/SELECT\s+/i, "SELECT DISTINCT ");
+            explanations.push("Klausa DISTINCT diaktifkan untuk eliminasi duplikasi");
+        }
+    }
+
+    if (explanations.length === 0) {
+        explanations.push("Instruksi diproses dan format query diperbarui");
+    }
+
+    return {
+        sql: newSql.trim(),
+        explanation: explanations.join(", ")
+    };
 }
 
 function getCurrentPersona() {

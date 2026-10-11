@@ -111,3 +111,111 @@ header select {
     border-bottom-right-radius: 0.875rem;
 }
 
+/* ================= DARK MODE OVERRIDES ================= */
+html.dark {
+    color-scheme: dark;
+}
+
+html.dark body {
+    background-color: #090d16 !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark header {
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    border-color: #1e293b !important;
+}
+
+html.dark header select,
+html.dark header nav,
+html.dark header button {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark .bg-white {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+    background-color: #131d31 !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+    color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+    color: #94a3b8 !important;
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-300,
+html.dark .border-slate-100 {
+    border-color: #1e293b !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+    background-color: #0b1120 !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.dark footer {
+    background-color: #0f172a !important;
+    border-color: #1e293b !important;
+    color: #64748b !important;
+}
+
+html.dark table th {
+    background-color: #131d31 !important;
+    color: #94a3b8 !important;
+    border-color: #1e293b !important;
+}
+
+html.dark table td {
+    border-color: #1e293b !important;
+}
+
+html.dark tr:hover td {
+    background-color: rgba(30, 41, 59, 0.4) !important;
+}
+
+html.dark .step-card {
+    border-color: #334155 !important;
+}
+
+html.dark .step-card:not(.active):not(.done) {
+    background-color: #0f172a !important;
+}
+
+html.dark .step-card.active {
+    background-color: #1e293b !important;
+    border-color: #3b82f6 !important;
+}
+
+html.dark .step-card.done {
+    background-color: #0d281e !important;
+    border-color: #059669 !important;
+}
+
+html.dark .tab-btn:not(.active) {
+    color: #94a3b8 !important;
+}
+
+html.dark .tab-btn:not(.active):hover {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+
+
+

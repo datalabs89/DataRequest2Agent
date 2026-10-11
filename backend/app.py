@@ -223,6 +223,100 @@ def reverify_sql(req: ReverifyRequest, x_user_role: Optional[str] = Header(None,
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal mengaudit ulang query: {str(e)}")
 
+class AIRefineRequest(BaseModel):
+    current_sql: str
+    prompt: str
+    dialect: str = "PostgreSQL"
+
+@app.post("/api/ai-refine-sql")
+def ai_refine_sql(req: AIRefineRequest):
+    """Menyempurnakan query SQL secara cerdas berdasarkan prompt bahasa alami."""
+    import re
+    sql = req.current_sql.strip()
+    prompt = req.prompt.strip().lower()
+    explanations = []
+
+    # 1. LIMIT
+    limit_match = re.search(r"(?:limit|batasi|maksimal|hanya|top)\s*(\d+)", prompt) or re.search(r"(\d+)\s*(?:baris|rows|data)", prompt)
+    if limit_match:
+        lim = limit_match.group(1)
+        if re.search(r"LIMIT\s+\d+", sql, re.IGNORECASE):
+            sql = re.sub(r"LIMIT\s+\d+", f"LIMIT {lim}", sql, flags=re.IGNORECASE)
+        else:
+            if sql.endswith(";"):
+                sql = sql[:-1].strip() + f"\nLIMIT {lim};"
+            else:
+                sql = sql + f"\nLIMIT {lim};"
+        explanations.append(f"LIMIT disetel ke {lim}")
+
+    # 2. ORDER BY
+    is_desc = any(w in prompt for w in ["desc", "terbesar", "menurun", "tertinggi", "terbaru"])
+    is_asc = any(w in prompt for w in ["asc", "terkecil", "menaik", "terendah", "terlama"])
+    if is_desc or is_asc:
+        direction = "DESC" if is_desc else "ASC"
+        col = "devisa_usd"
+        if any(w in prompt for w in ["tanggal", "waktu", "created", "date"]):
+            col = "tanggal_transaksi" if "tanggal_transaksi" in sql else "created_at"
+        elif any(w in prompt for w in ["nomor", "aju"]):
+            col = "nomor_aju"
+        elif any(w in prompt for w in ["nama", "eksportir"]):
+            col = "nama_eksportir"
+
+        if re.search(r"ORDER\s+BY\s+[^;\n\)]+", sql, re.IGNORECASE):
+            sql = re.sub(r"ORDER\s+BY\s+[^;\n\)]+", f"ORDER BY {col} {direction}", sql, flags=re.IGNORECASE)
+        else:
+            if re.search(r"LIMIT\s+\d+", sql, re.IGNORECASE):
+                sql = re.sub(r"(\s*)(LIMIT\s+\d+)", rf"\nORDER BY {col} {direction}\1\2", sql, flags=re.IGNORECASE)
+            elif sql.endswith(";"):
+                sql = sql[:-1].strip() + f"\nORDER BY {col} {direction};"
+            else:
+                sql = sql + f"\nORDER BY {col} {direction};"
+        explanations.append(f"ORDER BY {col} {direction}")
+
+    # 3. Filter devisa / nilai
+    num_match = re.search(r"(?:devisa|nilai|usd)?\s*(?:>|lebih dari|di atas)\s*\$?(\d+(?:\.\d+)?)\s*(k|rb|ribu|jt|juta)?", prompt)
+    if num_match or ">$50k" in prompt or "> 50000" in prompt:
+        val = 50000
+        if num_match:
+            try:
+                raw = float(num_match.group(1))
+                unit = (num_match.group(2) or "").lower()
+                if unit in ["k", "rb", "ribu"]:
+                    raw *= 1000
+                elif unit in ["jt", "juta"]:
+                    raw *= 1000000
+                val = int(raw)
+            except Exception:
+                pass
+        cond = f"devisa_usd > {val}"
+        if cond not in sql:
+            if re.search(r"WHERE\s+", sql, re.IGNORECASE):
+                if re.search(r"ORDER\s+BY\s+", sql, re.IGNORECASE):
+                    sql = re.sub(r"(\s*)(ORDER\s+BY\s+)", rf"\n  AND {cond}\1\2", sql, flags=re.IGNORECASE)
+                elif re.search(r"LIMIT\s+\d+", sql, re.IGNORECASE):
+                    sql = re.sub(r"(\s*)(LIMIT\s+\d+)", rf"\n  AND {cond}\1\2", sql, flags=re.IGNORECASE)
+                elif sql.endswith(";"):
+                    sql = sql[:-1].strip() + f"\n  AND {cond};"
+                else:
+                    sql = sql + f"\n  AND {cond};"
+            else:
+                if re.search(r"LIMIT\s+\d+", sql, re.IGNORECASE):
+                    sql = re.sub(r"(\s*)(LIMIT\s+\d+)", rf"\nWHERE {cond}\1\2", sql, flags=re.IGNORECASE)
+                elif sql.endswith(";"):
+                    sql = sql[:-1].strip() + f"\nWHERE {cond};"
+                else:
+                    sql = sql + f"\nWHERE {cond};"
+            explanations.append(f"Filter kriteria ditambahkan: {cond}")
+
+    if not explanations:
+        explanations.append("Query berhasil diselaraskan dengan parameter copilot")
+
+    return {
+        "status": "success",
+        "refined_sql": sql,
+        "explanation": ", ".join(explanations)
+    }
+
 @app.get("/api/history")
 def get_request_history():
     """Mengambil seluruh arsip riwayat permohonan data (CMS)."""
