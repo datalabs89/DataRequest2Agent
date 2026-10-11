@@ -144,14 +144,32 @@ class CertificateGenerator:
         story.append(t_fb)
         story.append(Spacer(1, 24))
 
-        # Tanda Tangan Digital Verifikator
+        # QR Code Verifikasi Keabsahan Dokumen
+        from reportlab.graphics.shapes import Drawing
+        from reportlab.graphics.barcode.qr import QrCodeWidget
+
+        verify_url = f"https://datalabs89.github.io/DataRequest2Agent/?verify={spec.request_id}"
+        qr = QrCodeWidget(verify_url)
+        b = qr.getBounds()
+        w = b[2] - b[0]
+        h = b[3] - b[1]
+        qr_drawing = Drawing(65, 65, transform=[65/w, 0, 0, 65/h, 0, 0])
+        qr_drawing.add(qr)
+
+        qr_box = [
+            Paragraph("<font size='7' color='#64748B'><b>SCAN VERIFIKASI RESMI</b><br/>Pindai untuk validasi dokumen</font>", sec_note if 'sec_note' in locals() else val_style),
+            qr_drawing
+        ]
+
+        # Tanda Tangan Digital Verifikator dengan QR Code
         sig_data = [
             [
-                Paragraph("Pemohon Data:<br/><br/><br/><b>" + spec.requester_name + "</b><br/>Lead Data Analyst", val_style),
-                Paragraph("Disahkan Oleh Data Governance:<br/><br/><br/><b>" + reviewer_name + "</b><br/>" + reviewer_role, val_style)
+                Paragraph("<b>Data Analyst (Pemohon):</b><br/><br/><br/><b>" + spec.requester_name + "</b><br/>Lead Data Analyst", val_style),
+                qr_drawing,
+                Paragraph("<b>Disahkan Oleh Data Governance:</b><br/><br/><br/><b>" + reviewer_name + "</b><br/>" + reviewer_role, val_style)
             ]
         ]
-        t_sig = Table(sig_data, colWidths=[260, 260])
+        t_sig = Table(sig_data, colWidths=[200, 100, 220])
         t_sig.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),

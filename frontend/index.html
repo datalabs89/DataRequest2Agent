@@ -909,6 +909,10 @@
                                 <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
                                 <span>Sheet 3: KAMUS_DATA</span>
                             </button>
+                            <button id="btn-sheet-tab-chart" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5" data-sheet="chart">
+                                <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-blue-600"></i>
+                                <span>Sheet 4: VISUALISASI_TREN</span>
+                            </button>
                         </div>
 
                         <!-- Right Search & Copy Bar -->
@@ -978,6 +982,49 @@
                                 </thead>
                                 <tbody id="delivery-dict-sheet-tbody" class="divide-y divide-slate-100"></tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    <!-- Container Sheet 4: VISUALISASI_TREN -->
+                    <div id="container-sheet-chart" class="hidden p-4 space-y-4">
+                        <div class="bg-blue-50/60 border border-blue-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <h5 class="text-xs font-bold text-blue-950 uppercase tracking-wide flex items-center space-x-2">
+                                    <i data-lucide="line-chart" class="w-4 h-4 text-blue-600"></i>
+                                    <span>Eksplorasi Tren & Distribusi Data Cepat</span>
+                                </h5>
+                                <p class="text-[11px] text-blue-800 mt-0.5" id="delivery-chart-subtitle">Visualisasi interaktif agregat dari dataset yang baru diekstrak.</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[11px] font-medium text-slate-600">Tipe Grafik:</span>
+                                <select id="select-delivery-chart-type" class="text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="bar">Grafik Batang (Bar)</option>
+                                    <option value="line">Grafik Tren (Line)</option>
+                                    <option value="doughnut">Komposisi (Doughnut)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Grid 2 Chart Cards -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs">
+                                <h6 class="text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
+                                    <span id="delivery-chart-1-title">Distribusi Nominal Transaksi</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">Agregat Satuan</span>
+                                </h6>
+                                <div class="h-64 relative">
+                                    <canvas id="canvas-delivery-chart-1"></canvas>
+                                </div>
+                            </div>
+                            <div class="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs">
+                                <h6 class="text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
+                                    <span id="delivery-chart-2-title">Komposisi Kategori / Entitas</span>
+                                    <span class="text-[10px] text-slate-400 font-mono">Frekuensi Data</span>
+                                </h6>
+                                <div class="h-64 relative">
+                                    <canvas id="canvas-delivery-chart-2"></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

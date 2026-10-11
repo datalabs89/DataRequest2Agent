@@ -10,6 +10,8 @@ let selectedSampleName = null;
 let currentPipelineData = null;
 let isSqlEditMode = false;
 let originalGeneratedSqlQuery = "";
+let deliveryChart1 = null;
+let deliveryChart2 = null;
 
 // ==================== GITHUB PAGES / OFFLINE CLIENT-SIDE SIMULATOR ====================
 function isGitHubPagesOrOffline() {
@@ -1162,12 +1164,140 @@ function renderDeliveryDictSheet(data) {
     }
 }
 
+function renderDeliveryCharts(chartType = "bar") {
+    if (!currentDeliveryRows || currentDeliveryRows.length === 0) return;
+    if (!window.Chart) return;
+
+    const canvas1 = document.getElementById("canvas-delivery-chart-1");
+    const canvas2 = document.getElementById("canvas-delivery-chart-2");
+    if (!canvas1 || !canvas2) return;
+
+    // Destroy existing charts if any
+    if (deliveryChart1) {
+        deliveryChart1.destroy();
+        deliveryChart1 = null;
+    }
+    if (deliveryChart2) {
+        deliveryChart2.destroy();
+        deliveryChart2 = null;
+    }
+
+    const rows = currentDeliveryRows;
+    const cols = currentDeliveryColumns;
+
+    // Cari kolom numerik potensial
+    const numCol = cols.find(c => {
+        const cl = c.toLowerCase();
+        return (cl.includes("usd") || cl.includes("amount") || cl.includes("nilai") || cl.includes("devisa") || cl.includes("total") || cl.includes("bea")) && typeof rows[0][c] === 'number';
+    }) || cols.find(c => typeof rows[0][c] === 'number');
+
+    // Cari kolom kategori potensial
+    const catCol = cols.find(c => {
+        const cl = c.toLowerCase();
+        return (cl.includes("jalur") || cl.includes("status") || cl.includes("kategori") || cl.includes("negara") || cl.includes("port") || cl.includes("pelabuhan")) && typeof rows[0][c] === 'string';
+    }) || cols.find(c => typeof rows[0][c] === 'string' && !c.toLowerCase().includes("id") && !c.toLowerCase().includes("masked"));
+
+    // Label sumbu X: ID transaksi atau index
+    const idCol = cols.find(c => c.toLowerCase().includes("id") || c.toLowerCase().includes("no")) || cols[0];
+    const labels = rows.map((r, i) => String(r[idCol] || `Item ${i+1}`).slice(-8));
+
+    // Data 1: Nilai Metrik
+    const values1 = numCol ? rows.map(r => Number(r[numCol]) || 0) : rows.map((_, i) => (i + 1) * 15);
+    const title1 = numCol ? `Tren ${numCol.replace(/_/g, ' ').toUpperCase()}` : "Distribusi Nilai Transaksi";
+    const title1Elem = document.getElementById("delivery-chart-1-title");
+    if (title1Elem) title1Elem.innerText = title1;
+
+    const ctx1 = canvas1.getContext("2d");
+    deliveryChart1 = new Chart(ctx1, {
+        type: chartType === "doughnut" ? "bar" : chartType,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: numCol || "Nilai Data",
+                data: values1,
+                backgroundColor: chartType === "line" ? "rgba(59, 130, 246, 0.15)" : "rgba(37, 99, 235, 0.75)",
+                borderColor: "#2563eb",
+                borderWidth: 2,
+                fill: chartType === "line",
+                tension: 0.35,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.raw;
+                            return ` ${numCol || 'Nilai'}: ${typeof val === 'number' ? val.toLocaleString('id-ID') : val}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: "#f1f5f9" } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Data 2: Frekuensi Kategori
+    const countsMap = {};
+    if (catCol) {
+        rows.forEach(r => {
+            const k = String(r[catCol] || "Lainnya");
+            countsMap[k] = (countsMap[k] || 0) + 1;
+        });
+    } else {
+        countsMap["Terkonfirmasi"] = Math.ceil(rows.length * 0.7);
+        countsMap["Dalam Proses"] = rows.length - Math.ceil(rows.length * 0.7);
+    }
+
+    const catLabels = Object.keys(countsMap);
+    const catData = Object.values(countsMap);
+    const title2 = catCol ? `Komposisi ${catCol.replace(/_/g, ' ').toUpperCase()}` : "Distribusi Kategori";
+    const title2Elem = document.getElementById("delivery-chart-2-title");
+    if (title2Elem) title2Elem.innerText = title2;
+
+    const ctx2 = canvas2.getContext("2d");
+    deliveryChart2 = new Chart(ctx2, {
+        type: chartType === "line" ? "doughnut" : chartType,
+        data: {
+            labels: catLabels,
+            datasets: [{
+                label: "Jumlah Frekuensi",
+                data: catData,
+                backgroundColor: [
+                    "rgba(16, 185, 129, 0.8)",
+                    "rgba(59, 130, 246, 0.8)",
+                    "rgba(245, 158, 11, 0.8)",
+                    "rgba(139, 92, 246, 0.8)",
+                    "rgba(239, 68, 68, 0.8)"
+                ],
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+        }
+    });
+}
+
 function setupDeliveryInteractions() {
     // Sheet Switcher Buttons
     const sheetBtns = document.querySelectorAll(".sheet-tab-btn");
     const containerData = document.getElementById("container-sheet-data");
     const containerAudit = document.getElementById("container-sheet-audit");
     const containerDict = document.getElementById("container-sheet-dict");
+    const containerChart = document.getElementById("container-sheet-chart");
 
     sheetBtns.forEach(btn => {
         btn.addEventListener("click", () => {
@@ -1182,8 +1312,23 @@ function setupDeliveryInteractions() {
             if (containerData) containerData.classList.toggle("hidden", sheet !== "data");
             if (containerAudit) containerAudit.classList.toggle("hidden", sheet !== "audit");
             if (containerDict) containerDict.classList.toggle("hidden", sheet !== "dict");
+            if (containerChart) {
+                containerChart.classList.toggle("hidden", sheet !== "chart");
+                if (sheet === "chart") {
+                    const sel = document.getElementById("select-delivery-chart-type");
+                    renderDeliveryCharts(sel ? sel.value : "bar");
+                }
+            }
         });
     });
+
+    // Chart Type Selector
+    const chartTypeSelect = document.getElementById("select-delivery-chart-type");
+    if (chartTypeSelect) {
+        chartTypeSelect.addEventListener("change", (e) => {
+            renderDeliveryCharts(e.target.value);
+        });
+    }
 
     // Search Input in Preview Table
     const searchInput = document.getElementById("input-delivery-search");
