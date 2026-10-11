@@ -1,6 +1,6 @@
 # DataRequest Studio
 
-> **Enterprise Data Requisition & Automated Governance Platform**  
+> **Unified Data Service & Metadata Platform**  
 > **Platform Layanan dan Tata Kelola Data Terpadu** — *Layanan Data Cepat, Tata Kelola Tepat.*  
 > Otomasi pemenuhan permohonan data berbasis OpenMetadata & audit independen.
 
