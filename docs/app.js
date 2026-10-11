@@ -1214,6 +1214,11 @@ function renderDeliveryCharts(chartType = "bar") {
     const title1Elem = document.getElementById("delivery-chart-1-title");
     if (title1Elem) title1Elem.innerText = title1;
 
+    const isDark = document.documentElement.classList.contains("dark");
+    const gridColor = isDark ? "rgba(51, 65, 85, 0.5)" : "#f1f5f9";
+    const tickColor = isDark ? "#94a3b8" : "#64748b";
+    const legendColor = isDark ? "#e2e8f0" : "#334155";
+
     const ctx1 = canvas1.getContext("2d");
     deliveryChart1 = new Chart(ctx1, {
         type: chartType === "doughnut" ? "bar" : chartType,
@@ -1222,8 +1227,8 @@ function renderDeliveryCharts(chartType = "bar") {
             datasets: [{
                 label: numCol || "Nilai Data",
                 data: values1,
-                backgroundColor: chartType === "line" ? "rgba(59, 130, 246, 0.15)" : "rgba(37, 99, 235, 0.75)",
-                borderColor: "#2563eb",
+                backgroundColor: chartType === "line" ? "rgba(59, 130, 246, 0.2)" : (isDark ? "rgba(96, 165, 250, 0.85)" : "rgba(37, 99, 235, 0.75)"),
+                borderColor: isDark ? "#60a5fa" : "#2563eb",
                 borderWidth: 2,
                 fill: chartType === "line",
                 tension: 0.35,
@@ -1245,8 +1250,15 @@ function renderDeliveryCharts(chartType = "bar") {
                 }
             },
             scales: {
-                y: { beginAtZero: true, grid: { color: "#f1f5f9" } },
-                x: { grid: { display: false } }
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: gridColor },
+                    ticks: { color: tickColor }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { color: tickColor }
+                }
             }
         }
     });
@@ -1278,11 +1290,11 @@ function renderDeliveryCharts(chartType = "bar") {
                 label: "Jumlah Frekuensi",
                 data: catData,
                 backgroundColor: [
-                    "rgba(16, 185, 129, 0.8)",
-                    "rgba(59, 130, 246, 0.8)",
-                    "rgba(245, 158, 11, 0.8)",
-                    "rgba(139, 92, 246, 0.8)",
-                    "rgba(239, 68, 68, 0.8)"
+                    "rgba(16, 185, 129, 0.85)",
+                    "rgba(59, 130, 246, 0.85)",
+                    "rgba(245, 158, 11, 0.85)",
+                    "rgba(139, 92, 246, 0.85)",
+                    "rgba(239, 68, 68, 0.85)"
                 ],
                 borderWidth: 1,
                 borderRadius: 6
@@ -1292,7 +1304,14 @@ function renderDeliveryCharts(chartType = "bar") {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 10 } } }
+                legend: { 
+                    position: "bottom", 
+                    labels: { 
+                        boxWidth: 12, 
+                        font: { size: 10 },
+                        color: legendColor
+                    } 
+                }
             }
         }
     });
@@ -1606,6 +1625,13 @@ function setupDarkModeToggle() {
                 }
             }
             lucide.createIcons();
+
+            // Refresh chart visual theme jika chart sedang aktif
+            if (typeof deliveryChart1 !== 'undefined' && (deliveryChart1 || deliveryChart2)) {
+                const sel = document.getElementById("select-delivery-chart-type");
+                renderDeliveryCharts(sel ? sel.value : "bar");
+            }
+
             appendConsoleLog("UI Controller", `Beralih ke tampilan ${isDark ? "Dark Mode (Mode Gelap)" : "Light Mode (Mode Terang)"}. Preferensi tersimpan.`);
         });
     }
