@@ -905,9 +905,11 @@ function renderDeliveryDataPreview(query = "") {
 
             // Format nominal
             if (typeof val === "number") {
-                if (colLower.includes("usd") || colLower.includes("devisa") || colLower.includes("cif")) {
+                if (colLower.includes("usd") || colLower.includes("devisa") || colLower.includes("cif") || colLower.includes("fob")) {
                     val = "$" + val.toLocaleString("en-US");
-                } else if (colLower.includes("amount") || colLower.includes("idr") || colLower.includes("bea") || colLower.includes("ppn") || colLower.includes("cukai")) {
+                } else if (colLower.includes("tarif")) {
+                    val = (val < 1 ? (val * 100).toFixed(1) + "%" : "Rp " + val.toLocaleString("id-ID"));
+                } else if (colLower.includes("amount") || colLower.includes("idr") || colLower.includes("bea") || colLower.includes("ppn") || colLower.includes("pph") || colLower.includes("cukai")) {
                     val = "Rp " + val.toLocaleString("id-ID");
                 }
             }

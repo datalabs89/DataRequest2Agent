@@ -47,19 +47,46 @@ class EnterpriseDatabaseEngine:
         );
         """)
 
-        # 3. Tabel fct_transactions
+        # 3. Tabel fct_transactions (Fakta Ekspor & Transaksi Terintegrasi)
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS fct_transactions (
             transaction_id TEXT PRIMARY KEY,
+            nomor_aju TEXT,
+            nomor_daftar TEXT,
+            tanggal_daftar TEXT,
+            kantor_ekspor TEXT,
+            kantor_muat TEXT,
             customer_id TEXT,
+            npwp_eksportir TEXT,
+            nama_eksportir TEXT,
+            alamat_eksportir TEXT,
+            npwp_ppjk TEXT,
+            nama_ppjk TEXT,
+            nama_penerima TEXT,
+            negara_penerima TEXT,
+            nama_pembeli TEXT,
+            negara_pembeli TEXT,
+            negara_tujuan TEXT,
+            seri_barang INTEGER,
+            kode_hs TEXT,
+            uraian_barang TEXT,
+            jumlah_satuan NUMERIC,
+            jenis_satuan TEXT,
+            netto_barang NUMERIC,
+            valuta TEXT,
+            kurs NUMERIC,
+            fob_barang NUMERIC,
+            total_amount NUMERIC,
+            tarif_bea_keluar NUMERIC,
+            bea_keluar_barang NUMERIC,
+            pph_ekspor_peb NUMERIC,
+            jalur TEXT,
             store_id TEXT,
             transaction_date TEXT,
             channel TEXT,
-            total_amount NUMERIC,
-            discount_amount NUMERIC,
-            tax_amount NUMERIC,
             payment_method TEXT,
             status TEXT,
+            status_pabean TEXT,
             created_at TEXT,
             FOREIGN KEY (customer_id) REFERENCES dim_customers(customer_id),
             FOREIGN KEY (store_id) REFERENCES dim_stores(store_id)
@@ -100,18 +127,55 @@ class EnterpriseDatabaseEngine:
         # 6. Tabel DJBC Fakta Ekspor: fct_peb_ekspor
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS fct_peb_ekspor (
-            nomor_peb TEXT PRIMARY KEY,
+            nomor_aju TEXT PRIMARY KEY,
+            nomor_daftar TEXT,
+            nomor_peb TEXT,
+            tanggal_daftar TEXT,
             tanggal_peb TEXT,
+            kantor_ekspor TEXT,
+            kantor_muat TEXT,
+            kode_kantor TEXT,
             npwp_eksportir TEXT,
             nama_eksportir TEXT,
             alamat_eksportir TEXT,
-            kode_kantor TEXT,
+            npwp_ppjk TEXT,
+            nama_ppjk TEXT,
+            nama_penerima TEXT,
+            negara_penerima TEXT,
+            nama_pembeli TEXT,
+            negara_pembeli TEXT,
             negara_tujuan TEXT,
+            seri_barang INTEGER,
+            kode_hs TEXT,
+            uraian_barang TEXT,
+            jumlah_satuan NUMERIC,
+            jenis_satuan TEXT,
+            netto_barang NUMERIC,
+            valuta TEXT,
+            kurs NUMERIC,
+            fob_barang NUMERIC,
             nilai_fob_usd NUMERIC,
             nilai_devisa_idr NUMERIC,
+            tarif_bea_keluar NUMERIC,
+            bea_keluar_barang NUMERIC,
+            pph_ekspor_peb NUMERIC,
+            jalur TEXT,
             status_pabean TEXT,
             created_at TEXT,
             FOREIGN KEY (npwp_eksportir) REFERENCES dim_perusahaan(npwp_perusahaan)
+        );
+        """)
+
+        # 6b. Tabel Dokumen Pelengkap Ekspor: dim_dokumen_pelengkap
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS dim_dokumen_pelengkap (
+            nomor_aju TEXT,
+            nomor_peb TEXT,
+            tanggal_peb TEXT,
+            nama_dokumen TEXT,
+            nomor_dokumen TEXT,
+            tanggal_dokumen TEXT,
+            FOREIGN KEY (nomor_aju) REFERENCES fct_peb_ekspor(nomor_aju)
         );
         """)
 

@@ -235,21 +235,46 @@ BERKAS DALAM PAKET INI:
                 masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.***.*-{random.randint(100,999)}.000"
 
                 devisa_usd = random.choice([25000, 48000, 75000, 120000, 185000, 240000, 310000, 520000])
-                bea_keluar = random.choice([0, 0, 0, 12500000, 24000000, 45000000])
+                tarif_bk = random.choice([0.05, 0.075, 0.10, 0.15])
+                bea_keluar = int(devisa_usd * 15500 * tarif_bk) if random.random() > 0.4 else 0
+                pph_ekspor = int(devisa_usd * 15500 * 0.015) if bea_keluar > 0 else 0
+                netto = random.choice([5200, 10650, 15400, 22000, 31500])
+                jalur_code = random.choice(["H", "H", "H", "K", "M"])
+                jalur_label = "HIJAU" if jalur_code == "H" else ("KUNING" if jalur_code == "K" else "MERAH")
+                negara_dest = random.choice(negara_list)
 
                 row = {
-                    "nomor_peb": f"00{random.randint(10,99)}00-00{random.randint(1000,9999)}-{tx_date.strftime('%Y%m%d')}-{1000 + i}",
-                    "tanggal_peb": tgl_str,
+                    "nomor_aju": f"070000000222{tx_date.strftime('%Y%m%d')}{100000 + i:06d}",
+                    "nomor_daftar": f"00{random.randint(1000, 9999)}",
+                    "tanggal_daftar": tgl_str,
+                    "kantor_ekspor": random.choice(["KPPBC TMP TANJUNG PERAK", "KPPBC TMP TANJUNG PRIOK", "KPPBC TMP SOEKARNO HATTA", "KPPBC TMP BELAWAN"]),
+                    "kantor_muat": random.choice(["KPPBC TMP TANJUNG PERAK", "KPPBC TMP TANJUNG PRIOK", "KPPBC TMP BELAWAN"]),
                     "nama_eksportir_masked": masked_company,
                     "npwp_eksportir_masked": masked_npwp,
-                    "negara_tujuan": random.choice(negara_list),
-                    "pelabuhan_muat": random.choice(pelabuhan_muat_list),
-                    "pelabuhan_bongkar": random.choice(pelabuhan_tujuan_list),
-                    "jenis_komoditas": random.choice(komoditas_list),
-                    "nilai_devisa_usd": devisa_usd,
-                    "bea_keluar_idr": bea_keluar,
-                    "status_jalur": random.choice(["HIJAU", "HIJAU", "HIJAU", "KUNING", "MERAH"]),
-                    "status_dokumen": "SELESAI (NPE)"
+                    "npwp_ppjk_masked": f"01.813.***.*-{random.randint(100,999)}.000",
+                    "nama_ppjk_masked": "PT CIP*** SEGARA INTERNASIONAL",
+                    "nama_penerima": "MITSUBISHI CORPORATION RTM JAPAN LTD.",
+                    "negara_penerima": negara_dest,
+                    "nama_pembeli": "MITSUBISHI CORP BUYER INC.",
+                    "negara_pembeli": negara_dest,
+                    "negara_tujuan": negara_dest,
+                    "seri_barang": 1,
+                    "kode_hs": random.choice(["7112999000", "7112991000", "7112920000", "7112300000"]),
+                    "uraian_barang": random.choice(["ANODE SLIME (HASIL PEMURNIAN TEMBAGA)", "SILVER CHAIN SCRAPS", "WASTE AND SCRAP OF PRECIOUS METAL", "ELECTRONIC SCRAP CONTAINING GOLD"]),
+                    "jumlah_satuan": netto,
+                    "jenis_satuan": "KGM",
+                    "netto_barang": netto,
+                    "valuta": "USD",
+                    "kurs": 15500,
+                    "fob_barang": devisa_usd,
+                    "tarif_bea_keluar": tarif_bk,
+                    "bea_keluar_barang": bea_keluar,
+                    "pph_ekspor_peb": pph_ekspor,
+                    "jalur": jalur_code,
+                    "status_jalur": jalur_label,
+                    "status_pabean": "NPE",
+                    "status_dokumen": "SELESAI (NPE)",
+                    "dokumen_pelengkap": f"INVOICE: SLMMMC2026-01 (Tgl: {tgl_str})"
                 }
                 data.append(row)
 
@@ -405,11 +430,14 @@ BERKAS DALAM PAKET INI:
                 col_name_lower = headers[col_idx - 1].lower()
 
                 # Format Khusus Angka Nominal IDR & USD
-                if any(x in col_name_lower for x in ["total_amount", "discount_amount", "tax_amount", "bea_keluar_idr", "bea_masuk_idr", "ppn_idr", "pph_idr", "total_tagihan_cukai_idr"]):
+                if any(x in col_name_lower for x in ["total_amount", "discount_amount", "tax_amount", "bea_keluar", "bea_masuk", "ppn_idr", "pph_idr", "pph_ekspor", "total_tagihan_cukai_idr"]):
                     cell.number_format = 'Rp #,##0'
                     cell.alignment = Alignment(horizontal="right")
-                elif any(x in col_name_lower for x in ["usd", "devisa", "cif"]):
+                elif any(x in col_name_lower for x in ["usd", "devisa", "cif", "fob"]):
                     cell.number_format = '$#,##0.00'
+                    cell.alignment = Alignment(horizontal="right")
+                elif "tarif" in col_name_lower:
+                    cell.number_format = '0.00%' if isinstance(val, (int, float)) and val < 1 else 'Rp #,##0'
                     cell.alignment = Alignment(horizontal="right")
                 elif "date" in col_name_lower or "tanggal" in col_name_lower:
                     cell.alignment = Alignment(horizontal="center")

@@ -32,15 +32,39 @@ class OpenMetadataConnector:
                 lineage_upstream=["staging_ceisa.stg_peb_header", "staging_ceisa.stg_nopen_online"],
                 lineage_downstream=["datamart_ceisa.dm_kinerja_ekspor_bulanan", "datamart_ceisa.dm_devisa_ekspor"],
                 columns=[
-                    OpenMetadataColumn(name="nomor_peb", data_type="VARCHAR(32)", description="Nomor pendaftaran PEB (6 digit nopen + tanggal)", tags=["PK", "Core"]),
-                    OpenMetadataColumn(name="tanggal_peb", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen ekspor", tags=["Temporal", "PartitionKey"]),
-                    OpenMetadataColumn(name="npwp_eksportir", data_type="VARCHAR(20)", description="NPWP 16 digit perusahaan eksportir", tags=["FK", "PII", "Restricted"], is_pii=True),
+                    OpenMetadataColumn(name="nomor_aju", data_type="VARCHAR(32)", description="Nomor Pengajuan 26-digit Dokumen PEB BC 3.0", tags=["PK", "Core"]),
+                    OpenMetadataColumn(name="nomor_daftar", data_type="VARCHAR(16)", description="Nomor Pendaftaran PEB / Nopen 6 digit", tags=["Core"]),
+                    OpenMetadataColumn(name="nomor_peb", data_type="VARCHAR(32)", description="Nomor Pendaftaran PEB (nopen)", tags=["Core"]),
+                    OpenMetadataColumn(name="tanggal_daftar", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen ekspor PEB", tags=["Temporal", "PartitionKey"]),
+                    OpenMetadataColumn(name="tanggal_peb", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen ekspor", tags=["Temporal"]),
+                    OpenMetadataColumn(name="kantor_ekspor", data_type="VARCHAR(64)", description="Kantor pabean pendaftaran ekspor (contoh: KPPBC TMP TANJUNG PERAK)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="kantor_muat", data_type="VARCHAR(64)", description="Kantor pabean pemuatan barang ekspor", tags=["Dimension"]),
+                    OpenMetadataColumn(name="kode_kantor", data_type="VARCHAR(8)", description="Kode kantor pabean pemuatan (contoh: 040300 - Tanjung Priok)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="npwp_eksportir", data_type="VARCHAR(20)", description="NPWP 15/16 digit perusahaan eksportir", tags=["FK", "PII", "Restricted"], is_pii=True),
                     OpenMetadataColumn(name="nama_eksportir", data_type="VARCHAR(128)", description="Nama entitas badan usaha eksportir", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="alamat_eksportir", data_type="VARCHAR(256)", description="Alamat domisili eksportir", tags=["PII"], is_pii=True),
-                    OpenMetadataColumn(name="kode_kantor", data_type="VARCHAR(8)", description="Kode kantor pabean pemuatan (contoh: 040300 - Tanjung Priok)", tags=["Dimension"]),
-                    OpenMetadataColumn(name="negara_tujuan", data_type="VARCHAR(64)", description="Negara tujuan ekspor barang", tags=["Dimension", "Geography"]),
+                    OpenMetadataColumn(name="npwp_ppjk", data_type="VARCHAR(20)", description="NPWP Perusahaan Pengurusan Jasa Kepabeanan", tags=["PII", "Restricted"], is_pii=True),
+                    OpenMetadataColumn(name="nama_ppjk", data_type="VARCHAR(128)", description="Nama entitas PPJK pengurus dokumen", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="nama_penerima", data_type="VARCHAR(128)", description="Nama entitas penerima barang di luar negeri (Consignee)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="negara_penerima", data_type="VARCHAR(64)", description="Negara domisili penerima barang", tags=["Geography"]),
+                    OpenMetadataColumn(name="nama_pembeli", data_type="VARCHAR(128)", description="Nama entitas pembeli di luar negeri (Buyer)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="negara_pembeli", data_type="VARCHAR(64)", description="Negara domisili pembeli", tags=["Geography"]),
+                    OpenMetadataColumn(name="negara_tujuan", data_type="VARCHAR(64)", description="Negara tujuan akhir ekspor barang", tags=["Dimension", "Geography"]),
+                    OpenMetadataColumn(name="seri_barang", data_type="INTEGER", description="Nomor urut seri barang ekspor", tags=["Dimension"]),
+                    OpenMetadataColumn(name="kode_hs", data_type="VARCHAR(16)", description="Klasifikasi pos tarif 8/10 digit HS Code (contoh: 7112999000)", tags=["Dimension", "Classification"]),
+                    OpenMetadataColumn(name="uraian_barang", data_type="VARCHAR(500)", description="Uraian jenis dan spesifikasi komoditas barang ekspor", tags=["Dimension"]),
+                    OpenMetadataColumn(name="jumlah_satuan", data_type="NUMERIC(18,4)", description="Jumlah kuantitas barang ekspor", tags=["Metric"]),
+                    OpenMetadataColumn(name="jenis_satuan", data_type="VARCHAR(16)", description="Satuan barang (KGM, PCS, TNE, dsb.)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="netto_barang", data_type="NUMERIC(18,4)", description="Berat bersih (Net Weight) barang (Kg)", tags=["Metric"]),
+                    OpenMetadataColumn(name="valuta", data_type="VARCHAR(8)", description="Kode valuta transaksi (USD, IDR, JPY, EUR)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="kurs", data_type="NUMERIC(18,4)", description="Nilai kurs Keputusan Menteri Keuangan (KMK)", tags=["Metric"]),
+                    OpenMetadataColumn(name="fob_barang", data_type="NUMERIC(18,2)", description="Nilai Free On Board (FOB) barang dalam valuta", tags=["Metric"]),
                     OpenMetadataColumn(name="nilai_fob_usd", data_type="NUMERIC(18,2)", description="Nilai Free on Board dalam valuta USD", tags=["Metric"]),
                     OpenMetadataColumn(name="nilai_devisa_idr", data_type="NUMERIC(20,2)", description="Nilai devisa hasil ekspor ekuivalen Rupiah", tags=["Metric"]),
+                    OpenMetadataColumn(name="tarif_bea_keluar", data_type="NUMERIC(8,4)", description="Tarif pungutan Bea Keluar ekspor (Advalorem % atau spesifik)", tags=["Metric"]),
+                    OpenMetadataColumn(name="bea_keluar_barang", data_type="NUMERIC(18,2)", description="Nominal pungutan Bea Keluar ekspor barang (Rupiah)", tags=["Metric"]),
+                    OpenMetadataColumn(name="pph_ekspor_peb", data_type="NUMERIC(18,2)", description="Pajak Penghasilan (PPh Pasal 22) Ekspor (Rupiah)", tags=["Metric"]),
+                    OpenMetadataColumn(name="jalur", data_type="VARCHAR(8)", description="Jalur pelayanan pabean: H (Hijau), K (Kuning), M (Merah)", tags=["Dimension", "Filter"]),
                     OpenMetadataColumn(name="status_pabean", data_type="VARCHAR(32)", description="Status persetujuan pabean: NPE, PERIKSA_FISIK, REVISI, BATAL", tags=["Dimension", "Filter"]),
                     OpenMetadataColumn(name="created_at", data_type="TIMESTAMP", description="Waktu data tersinkronisasi ke DWH CEISA", tags=["System"])
                 ]
@@ -144,30 +168,76 @@ class OpenMetadataConnector:
                     OpenMetadataColumn(name="tanggal_terdaftar", data_type="DATE", description="Tanggal perolehan NIB/Akses Kepabeanan", tags=["Temporal"])
                 ]
             ),
-            # 6. TABEL FAKTA KEUANGAN & TRANSAKSI RETAIL UMUM
+            # 6. TABEL FAKTA KEPABEANAN EKSPOR & TRANSAKSI BC 3.0: fct_transactions
             OpenMetadataTable(
                 fqn="dwh_production.sales.fct_transactions",
-                service_name="PostgreSQL-DWH",
+                service_name="CEISA40-PostgreSQL-DWH",
                 database_name="dwh_production",
                 schema_name="sales",
                 table_name="fct_transactions",
-                description="Tabel fakta transaksi penjualan dan pembayaran nasabah/pelanggan harian.",
-                tier="Tier 1",
-                owner="Sales & Revenue Data Team",
-                lineage_upstream=["staging.stg_pos_transactions", "staging.stg_payment_gateway"],
-                lineage_downstream=["datamart.dm_monthly_sales_summary", "datamart.dm_customer_churn"],
+                description="Tabel fakta transaksi ekspor barang pabean (PEB BC 3.0) terintegrasi, memuat tarif bea keluar, bea keluar barang, pph ekspor, nilai FOB, kode HS komoditas, dan kelengkapan dokumen pabean.",
+                tier="Tier 1 - Mission Critical",
+                owner="Subdit Ekspor & Pengelolaan Data DWH",
+                lineage_upstream=["staging_ceisa.stg_peb_header", "staging_ceisa.stg_peb_barang", "staging_ceisa.stg_dokumen_pelengkap"],
+                lineage_downstream=["datamart_ceisa.dm_kinerja_ekspor_bulanan", "datamart_ceisa.dm_devisa_ekspor"],
                 columns=[
-                    OpenMetadataColumn(name="transaction_id", data_type="VARCHAR(64)", description="Primary key unik transaksi", tags=["PK", "Core"]),
-                    OpenMetadataColumn(name="customer_id", data_type="VARCHAR(32)", description="Foreign key ke dim_customers", tags=["FK"]),
-                    OpenMetadataColumn(name="store_id", data_type="VARCHAR(32)", description="Foreign key ke dim_stores", tags=["FK"]),
-                    OpenMetadataColumn(name="transaction_date", data_type="TIMESTAMP", description="Waktu transaksi tercatat", tags=["Temporal", "PartitionKey"]),
-                    OpenMetadataColumn(name="channel", data_type="VARCHAR(32)", description="Kanal penjualan: Online, Mobile App, Flagship Store, Agen", tags=["Dimension"]),
-                    OpenMetadataColumn(name="total_amount", data_type="NUMERIC(15,2)", description="Total nilai transaksi kotor (IDR)", tags=["Metric"]),
-                    OpenMetadataColumn(name="discount_amount", data_type="NUMERIC(15,2)", description="Total potongan diskon (IDR)", tags=["Metric"]),
-                    OpenMetadataColumn(name="tax_amount", data_type="NUMERIC(15,2)", description="Nilai PPN 11%", tags=["Metric"]),
-                    OpenMetadataColumn(name="payment_method", data_type="VARCHAR(32)", description="Metode pembayaran: QRIS, Credit Card, Bank Transfer, VA", tags=["Dimension"]),
-                    OpenMetadataColumn(name="status", data_type="VARCHAR(32)", description="Status pembayaran: SUCCESS, FAILED, PENDING, REFUNDED", tags=["Dimension", "Filter"]),
+                    OpenMetadataColumn(name="nomor_aju", data_type="VARCHAR(32)", description="Nomor Pengajuan 26-digit Dokumen PEB BC 3.0", tags=["PK", "Core"]),
+                    OpenMetadataColumn(name="nomor_daftar", data_type="VARCHAR(16)", description="Nomor Pendaftaran PEB / Nopen resmi 6 digit", tags=["Core"]),
+                    OpenMetadataColumn(name="tanggal_daftar", data_type="TIMESTAMP", description="Tanggal pendaftaran dokumen ekspor PEB", tags=["Temporal", "PartitionKey"]),
+                    OpenMetadataColumn(name="kantor_ekspor", data_type="VARCHAR(64)", description="Kantor pabean pendaftaran ekspor (contoh: KPPBC TMP TANJUNG PERAK)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="kantor_muat", data_type="VARCHAR(64)", description="Kantor pabean pemuatan barang ekspor", tags=["Dimension"]),
+                    OpenMetadataColumn(name="npwp_eksportir", data_type="VARCHAR(20)", description="NPWP 15/16 digit perusahaan eksportir", tags=["FK", "PII", "Restricted"], is_pii=True),
+                    OpenMetadataColumn(name="nama_eksportir", data_type="VARCHAR(128)", description="Nama entitas badan usaha eksportir", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="alamat_eksportir", data_type="VARCHAR(256)", description="Alamat domisili eksportir", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="npwp_ppjk", data_type="VARCHAR(20)", description="NPWP Perusahaan Pengurusan Jasa Kepabeanan (PPJK)", tags=["PII", "Restricted"], is_pii=True),
+                    OpenMetadataColumn(name="nama_ppjk", data_type="VARCHAR(128)", description="Nama entitas PPJK pengurus dokumen", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="nama_penerima", data_type="VARCHAR(128)", description="Nama entitas penerima barang di luar negeri (Consignee)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="negara_penerima", data_type="VARCHAR(64)", description="Negara domisili penerima barang", tags=["Geography"]),
+                    OpenMetadataColumn(name="nama_pembeli", data_type="VARCHAR(128)", description="Nama entitas pembeli di luar negeri (Buyer)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="negara_pembeli", data_type="VARCHAR(64)", description="Negara domisili pembeli", tags=["Geography"]),
+                    OpenMetadataColumn(name="negara_tujuan", data_type="VARCHAR(64)", description="Negara tujuan akhir ekspor barang", tags=["Dimension", "Geography"]),
+                    OpenMetadataColumn(name="seri_barang", data_type="INTEGER", description="Nomor urut seri barang ekspor dalam PEB", tags=["Dimension"]),
+                    OpenMetadataColumn(name="kode_hs", data_type="VARCHAR(16)", description="Klasifikasi pos tarif 8/10 digit HS Code (contoh: 7112999000)", tags=["Dimension", "Classification"]),
+                    OpenMetadataColumn(name="uraian_barang", data_type="VARCHAR(500)", description="Uraian jenis dan spesifikasi komoditas barang ekspor", tags=["Dimension"]),
+                    OpenMetadataColumn(name="jumlah_satuan", data_type="NUMERIC(18,4)", description="Jumlah kuantitas barang ekspor", tags=["Metric"]),
+                    OpenMetadataColumn(name="jenis_satuan", data_type="VARCHAR(16)", description="Satuan barang (KGM, PCS, TNE, dsb.)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="netto_barang", data_type="NUMERIC(18,4)", description="Berat bersih (Net Weight) barang (Kg)", tags=["Metric"]),
+                    OpenMetadataColumn(name="valuta", data_type="VARCHAR(8)", description="Kode valuta transaksi (USD, IDR, JPY, EUR)", tags=["Dimension"]),
+                    OpenMetadataColumn(name="kurs", data_type="NUMERIC(18,4)", description="Nilai kurs Keputusan Menteri Keuangan (KMK)", tags=["Metric"]),
+                    OpenMetadataColumn(name="fob_barang", data_type="NUMERIC(18,2)", description="Nilai Free On Board (FOB) barang dalam valuta", tags=["Metric"]),
+                    OpenMetadataColumn(name="tarif_bea_keluar", data_type="NUMERIC(8,4)", description="Tarif pungutan Bea Keluar ekspor (Advalorem % atau spesifik)", tags=["Metric"]),
+                    OpenMetadataColumn(name="bea_keluar_barang", data_type="NUMERIC(18,2)", description="Nominal pungutan Bea Keluar ekspor barang (Rupiah)", tags=["Metric"]),
+                    OpenMetadataColumn(name="pph_ekspor_peb", data_type="NUMERIC(18,2)", description="Pajak Penghasilan (PPh Pasal 22) Ekspor (Rupiah)", tags=["Metric"]),
+                    OpenMetadataColumn(name="jalur", data_type="VARCHAR(8)", description="Jalur pelayanan pabean: H (Hijau), K (Kuning), M (Merah)", tags=["Dimension", "Filter"]),
+                    OpenMetadataColumn(name="status_pabean", data_type="VARCHAR(32)", description="Status persetujuan pabean: NPE, PERIKSA_FISIK, REVISI, BATAL", tags=["Dimension", "Filter"]),
+                    # Kolom kompatibilitas pipeline analitik
+                    OpenMetadataColumn(name="transaction_id", data_type="VARCHAR(64)", description="Alias ID transaksi unik (sesuai nomor_aju)", tags=["PK", "Core"]),
+                    OpenMetadataColumn(name="customer_id", data_type="VARCHAR(32)", description="Alias ID entitas (sesuai npwp_eksportir)", tags=["FK"]),
+                    OpenMetadataColumn(name="transaction_date", data_type="TIMESTAMP", description="Alias waktu transaksi (sesuai tanggal_daftar)", tags=["Temporal"]),
+                    OpenMetadataColumn(name="total_amount", data_type="NUMERIC(18,2)", description="Alias total nilai transaksi (sesuai fob_barang / devisa)", tags=["Metric"]),
+                    OpenMetadataColumn(name="status", data_type="VARCHAR(32)", description="Alias status dokumen transaksi (sesuai status_pabean)", tags=["Dimension", "Filter"]),
                     OpenMetadataColumn(name="created_at", data_type="TIMESTAMP", description="Waktu record dibuat di DWH", tags=["System"])
+                ]
+            ),
+            # 7. TABEL DOKUMEN PELENGKAP PABEAN EKSPOR: dim_dokumen_pelengkap
+            OpenMetadataTable(
+                fqn="dwh_ceisa.ekspor.dim_dokumen_pelengkap",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="ekspor",
+                table_name="dim_dokumen_pelengkap",
+                description="Tabel dokumen pelengkap pabean ekspor BC 3.0 (Invoice, Packing List, Certificate of Origin / COO, Bill of Lading, L/C).",
+                tier="Tier 2",
+                owner="Direktorat Teknis Kepabeanan",
+                lineage_upstream=["staging_ceisa.stg_dokumen_pelengkap"],
+                lineage_downstream=["dwh_ceisa.ekspor.fct_peb_ekspor", "dwh_production.sales.fct_transactions"],
+                columns=[
+                    OpenMetadataColumn(name="nomor_aju", data_type="VARCHAR(32)", description="Nomor Pengajuan 26-digit Dokumen PEB (FK)", tags=["PK", "FK"]),
+                    OpenMetadataColumn(name="nomor_peb", data_type="VARCHAR(16)", description="Nomor Pendaftaran PEB (Nopen)", tags=["FK"]),
+                    OpenMetadataColumn(name="tanggal_peb", data_type="TIMESTAMP", description="Tanggal Pendaftaran PEB", tags=["Temporal"]),
+                    OpenMetadataColumn(name="nama_dokumen", data_type="VARCHAR(64)", description="Jenis Dokumen Pelengkap: INVOICE, PACKING LIST, COO, BL", tags=["Dimension"]),
+                    OpenMetadataColumn(name="nomor_dokumen", data_type="VARCHAR(128)", description="Nomor resmi dokumen pelengkap", tags=["Core"]),
+                    OpenMetadataColumn(name="tanggal_dokumen", data_type="DATE", description="Tanggal penerbitan dokumen pelengkap", tags=["Temporal"])
                 ]
             ),
             OpenMetadataTable(
@@ -392,6 +462,27 @@ class OpenMetadataConnector:
                 "right_table": "fct_shipments",
                 "join_type": "LEFT JOIN",
                 "on_condition": "fct_transactions.transaction_id = fct_shipments.transaction_id"
+            })
+        if "fct_transactions" in selected_names and "dim_perusahaan" in selected_names:
+            join_strategies.append({
+                "left_table": "fct_transactions",
+                "right_table": "dim_perusahaan",
+                "join_type": "INNER JOIN",
+                "on_condition": "fct_transactions.npwp_eksportir = dim_perusahaan.npwp_perusahaan"
+            })
+        if "fct_peb_ekspor" in selected_names and "dim_dokumen_pelengkap" in selected_names:
+            join_strategies.append({
+                "left_table": "fct_peb_ekspor",
+                "right_table": "dim_dokumen_pelengkap",
+                "join_type": "LEFT JOIN",
+                "on_condition": "fct_peb_ekspor.nomor_aju = dim_dokumen_pelengkap.nomor_aju"
+            })
+        if "fct_transactions" in selected_names and "dim_dokumen_pelengkap" in selected_names:
+            join_strategies.append({
+                "left_table": "fct_transactions",
+                "right_table": "dim_dokumen_pelengkap",
+                "join_type": "LEFT JOIN",
+                "on_condition": "fct_transactions.nomor_aju = dim_dokumen_pelengkap.nomor_aju"
             })
 
         summary = f"Ditemukan {len(final_selected)} tabel metadata resmi di OpenMetadata yang relevan dengan '{primary_entity}'."

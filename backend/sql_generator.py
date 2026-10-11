@@ -85,21 +85,49 @@ class SQLGenerator:
                         select_clauses.append(f"CONCAT(SUBSTRING({t_alias}.nama_eksportir, 1, 3), '*** ', SUBSTRING({t_alias}.nama_eksportir, LENGTH({t_alias}.nama_eksportir)-2, 3)) AS nama_eksportir_masked")
                     selected_col_names.append("nama_eksportir_masked")
 
-            if is_field_requested("kode_kantor") or is_field_requested("kantor"):
-                select_clauses.append(f"{t_alias}.kode_kantor")
-                selected_col_names.append("kode_kantor")
+            if is_field_requested("nomor_aju") or is_field_requested("aju"):
+                select_clauses.append(f"{t_alias}.nomor_aju")
+                selected_col_names.append("nomor_aju")
+
+            if is_field_requested("kode_kantor") or is_field_requested("kantor") or is_field_requested("kantor_ekspor"):
+                select_clauses.append(f"{t_alias}.kantor_ekspor")
+                selected_col_names.append("kantor_ekspor")
 
             if is_field_requested("negara") or is_field_requested("negara_tujuan"):
                 select_clauses.append(f"{t_alias}.negara_tujuan")
                 selected_col_names.append("negara_tujuan")
 
-            if is_field_requested("fob") or is_field_requested("nilai_fob_usd"):
-                select_clauses.append(f"{t_alias}.nilai_fob_usd")
-                selected_col_names.append("nilai_fob_usd")
+            if is_field_requested("kode_hs") or is_field_requested("hs"):
+                select_clauses.append(f"{t_alias}.kode_hs")
+                selected_col_names.append("kode_hs")
+
+            if is_field_requested("uraian_barang") or is_field_requested("uraian") or is_field_requested("komoditas"):
+                select_clauses.append(f"{t_alias}.uraian_barang")
+                selected_col_names.append("uraian_barang")
+
+            if is_field_requested("fob") or is_field_requested("nilai_fob_usd") or is_field_requested("fob_barang"):
+                select_clauses.append(f"{t_alias}.fob_barang")
+                selected_col_names.append("fob_barang")
+
+            if is_field_requested("tarif_bea_keluar") or is_field_requested("tarif"):
+                select_clauses.append(f"{t_alias}.tarif_bea_keluar")
+                selected_col_names.append("tarif_bea_keluar")
+
+            if is_field_requested("bea_keluar") or is_field_requested("bea_keluar_barang"):
+                select_clauses.append(f"{t_alias}.bea_keluar_barang")
+                selected_col_names.append("bea_keluar_barang")
+
+            if is_field_requested("pph") or is_field_requested("pph_ekspor_peb"):
+                select_clauses.append(f"{t_alias}.pph_ekspor_peb")
+                selected_col_names.append("pph_ekspor_peb")
 
             if is_field_requested("devisa") or is_field_requested("nilai_devisa_idr") or is_field_requested("total_amount") or is_field_requested("nominal"):
                 select_clauses.append(f"{t_alias}.nilai_devisa_idr")
                 selected_col_names.append("nilai_devisa_idr")
+
+            if is_field_requested("jalur"):
+                select_clauses.append(f"{t_alias}.jalur")
+                selected_col_names.append("jalur")
 
             select_clauses.append(f"{t_alias}.status_pabean")
             selected_col_names.append("status_pabean")
@@ -193,17 +221,47 @@ class SQLGenerator:
         else:
             # Fallback untuk fct_transactions
             date_col = "transaction_date"
-            if "transaction_id" in all_cols_by_tbl.get("fct_transactions", {}):
+            if is_field_requested("nomor_aju") or is_field_requested("aju"):
+                select_clauses.append(f"{t_alias}.nomor_aju")
+                selected_col_names.append("nomor_aju")
+            elif "transaction_id" in all_cols_by_tbl.get("fct_transactions", {}):
                 select_clauses.append(f"{t_alias}.transaction_id")
                 selected_col_names.append("transaction_id")
 
-            if "transaction_date" in all_cols_by_tbl.get("fct_transactions", {}) and is_field_requested("transaction_date"):
+            if is_field_requested("tanggal_daftar") or is_field_requested("tanggal_peb"):
+                select_clauses.append(f"{t_alias}.tanggal_daftar")
+                selected_col_names.append("tanggal_daftar")
+            elif "transaction_date" in all_cols_by_tbl.get("fct_transactions", {}) and is_field_requested("transaction_date"):
                 select_clauses.append(f"{t_alias}.transaction_date")
                 selected_col_names.append("transaction_date")
 
-            if "total_amount" in all_cols_by_tbl.get("fct_transactions", {}) and is_field_requested("total_amount"):
-                select_clauses.append(f"{t_alias}.total_amount")
-                selected_col_names.append("total_amount")
+            if is_field_requested("kode_hs") or is_field_requested("hs"):
+                select_clauses.append(f"{t_alias}.kode_hs")
+                selected_col_names.append("kode_hs")
+
+            if is_field_requested("uraian_barang") or is_field_requested("uraian") or is_field_requested("komoditas"):
+                select_clauses.append(f"{t_alias}.uraian_barang")
+                selected_col_names.append("uraian_barang")
+
+            if is_field_requested("fob_barang") or is_field_requested("fob") or is_field_requested("total_amount"):
+                if "fob_barang" in all_cols_by_tbl.get("fct_transactions", {}):
+                    select_clauses.append(f"{t_alias}.fob_barang")
+                    selected_col_names.append("fob_barang")
+                elif "total_amount" in all_cols_by_tbl.get("fct_transactions", {}):
+                    select_clauses.append(f"{t_alias}.total_amount")
+                    selected_col_names.append("total_amount")
+
+            if is_field_requested("tarif_bea_keluar") or is_field_requested("tarif"):
+                select_clauses.append(f"{t_alias}.tarif_bea_keluar")
+                selected_col_names.append("tarif_bea_keluar")
+
+            if is_field_requested("bea_keluar") or is_field_requested("bea_keluar_barang"):
+                select_clauses.append(f"{t_alias}.bea_keluar_barang")
+                selected_col_names.append("bea_keluar_barang")
+
+            if is_field_requested("pph") or is_field_requested("pph_ekspor_peb"):
+                select_clauses.append(f"{t_alias}.pph_ekspor_peb")
+                selected_col_names.append("pph_ekspor_peb")
 
             if "payment_method" in all_cols_by_tbl.get("fct_transactions", {}) and is_field_requested("payment_method"):
                 select_clauses.append(f"{t_alias}.payment_method")
