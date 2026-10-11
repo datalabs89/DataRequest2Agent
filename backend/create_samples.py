@@ -288,5 +288,5 @@ if __name__ == "__main__":
     out_dir = os.path.join(os.path.dirname(__file__), "..", "samples")
     os.makedirs(out_dir, exist_ok=True)
     generate_sample_pdf_1(os.path.join(out_dir, "Permohonan_Data_Bea_Cukai_Ekspor_Impor.pdf"))
-    generate_sample_pdf_2(os.path.join(out_dir, "Permohonan_Data_Fiskal_Internal_Kemenkeu.pdf"))
+    generate_sample_pdf_2(os.path.join(out_dir, "Permohonan_Data_Internal_Kemenkeu.pdf"))
     generate_sample_pdf_3(os.path.join(out_dir, "Permohonan_Data_Eksternal_Kemenkeu.pdf"))
