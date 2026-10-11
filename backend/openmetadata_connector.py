@@ -291,7 +291,7 @@ class OpenMetadataConnector:
                 table_name="fct_shipments",
                 description="Tabel pelacakan berkas perkara permohonan keberatan penetapan bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
                 tier="Tier 2",
-                owner="Direktorat Keberatan dan Banding",
+                owner="Direktorat Keberatan Banding dan Peraturan",
                 lineage_upstream=["staging_ceisa.stg_permohonan_keberatan"],
                 lineage_downstream=["datamart_ceisa.dm_kinerja_keberatan_banding"],
                 columns=[
