@@ -508,7 +508,13 @@ html.dark [id*="btn-sheet-tab-"].bg-white {
     box-shadow: none !important;
 }
 
-/* 12. Tab 4 Audit Filters & Verification Checklist */
+/* 12. Tab 4 Independent Audit Card (Executive Banner) & Verification Checklist */
+#verif-compliance-card {
+    background: linear-gradient(135deg, #090e1a 0%, #151a36 50%, #090e1a 100%) !important;
+    border-color: rgba(99, 102, 241, 0.35) !important;
+    color: #ffffff !important;
+}
+
 html.dark .verif-filter-btn:not(.bg-indigo-600) {
     background-color: #152033 !important;
     color: #cbd5e1 !important;

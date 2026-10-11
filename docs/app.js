@@ -774,8 +774,8 @@ function renderResults(data) {
     const badge = document.getElementById("verif-status-badge");
     badge.innerText = data.verification.status;
     badge.className = (data.verification.status.includes("APPROVED")) 
-        ? "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
-        : (data.verification.status.includes("REVISION") ? "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200" : "px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200");
+        ? "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+        : (data.verification.status.includes("REVISION") ? "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40" : "px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-300 border border-red-500/40");
     
     const verifTimeElem = document.getElementById("verif-timestamp");
     if (verifTimeElem) {
@@ -802,11 +802,11 @@ function renderResults(data) {
     if (scoreBarElem) {
         scoreBarElem.style.width = `${scorePercent}%`;
         if (scorePercent === 100) {
-            scoreBarElem.className = "bg-emerald-600 h-2 rounded-full transition-all duration-500";
+            scoreBarElem.className = "bg-gradient-to-r from-indigo-500 to-emerald-400 h-2 rounded-full transition-all duration-500";
         } else if (scorePercent >= 80) {
-            scoreBarElem.className = "bg-indigo-600 h-2 rounded-full transition-all duration-500";
+            scoreBarElem.className = "bg-gradient-to-r from-blue-500 to-indigo-400 h-2 rounded-full transition-all duration-500";
         } else {
-            scoreBarElem.className = "bg-amber-500 h-2 rounded-full transition-all duration-500";
+            scoreBarElem.className = "bg-gradient-to-r from-amber-500 to-rose-400 h-2 rounded-full transition-all duration-500";
         }
     }
     if (scoreSubtextElem) {
