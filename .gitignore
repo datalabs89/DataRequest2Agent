@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated dynamic outputs (keep directory structure)
+outputs/*.zip
+outputs/*.xlsx
+outputs/*.csv
+outputs/*.pdf
+outputs/*.db
+
+# Ignore transient uploaded PDFs
+uploads/*.pdf
+!samples/*.pdf

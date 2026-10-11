@@ -1,0 +1,5 @@
+{
+  "api_url": "http://localhost:8585/api/v1",
+  "jwt_token": "test",
+  "preferred_mode": "AUTO"
+}

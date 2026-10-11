@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataRequest Studio — Enterprise Data Requisition & Governance Fulfillment Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Prism.js for SQL syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <!-- Custom styling -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="h-16 flex items-center justify-between gap-3">
+                <!-- Brand / Logo (Kiri) -->
+                <div class="flex items-center space-x-3 flex-shrink-0">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 flex-shrink-0">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight whitespace-nowrap">DataRequest<span class="text-blue-600">Studio</span></span>
+                            <span class="hidden sm:inline-block bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider whitespace-nowrap">Enterprise</span>
+                        </div>
+                        <p class="hidden xl:block text-[11px] text-slate-500 truncate max-w-xs">Data Requisition & OpenMetadata Governance</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls (Kanan) -->
+                <div class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                    <!-- Navigasi Menu Items -->
+                    <nav class="flex items-center bg-slate-100/80 p-1 rounded-xl border border-slate-200/80 space-x-1">
+                        <button id="btn-open-analytics" class="text-xs flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white transition shadow-none hover:shadow-xs font-medium">
+                            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0"></i>
+                            <span class="hidden sm:inline">Analitik</span>
+                        </button>
+                        <button id="btn-open-cms" class="text-xs flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white transition shadow-none hover:shadow-xs font-medium">
+                            <i data-lucide="inbox" class="w-3.5 h-3.5 text-indigo-600 flex-shrink-0"></i>
+                            <span class="hidden sm:inline">CMS Riwayat</span>
+                        </button>
+                        <button id="btn-browse-catalog" class="text-xs flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-white transition shadow-none hover:shadow-xs font-medium">
+                            <i data-lucide="database" class="w-3.5 h-3.5 text-blue-600 flex-shrink-0"></i>
+                            <span class="hidden md:inline">Katalog</span>
+                        </button>
+                    </nav>
+
+                    <!-- Persona Switcher (RBAC) -->
+                    <div class="flex items-center space-x-1 bg-white p-1 rounded-xl border border-slate-200 text-xs shadow-2xs">
+                        <i data-lucide="user-cog" class="w-3.5 h-3.5 text-slate-500 ml-1.5 flex-shrink-0"></i>
+                        <select id="select-persona" class="bg-transparent font-medium text-slate-700 outline-none pr-1 cursor-pointer text-xs">
+                            <option value="steward">🛡️ Data Steward</option>
+                            <option value="analyst">👤 Pemohon Data</option>
+                            <option value="admin">⚙️ Data Engineer</option>
+                        </select>
+                    </div>
+
+                    <!-- OpenMetadata Settings Button -->
+                    <button id="btn-open-om-settings" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition shadow-2xs hover:text-blue-600 flex-shrink-0" title="Pengaturan Koneksi OpenMetadata">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                    </button>
+
+                    <!-- Status Pill Badge -->
+                    <div id="badge-om-status" class="flex items-center space-x-1.5 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/90 px-2.5 py-1.5 rounded-xl font-medium flex-shrink-0 whitespace-nowrap shadow-2xs" title="Status Katalog OpenMetadata">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
+                        <span id="om-status-text" class="text-[11px] font-semibold">Katalog DWH (5)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Banner / Hero Summary -->
+        <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative z-10 max-w-3xl space-y-3">
+                <div class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-300 text-xs font-medium border border-blue-400/20">
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                    <span>Sistem Tata Kelola & Otomatisasi Permohonan Data Enterprise</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Otomatisasi Pemenuhan Permohonan Data Berbasis Katalog Metadata</h1>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    Unggah formulir permohonan data (PDF), sistem multi-agent akan mengekstrak spesifikasi kebutuhan, mencocokkannya ke skema resmi <strong>OpenMetadata</strong>, membuat query SQL ber-masking PII, memverifikasinya secara independen, dan menghasilkan file <strong>Excel (.xlsx 3-sheet)</strong>, <strong>CSV</strong>, dan <strong>Paket Pemenuhan Lengkap (.ZIP)</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- Workflow Visual Stepper -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-1">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">1</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-900 truncate">Ekstraksi PDF</p>
+                    <p class="text-[11px] text-slate-500 truncate">Spec & Filter</p>
+                </div>
+            </div>
+            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-2">
+                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">2</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-900 truncate">OpenMetadata</p>
+                    <p class="text-[11px] text-slate-500 truncate">Schema Match</p>
+                </div>
+            </div>
+            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-3">
+                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">3</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-900 truncate">Sintesis SQL</p>
+                    <p class="text-[11px] text-slate-500 truncate">PII Masking</p>
+                </div>
+            </div>
+            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-4">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">4</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-900 truncate">Audit & Verifikasi</p>
+                    <p class="text-[11px] text-slate-500 truncate">Fidelity & Guard</p>
+                </div>
+            </div>
+            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-5">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">5</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-slate-900 truncate">Delivery Data</p>
+                    <p class="text-[11px] text-slate-500 truncate">Excel, CSV & ZIP</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Agent Thought Console / Terminal -->
+        <div id="agent-console-box" class="bg-slate-900 rounded-xl border border-slate-800 shadow-md p-4 text-xs font-mono text-slate-300">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span class="font-bold text-slate-200">Terminal Eksekusi Pipeline (Live Multi-Agent Log)</span>
+                </div>
+                <span class="text-[11px] text-slate-500" id="console-agent-status">Menunggu inisiasi pengguna...</span>
+            </div>
+            <div id="console-logs" class="space-y-1.5 max-h-40 overflow-y-auto pr-2 text-slate-300">
+                <div class="text-slate-500 italic">> Sistem siap. Pilih dokumen atau unggah berkas PDF untuk memulai alur orkestrasi.</div>
+            </div>
+        </div>
+
+        <!-- Section 1: Upload & Input Panel -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                        <i data-lucide="file-up" class="w-5 h-5 text-blue-600"></i>
+                        <span>Unggah Dokumen Permohonan Data (PDF)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Unggah berkas resmi formulir permohonan atau pilih dokumen contoh yang telah disediakan.</p>
+                </div>
+
+                <!-- Database & Masking Selector -->
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <div class="flex items-center space-x-2">
+                        <label for="select-dialect" class="font-medium text-slate-600">Target Database:</label>
+                        <select id="select-dialect" class="bg-slate-50 border border-slate-300 text-slate-900 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="PostgreSQL">PostgreSQL</option>
+                            <option value="Oracle">Oracle Database</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label for="select-masking" class="font-medium text-slate-600">Proteksi PII:</label>
+                        <select id="select-masking" class="bg-slate-50 border border-slate-300 text-slate-900 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="PARTIAL">Masking Parsial (Ahm***zi, 3201******0001)</option>
+                            <option value="HASH">Pseudonimisasi Hash Kriptografis</option>
+                            <option value="FULL_REDACT">Redaksi Total ([TERLINDUNGI_UU_PDP])</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Dropzone Area -->
+                <div class="lg:col-span-2">
+                    <div id="dropzone" class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-8 text-center bg-slate-50/50 hover:bg-blue-50/30 transition cursor-pointer flex flex-col items-center justify-center space-y-3">
+                        <input type="file" id="pdf-file-input" accept=".pdf" class="hidden">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <i data-lucide="file-text" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800" id="file-display-name">Klik untuk memilih file PDF atau tarik ke sini</p>
+                            <p class="text-xs text-slate-400 mt-1">Mendukung format PDF formulir permohonan data resmi (Maksimal 15 MB)</p>
+                        </div>
+                        <span class="inline-flex text-xs bg-white text-slate-600 border border-slate-200 px-3 py-1 rounded-md shadow-xs font-medium">Pilih Berkas Lokal</span>
+                    </div>
+                </div>
+
+                <!-- Sample Selector Card -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <span>Dokumen Contoh Siap Uji</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">Tidak memiliki file PDF saat ini? Pilih salah satu template permohonan resmi berikut:</p>
+                        <div id="sample-list" class="space-y-2">
+                            <div class="text-xs text-slate-400 italic">Memuat daftar sample...</div>
+                        </div>
+                    <div class="space-y-2 pt-1">
+                        <button id="btn-process" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 px-4 rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center space-x-2 transition disabled:opacity-50">
+                            <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+                            <span>Jalankan Pipeline Pemenuhan Data</span>
+                        </button>
+                        <label class="flex items-center space-x-2 text-[11px] text-slate-600 cursor-pointer select-none px-1">
+                            <input type="checkbox" id="chk-confirm-spec" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                            <span class="font-medium text-slate-700">Tinjau & Konfirmasi Spesifikasi sebelum Eksekusi</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Results Display Panel (Tabbed) -->
+        <div id="results-panel" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <!-- Tabs Navigation -->
+            <div class="border-b border-slate-200 bg-slate-50/70 px-4 sm:px-6 flex space-x-2 sm:space-x-6 overflow-x-auto">
+                <button class="tab-btn py-4 px-2 border-b-2 font-medium text-xs sm:text-sm text-blue-600 border-blue-600 flex items-center space-x-2" data-tab="tab-spec">
+                    <i data-lucide="file-check-2" class="w-4 h-4"></i>
+                    <span>1. Spesifikasi Permohonan</span>
+                </button>
+                <button class="tab-btn py-4 px-2 border-b-2 font-medium text-xs sm:text-sm text-slate-500 border-transparent hover:text-slate-700 flex items-center space-x-2" data-tab="tab-catalog">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                    <span>2. OpenMetadata Grounding</span>
+                </button>
+                <button class="tab-btn py-4 px-2 border-b-2 font-medium text-xs sm:text-sm text-slate-500 border-transparent hover:text-slate-700 flex items-center space-x-2" data-tab="tab-sql">
+                    <i data-lucide="code-2" class="w-4 h-4"></i>
+                    <span>3. Query SQL & Editor</span>
+                </button>
+                <button class="tab-btn py-4 px-2 border-b-2 font-medium text-xs sm:text-sm text-slate-500 border-transparent hover:text-slate-700 flex items-center space-x-2" data-tab="tab-verification">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>4. Audit & Feedback Verifikator</span>
+                </button>
+                <button class="tab-btn py-4 px-2 border-b-2 font-medium text-xs sm:text-sm text-slate-500 border-transparent hover:text-slate-700 flex items-center space-x-2" data-tab="tab-delivery">
+                    <i data-lucide="table-2" class="w-4 h-4"></i>
+                    <span>5. Ekspor Data (Excel, CSV, ZIP)</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: Spec Content -->
+            <div id="tab-spec" class="tab-content p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ID Permohonan</span>
+                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-req-id">-</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pemohon / PIC</span>
+                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-requester">-</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Unit Kerja / Divisi</span>
+                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-department">-</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Periode Data</span>
+                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-timerange">-</p>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                    <span class="text-xs font-bold text-blue-900 uppercase tracking-wider">Tujuan Penggunaan Data:</span>
+                    <p class="text-sm text-blue-950 mt-1" id="spec-purpose">-</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+                            <i data-lucide="filter" class="w-3.5 h-3.5 text-blue-600"></i>
+                            <span>Filter & Kriteria Bisnis Terdeteksi:</span>
+                        </h3>
+                        <div id="spec-filters-list" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+                            <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i>
+                            <span>Kolom Diminta & Klasifikasi PII:</span>
+                        </h3>
+                        <div id="spec-fields-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Catalog Content -->
+            <div id="tab-catalog" class="tab-content hidden p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Tabel & Skema Terpilih dari OpenMetadata</h3>
+                        <p class="text-xs text-slate-500" id="catalog-summary-text">-</p>
+                    </div>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-full font-medium">Verified DWH Catalog</span>
+                </div>
+
+                <!-- Visual Lineage Graph Bar -->
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <span class="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                        <i data-lucide="git-fork" class="w-3.5 h-3.5 text-blue-600"></i>
+                        <span>Visualisasi Alur Data Lineage DWH:</span>
+                    </span>
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-mono py-2">
+                        <span class="px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">Staging CRM/POS</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400"></i>
+                        <span class="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">dwh_production.sales.fct_transactions</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400"></i>
+                        <span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-800 font-semibold border border-indigo-200">dim_customers (JOIN)</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400"></i>
+                        <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">Datamart Analytics Q3</span>
+                    </div>
+                </div>
+
+                <div id="catalog-tables-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+            </div>
+
+            <!-- Tab 3: SQL Content & Editor -->
+            <div id="tab-sql" class="tab-content hidden p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                            <span>Query SQL Terverifikasi</span>
+                            <span class="text-[11px] bg-blue-100 text-blue-700 font-normal px-2 py-0.5 rounded">Human-in-the-Loop Supported</span>
+                        </h3>
+                        <p class="text-xs text-slate-500" id="sql-explanation-text">-</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-toggle-sql-edit" class="text-xs flex items-center space-x-1 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-700 transition">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            <span id="btn-toggle-edit-text">Mode Edit SQL</span>
+                        </button>
+                        <button id="btn-copy-sql" class="text-xs flex items-center space-x-1 bg-white border border-slate-300 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-slate-700 transition">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>Salin SQL</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- View Mode (Prism Highlighted) -->
+                <div id="sql-view-container" class="relative rounded-xl overflow-hidden border border-slate-800 shadow-inner">
+                    <pre class="m-0 p-4 bg-slate-900 text-xs sm:text-sm font-mono overflow-x-auto"><code class="language-sql" id="sql-code-block"></code></pre>
+                </div>
+
+                <!-- Edit Mode (Interactive Textarea) -->
+                <div id="sql-edit-container" class="hidden space-y-3">
+                    <textarea id="sql-editor-input" rows="12" class="w-full bg-slate-900 text-emerald-400 font-mono text-xs sm:text-sm p-4 rounded-xl border border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed shadow-inner"></textarea>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-400">Modifikasi kueri di atas, lalu jalankan verifikasi ulang terhadap parameter keamanan & dokumen PDF.</span>
+                        <button id="btn-reverify-sql" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-2 transition">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            <span>Audit Ulang & Eksekusi Kueri</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Verification & Verifier Feedback Content -->
+            <div id="tab-verification" class="tab-content hidden p-6 space-y-6">
+                <!-- Status Badge Banner -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Hasil Audit Independen & Kepatuhan</span>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span id="verif-status-badge" class="px-2.5 py-1 rounded-full text-xs font-bold">APPROVED</span>
+                            <span class="text-xs text-slate-500" id="verif-timestamp">Waktu: -</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-medium text-slate-500" id="verif-auditor-id">Auditor: Automated Compliance Engine v2</span>
+                    </div>
+                </div>
+
+                <!-- Checklist Checks -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Checklist Parameter Kepatuhan:</h4>
+                    <div id="verif-checks-list" class="space-y-3"></div>
+                </div>
+
+                <!-- Verifier Sign-off & Feedback Section -->
+                <div class="border-t border-slate-200 pt-6 space-y-4 bg-slate-50/70 p-5 rounded-2xl border">
+                    <div id="role-governance-notice" class="p-3 rounded-xl border text-xs flex items-center justify-between transition"></div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                                <i data-lucide="user-check" class="w-4 h-4 text-indigo-600"></i>
+                                <span>Sign-off & Catatan Verifikator Resmi (Data Steward / Governance)</span>
+                            </h4>
+                            <p class="text-xs text-slate-500 mt-0.5">Berikan arahan kepatuhan resmi atau instruksi batasan penggunaan data yang akan disematkan ke dalam berkas Excel dan paket manifest.</p>
+                        </div>
+                        <span id="feedback-signed-badge" class="hidden text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full">Telah Disahkan</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Petugas Verifikator:</label>
+                            <input type="text" id="verifier-name-input" value="Hendra Gunawan, S.Kom" class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jabatan / Unit Kerja:</label>
+                            <input type="text" id="verifier-role-input" value="Head of Data Governance & Compliance" class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan & Arahan Kepatuhan Verifikator (Feedback):</label>
+                        <textarea id="verifier-comments-input" rows="3" class="w-full text-xs p-3 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed" placeholder="Contoh: Permohonan disetujui untuk analisis retensi kuartal 3. Kolom total nominal dan NIK yang telah dimasking tidak boleh diekspor ke pihak luar tanpa izin DPO."></textarea>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <span class="text-[11px] text-slate-400">Keputusan verifikator akan langsung memperbarui status di CMS dan menyematkan stempel tanda tangan di lembar Excel.</span>
+                        <div class="flex items-center space-x-2">
+                            <button id="btn-feedback-revision" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold text-xs px-3.5 py-2 rounded-lg transition">
+                                ⚠️ Minta Revisi
+                            </button>
+                            <button id="btn-feedback-reject" class="bg-red-100 hover:bg-red-200 text-red-900 font-semibold text-xs px-3.5 py-2 rounded-lg transition">
+                                ❌ Tolak Permohonan
+                            </button>
+                            <button id="btn-feedback-approve" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-1.5 transition">
+                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                <span>Setujui & Sahkan Sertifikat (Approve)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Revision Action Box -->
+                    <div id="revision-action-box" class="hidden p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900">
+                        <div class="flex items-start space-x-2.5">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                            <div>
+                                <span class="font-bold">Permohonan Membutuhkan Penyesuaian (Status: REVISION REQUIRED)</span>
+                                <p class="text-[11px] text-amber-800 mt-0.5" id="revision-instruction-text">Verifikator meminta revisi parameter permohonan. Klik tombol di samping untuk membuka kembali form spesifikasi dan mengoreksi data.</p>
+                            </div>
+                        </div>
+                        <button id="btn-reopen-spec-for-revision" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3 py-1.5 rounded-lg flex items-center justify-center space-x-1.5 transition flex-shrink-0 shadow-2xs">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            <span>Buka Form Penyesuaian</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: Delivery Content -->
+            <div id="tab-delivery" class="tab-content hidden p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-emerald-50/60 border border-emerald-200 rounded-xl p-4">
+                    <div>
+                        <h4 class="text-sm font-bold text-emerald-950 flex items-center space-x-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                            <span>Data Berhasil Diekstraksi & Divalidasi</span>
+                        </h4>
+                        <p class="text-xs text-emerald-800 mt-1" id="delivery-stats-text">35 baris diekstrak dalam 42.5 ms.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <a id="btn-download-cert" href="#" download class="text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 rounded-xl shadow-md shadow-rose-600/20 flex items-center space-x-1.5 transition">
+                            <i data-lucide="award" class="w-4 h-4"></i>
+                            <span>Sertifikat PDF Resmi</span>
+                        </a>
+                        <a id="btn-download-zip" href="#" download class="text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl shadow-md shadow-indigo-600/20 flex items-center space-x-1.5 transition">
+                            <i data-lucide="archive" class="w-4 h-4"></i>
+                            <span>Unduh Paket Lengkap (.ZIP)</span>
+                        </a>
+                        <a id="btn-download-excel" href="#" download class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 flex items-center space-x-1.5 transition">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                            <span>Excel (.xlsx 3-Sheet)</span>
+                        </a>
+                        <a id="btn-download-csv" href="#" download class="text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2.5 rounded-xl shadow-xs flex items-center space-x-1.5 transition">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span>CSV</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Preview Table -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Preview 10 Baris Pertama:</h4>
+                        <span class="text-[11px] text-slate-400">Atribut PII otomatis dimasking</span>
+                    </div>
+                    <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-xs">
+                        <table class="w-full text-xs text-left text-slate-600" id="preview-table">
+                            <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                <tr id="preview-thead-row"></tr>
+                            </thead>
+                            <tbody id="preview-tbody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CMS / Request History Modal -->
+    <div id="cms-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="inbox" class="w-5 h-5 text-indigo-600"></i>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-900">CMS Repositori & Riwayat Permohonan Data</h3>
+                        <p class="text-xs text-slate-500">Arsip seluruh permohonan data yang pernah diproses oleh sistem tata kelola.</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <a id="btn-export-history-csv" href="/api/history/export" download class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-xs">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Ekspor CSV</span>
+                    </a>
+                    <button id="btn-close-cms" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <!-- Search & Status Filter Toolbar -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div class="relative w-full sm:w-80">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
+                        <input type="text" id="input-cms-search" placeholder="Cari nomor ID, nama pemohon, atau judul..." class="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex items-center space-x-1.5 w-full sm:w-auto overflow-x-auto text-xs">
+                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-blue-600 text-white transition shadow-2xs" data-status="ALL">Semua</button>
+                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="APPROVED">Disetujui</button>
+                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="REVISION">Perlu Revisi</button>
+                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="REJECTED">Ditolak</button>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-xs">
+                    <table class="w-full text-xs text-left text-slate-600">
+                        <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                            <tr>
+                                <th class="px-3.5 py-3">ID Permohonan</th>
+                                <th class="px-3.5 py-3">Judul Dokumen</th>
+                                <th class="px-3.5 py-3">Pemohon</th>
+                                <th class="px-3.5 py-3">Waktu Buat</th>
+                                <th class="px-3.5 py-3">Status</th>
+                                <th class="px-3.5 py-3">Baris</th>
+                                <th class="px-3.5 py-3 text-right">Aksi Unduh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cms-history-tbody" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics & Compliance Insights Modal -->
+    <div id="analytics-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-600"></i>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-900">Dashboard Analitik & Kepatuhan Tata Kelola Data</h3>
+                        <p class="text-xs text-slate-500">Ringkasan SLA, tingkat kepatuhan regulasi PDP, dan distribusi pemenuhan data perusahaan.</p>
+                    </div>
+                </div>
+                <button id="btn-close-analytics" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- KPI Stat Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                        <span class="text-xs text-blue-700 font-semibold uppercase tracking-wider block">Total Permohonan</span>
+                        <span id="stat-total-requests" class="text-2xl font-bold text-blue-950 mt-1 block">-</span>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+                        <span class="text-xs text-emerald-700 font-semibold uppercase tracking-wider block">Tingkat Kepatuhan (SLA)</span>
+                        <span id="stat-compliance-rate" class="text-2xl font-bold text-emerald-950 mt-1 block">-</span>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 text-center">
+                        <span class="text-xs text-purple-700 font-semibold uppercase tracking-wider block">Total Baris Diserahkan</span>
+                        <span id="stat-total-rows" class="text-2xl font-bold text-purple-950 mt-1 block">-</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                        <span class="text-xs text-amber-700 font-semibold uppercase tracking-wider block">Atribut PII Terlindungi</span>
+                        <span id="stat-pii-columns" class="text-2xl font-bold text-amber-950 mt-1 block">-</span>
+                    </div>
+                </div>
+
+                <!-- Distributions Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                            <i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i>
+                            <span>Distribusi Permohonan per Divisi / Unit Kerja</span>
+                        </h4>
+                        <div id="analytics-dept-list" class="space-y-2 text-xs">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                            <i data-lucide="check-square" class="w-4 h-4 text-emerald-600"></i>
+                            <span>Status Keputusan Verifikator (Data Steward)</span>
+                        </h4>
+                        <div id="analytics-status-list" class="space-y-2 text-xs">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OpenMetadata Connection Settings Modal -->
+    <div id="om-settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-blue-600"></i>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-900">Pengaturan Koneksi OpenMetadata</h3>
+                        <p class="text-xs text-slate-500">Konfigurasi endpoint REST API / MCP server tata kelola metadata.</p>
+                    </div>
+                </div>
+                <button id="btn-close-om-settings" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">OpenMetadata API Server URL:</label>
+                    <input type="text" id="input-om-url" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500" placeholder="http://localhost:8585/api/v1">
+                    <span class="text-[11px] text-slate-400 mt-1 block">Contoh: http://localhost:8585/api/v1 atau http://metadata.internal.corp/api/v1</span>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">OpenMetadata JWT Token (Bearer Auth):</label>
+                    <input type="password" id="input-om-jwt" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan JWT Token (Opsional untuk testing)">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Mode Operasional Katalog:</label>
+                    <select id="select-om-mode" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="AUTO">AUTO (Coba Live Server, fallback ke Offline DWH Catalog jika offline)</option>
+                        <option value="LIVE_ONLY">LIVE ONLY (Harus terhubung ke OpenMetadata server sungguhan)</option>
+                        <option value="OFFLINE_ONLY">OFFLINE ONLY (Gunakan Katalog Enterprise DWH Bawaan)</option>
+                    </select>
+                </div>
+                <div id="om-test-result" class="p-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
+                    <span class="font-medium">Status saat ini:</span> <span id="om-test-result-text">Mengecek koneksi...</span>
+                </div>
+                <div class="flex items-center justify-end space-x-2 pt-2">
+                    <button id="btn-test-om-conn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-lg transition">
+                        Uji Koneksi (Test)
+                    </button>
+                    <button id="btn-save-om-settings" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-1.5 shadow-sm">
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                        <span>Simpan Pengaturan</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spec Confirmation Modal (Human-in-the-Loop Checkpoint) -->
+    <div id="spec-confirmation-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-blue-50/70 to-indigo-50/70">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 flex-shrink-0">
+                        <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-bold text-base text-slate-900">Konfirmasi Spesifikasi Permohonan Data</h3>
+                            <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Human-in-the-Loop</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Tinjau dan sesuaikan parameter hasil ekstraksi sebelum kueri SQL dirumuskan dan dieksekusi di database.</p>
+                    </div>
+                </div>
+                <button id="btn-close-spec-conf" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="p-6 overflow-y-auto space-y-6 text-xs">
+                <!-- Info Alert Banner -->
+                <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 flex items-start space-x-3 text-amber-900">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                    <div class="space-y-0.5 leading-relaxed">
+                        <span class="font-bold block">Pemeriksaan Kepatuhan Tata Kelola Data (UU PDP):</span>
+                        <p class="text-[11px] text-amber-800">
+                            Pastikan rentang waktu data tidak melebihi persetujuan permohonan. Terapkan prinsip <strong>Minimisasi Data</strong> dengan menghapus centang pada kolom yang tidak relevan dengan tujuan analisis.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Sisi Kiri: Administrasi & Periode Tanggal -->
+                    <div class="space-y-4">
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i>
+                                <span>Informasi Permohonan</span>
+                            </h4>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block font-medium text-slate-600 mb-0.5">Nomor ID Permohonan:</label>
+                                    <input type="text" id="conf-req-id" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono text-slate-800 text-xs font-bold" readonly>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block font-medium text-slate-600 mb-0.5">Pemohon:</label>
+                                        <input type="text" id="conf-requester" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-slate-600 mb-0.5">Divisi / Unit Kerja:</label>
+                                        <input type="text" id="conf-dept" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-slate-600 mb-0.5">Tujuan Penggunaan Data:</label>
+                                    <textarea id="conf-purpose" rows="2" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1. Konfirmasi Periode Waktu -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i data-lucide="calendar-range" class="w-3.5 h-3.5 text-indigo-600"></i>
+                                <span>1. Konfirmasi Rentang Waktu (Periode)</span>
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-medium text-slate-600 mb-1">Tanggal Mulai:</label>
+                                    <input type="text" id="conf-date-start" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono font-semibold" placeholder="YYYY-MM-DD">
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-slate-600 mb-1">Tanggal Selesai:</label>
+                                    <input type="text" id="conf-date-end" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-mono font-semibold" placeholder="YYYY-MM-DD">
+                                </div>
+                            </div>
+                            <span class="text-[11px] text-slate-500 block">Kueri SQL akan membatasi data berdasarkan rentang tanggal ini.</span>
+                        </div>
+
+                        <!-- 2. Tingkat Granularitas -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i data-lucide="layers" class="w-3.5 h-3.5 text-purple-600"></i>
+                                <span>2. Tingkat Granularitas Data</span>
+                            </h4>
+                            <div class="flex items-center space-x-4 pt-1">
+                                <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700">
+                                    <input type="radio" name="conf-granularity" value="detail" checked class="text-blue-600 focus:ring-blue-500">
+                                    <span>Data Baris Detail (Row-Level)</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700">
+                                    <input type="radio" name="conf-granularity" value="summary" class="text-blue-600 focus:ring-blue-500">
+                                    <span>Data Agregat (Summary / Grouped)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sisi Kanan: Privasi Kolom & Filter Bisnis -->
+                    <div class="space-y-4">
+                        <!-- 3. Konfirmasi Kolom Diminta & PII -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                                    <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-600"></i>
+                                    <span>3. Kolom yang Diminta & Proteksi PII</span>
+                                </h4>
+                                <span class="text-[10px] text-slate-400">Centang kolom yang diizinkan</span>
+                            </div>
+                            <div id="conf-fields-container" class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- 4. Konfirmasi Filter Bisnis -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                                <i data-lucide="filter" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                <span>4. Kriteria Filter Bisnis</span>
+                            </h4>
+                            <div id="conf-filters-container" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+                <span class="text-[11px] text-slate-500">Perubahan pada parameter akan langsung digunakan oleh SQL Synthesizer.</span>
+                <div class="flex items-center space-x-2">
+                    <button id="btn-cancel-spec-conf" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold px-4 py-2 rounded-xl transition text-xs">
+                        Batal
+                    </button>
+                    <button id="btn-confirm-and-run" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition text-xs shadow-md shadow-blue-500/20 flex items-center space-x-2">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>Setujui & Jalankan Eksekusi Database</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Catalog Browser Modal -->
+    <div id="catalog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
+                    <h3 class="font-bold text-base text-slate-900">Katalog Enterprise OpenMetadata</h3>
+                </div>
+                <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4" id="modal-catalog-content"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+        <p>DataRequest Studio © 2026 — Enterprise Data Governance & Automated Fulfillment Platform.</p>
+    </footer>
+
+    <!-- App JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
