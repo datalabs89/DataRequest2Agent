@@ -41,11 +41,24 @@ OFFICIAL_DEPARTMENTS = [
     "Eksternal Kemenkeu"
 ]
 
+OFFICIAL_BUSINESS_PROCESSES = [
+    "Ekspor",
+    "Impor",
+    "Cukai",
+    "Fasilitas",
+    "Manifest",
+    "Penerimaan",
+    "Keberatan & Banding",
+    "Dukungan Manajemen",
+    "Lainnya"
+]
+
 class DataRequestSpec(BaseModel):
     request_id: str = "REQ-UNKNOWN"
     document_title: str
     requester_name: str
     requester_department: str = "Internal Bea dan Cukai"  # Salah satu dari OFFICIAL_DEPARTMENTS
+    business_process: str = "Lainnya"  # Salah satu dari OFFICIAL_BUSINESS_PROCESSES
     request_date: Optional[str] = None
     business_purpose: str
     primary_entity: str

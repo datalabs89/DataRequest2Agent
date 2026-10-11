@@ -50,6 +50,7 @@ class HistoryManager:
             "document_title": spec.document_title,
             "requester_name": spec.requester_name,
             "department": normalize_dept(spec.requester_department),
+            "business_process": getattr(spec, "business_process", "Lainnya") or "Lainnya",
             "created_at": now_str,
             "status": verification.status,
             "row_count": execution.row_count,
@@ -144,7 +145,7 @@ class HistoryManager:
             writer = csv.writer(f)
             writer.writerow([
                 "ID_PERMOHONAN", "NOMOR_DOKUMEN", "JUDUL_PERMOHONAN", "NAMA_PEMOHON",
-                "DIVISI_DEPARTEMEN", "WAKTU_PEMBUATAN", "STATUS_TATA_KELOLA",
+                "DIVISI_DEPARTEMEN", "PROSES_BISNIS", "WAKTU_PEMBUATAN", "STATUS_TATA_KELOLA",
                 "BARIS_DATA_HASIL", "FILE_EXCEL", "NAMA_VERIFIKATOR", "CATATAN_VERIFIKATOR"
             ])
             for item in history:
@@ -154,6 +155,7 @@ class HistoryManager:
                     item.get("document_title", ""),
                     item.get("requester_name", ""),
                     item.get("department", ""),
+                    item.get("business_process", "Lainnya"),
                     item.get("created_at", ""),
                     item.get("status", ""),
                     item.get("row_count", 0),

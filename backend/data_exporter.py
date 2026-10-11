@@ -295,6 +295,7 @@ BERKAS DALAM PAKET INI:
             ("Judul Permohonan", spec.document_title),
             ("Nama Pemohon", spec.requester_name),
             ("Unit Kerja / Divisi", spec.requester_department),
+            ("Tipe Proses Bisnis", getattr(spec, "business_process", "Lainnya") or "Lainnya"),
             ("Tujuan Penggunaan Data", spec.business_purpose),
             ("Periode Data", f"{spec.time_range_start} s/d {spec.time_range_end}"),
             ("Katalog Sumber", "OpenMetadata Enterprise Catalog (Verified)"),

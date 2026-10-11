@@ -79,6 +79,31 @@ class PDFRequestParser:
             return "Eksternal Kemenkeu"
         return "Internal Bea dan Cukai"
 
+    def detect_business_process(self, text: str) -> str:
+        """
+        Mendeteksi tipe proses bisnis kepabeanan & tata kelola dari dokumen:
+        - Ekspor, Impor, Cukai, Fasilitas, Manifest, Penerimaan,
+        - Keberatan & Banding, Dukungan Manajemen, Lainnya
+        """
+        lower = text.lower()
+        if any(k in lower for k in ["ekspor", "peb", "export", "bc 3.0", "bc 30"]):
+            return "Ekspor"
+        elif any(k in lower for k in ["impor", "pib", "import", "bc 2.0", "bc 20"]):
+            return "Impor"
+        elif any(k in lower for k in ["cukai", "rokok", "mmea", "etanol", "pita cukai", "bkct"]):
+            return "Cukai"
+        elif any(k in lower for k in ["fasilitas", "kawasan berikat", "kite", "tpb", "plb", "kaber"]):
+            return "Fasilitas"
+        elif any(k in lower for k in ["manifest", "bc 1.1", "bc 11", "sarana pengangkut", "inward", "outward"]):
+            return "Manifest"
+        elif any(k in lower for k in ["penerimaan", "kas negara", "bea masuk", "bea keluar", "setoran", "pajak impor"]):
+            return "Penerimaan"
+        elif any(k in lower for k in ["keberatan", "banding", "sengketa", "pengadilan pajak", "gugatan"]):
+            return "Keberatan & Banding"
+        elif any(k in lower for k in ["dukungan manajemen", "kepegawaian", "sdm", "sarpras", "keuangan internal", "tik", "sekretariat"]):
+            return "Dukungan Manajemen"
+        return "Lainnya"
+
     def _extract_spec_from_text(self, text: str) -> DataRequestSpec:
         # 1. Ekstraksi Nomor/ID Dokumen
         req_id_match = re.search(r"(?:Nomor(?:\s+[A-Za-z]+){0,3}|No\.?|Req(?:uest)?\s*ID)\s*[:=]\s*([A-Z0-9\/\-\.]+)", text, re.IGNORECASE)
@@ -188,11 +213,26 @@ class PDFRequestParser:
 
         compliance_notes = "Data bersifat internal rahasia. Kolom PII (Nama, NIK, No HP) wajib dimasking untuk kepatuhan PDP/GDPR."
 
+        # Ekstraksi Proses Bisnis eksplisit jika tertulis di formulir
+        bproc_match = re.search(r"(?:Tipe\s*Proses\s*Bisnis|Proses\s*Bisnis|Domain\s*Bisnis)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+        business_process = "Lainnya"
+        if bproc_match:
+            raw_bproc = bproc_match.group(1).strip()
+            for opt in ["Ekspor", "Impor", "Cukai", "Fasilitas", "Manifest", "Penerimaan", "Keberatan & Banding", "Dukungan Manajemen", "Lainnya"]:
+                if opt.lower() in raw_bproc.lower():
+                    business_process = opt
+                    break
+            else:
+                business_process = self.detect_business_process(raw_bproc)
+        else:
+            business_process = self.detect_business_process(text)
+
         return DataRequestSpec(
             request_id=request_id,
             document_title=document_title,
             requester_name=requester_name,
             requester_department=requester_dept,
+            business_process=business_process,
             request_date=request_date,
             business_purpose=business_purpose,
             primary_entity=primary_entity,

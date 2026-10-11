@@ -268,22 +268,26 @@
 
             <!-- Tab 1: Spec Content -->
             <div id="tab-spec" class="tab-content p-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ID Permohonan</span>
-                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-req-id">-</p>
+                        <p class="text-sm font-semibold text-slate-900 mt-1 truncate" id="spec-req-id">-</p>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pemohon / PIC</span>
-                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-requester">-</p>
+                        <p class="text-sm font-semibold text-slate-900 mt-1 truncate" id="spec-requester">-</p>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Unit Kerja / Divisi</span>
-                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-department">-</p>
+                        <div class="mt-1" id="spec-department">-</div>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Proses Bisnis</span>
+                        <div class="mt-1" id="spec-business-process">-</div>
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                         <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Periode Data</span>
-                        <p class="text-sm font-semibold text-slate-900 mt-1" id="spec-timerange">-</p>
+                        <p class="text-xs font-semibold text-slate-800 mt-1" id="spec-timerange">-</p>
                     </div>
                 </div>
 
@@ -753,9 +757,26 @@
                                         <input type="text" id="conf-subdept" placeholder="Sub-Unit / Direktorat (opsional)" class="w-full mt-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 text-[11px] outline-none focus:border-blue-400">
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block font-medium text-slate-600 mb-0.5">Tujuan Penggunaan Data:</label>
-                                    <textarea id="conf-purpose" rows="2" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs"></textarea>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block font-medium text-slate-600 mb-0.5">Tipe Proses Bisnis:</label>
+                                        <select id="conf-business-process" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                                            <option value="Ekspor">Ekspor</option>
+                                            <option value="Impor">Impor</option>
+                                            <option value="Cukai">Cukai</option>
+                                            <option value="Fasilitas">Fasilitas</option>
+                                            <option value="Manifest">Manifest</option>
+                                            <option value="Penerimaan">Penerimaan</option>
+                                            <option value="Keberatan & Banding">Keberatan & Banding</option>
+                                            <option value="Dukungan Manajemen">Dukungan Manajemen</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                        <p class="text-[10px] text-slate-400 mt-0.5">Klasifikasi domain proses bisnis kepabeanan</p>
+                                    </div>
+                                    <div>
+                                        <label class="block font-medium text-slate-600 mb-0.5">Tujuan Penggunaan Data:</label>
+                                        <textarea id="conf-purpose" rows="2" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 text-xs"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>

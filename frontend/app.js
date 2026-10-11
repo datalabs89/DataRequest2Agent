@@ -328,6 +328,20 @@ function renderResults(data) {
         deptBadgeColor = "text-teal-900 bg-teal-50 border-teal-200";
     }
     deptElem.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${deptBadgeColor}">${deptText}</span>`;
+
+    // Tipe Proses Bisnis
+    const bProcElem = document.getElementById("spec-business-process");
+    if (bProcElem) {
+        const bProcText = data.spec.business_process || "Lainnya";
+        let bProcBadge = "bg-indigo-50 text-indigo-900 border-indigo-200";
+        if (bProcText === "Ekspor" || bProcText === "Impor") bProcBadge = "bg-blue-50 text-blue-900 border-blue-200";
+        else if (bProcText === "Cukai") bProcBadge = "bg-purple-50 text-purple-900 border-purple-200";
+        else if (bProcText === "Penerimaan") bProcBadge = "bg-emerald-50 text-emerald-900 border-emerald-200";
+        else if (bProcText === "Fasilitas") bProcBadge = "bg-cyan-50 text-cyan-900 border-cyan-200";
+        else if (bProcText.includes("Keberatan")) bProcBadge = "bg-amber-50 text-amber-900 border-amber-200";
+        bProcElem.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${bProcBadge}">${bProcText}</span>`;
+    }
+
     document.getElementById("spec-timerange").innerText = `${data.spec.time_range_start} s/d ${data.spec.time_range_end}`;
     document.getElementById("spec-purpose").innerText = data.spec.business_purpose;
 
@@ -717,7 +731,10 @@ function setupCmsModal() {
                 <td class="px-3.5 py-3 font-medium text-slate-800">${item.document_title}</td>
                 <td class="px-3.5 py-3">
                     <span class="font-medium text-slate-800 block">${item.requester_name}</span>
-                    <span class="text-[9px] px-1.5 py-0.5 rounded mt-0.5 inline-block ${deptBadgeClass}">${deptStr}</span>
+                    <div class="flex items-center space-x-1 mt-0.5">
+                        <span class="text-[9px] px-1.5 py-0.5 rounded inline-block ${deptBadgeClass}">${deptStr}</span>
+                        ${item.business_process ? `<span class="text-[9px] px-1.5 py-0.5 rounded inline-block bg-indigo-50 text-indigo-800 border border-indigo-200 font-semibold">${item.business_process}</span>` : ''}
+                    </div>
                 </td>
                 <td class="px-3.5 py-3 text-slate-500 whitespace-nowrap">${item.created_at}</td>
                 <td class="px-3.5 py-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${item.status}</span></td>
@@ -757,7 +774,8 @@ function setupCmsModal() {
                 (i.request_id || "").toLowerCase().includes(query) ||
                 (i.document_title || "").toLowerCase().includes(query) ||
                 (i.requester_name || "").toLowerCase().includes(query) ||
-                (i.department || "").toLowerCase().includes(query)
+                (i.department || "").toLowerCase().includes(query) ||
+                (i.business_process || "").toLowerCase().includes(query)
             );
         }
 
@@ -1198,6 +1216,12 @@ function openSpecConfirmationModal(spec) {
     if (deptSelect) deptSelect.value = baseDept;
     if (subdeptInput) subdeptInput.value = subDept;
 
+    // Set Tipe Proses Bisnis
+    const bProcSelect = document.getElementById("conf-business-process");
+    if (bProcSelect) {
+        bProcSelect.value = spec.business_process || "Lainnya";
+    }
+
     document.getElementById("conf-purpose").value = spec.business_purpose || "";
     document.getElementById("conf-date-start").value = spec.time_range_start || "2026-07-01";
     document.getElementById("conf-date-end").value = spec.time_range_end || "2026-09-30";
@@ -1269,6 +1293,7 @@ function setupSpecConfirmationModal() {
         const baseDeptVal = document.getElementById("conf-dept")?.value || "Internal Bea dan Cukai";
         const subDeptVal = document.getElementById("conf-subdept")?.value.trim();
         extractedSpecForConfirmation.requester_department = subDeptVal ? `${baseDeptVal} (${subDeptVal})` : baseDeptVal;
+        extractedSpecForConfirmation.business_process = document.getElementById("conf-business-process")?.value || "Lainnya";
         extractedSpecForConfirmation.business_purpose = document.getElementById("conf-purpose").value.trim();
         extractedSpecForConfirmation.time_range_start = document.getElementById("conf-date-start").value.trim();
         extractedSpecForConfirmation.time_range_end = document.getElementById("conf-date-end").value.trim();

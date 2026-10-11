@@ -95,11 +95,13 @@ class CertificateGenerator:
         # Bagian 1: Data Permohonan
         story.append(Paragraph("<b>I. RINCIAN PERMOHONAN DATA</b>", label_style))
         story.append(Spacer(1, 4))
+        b_proc = getattr(spec, 'business_process', 'Lainnya') or 'Lainnya'
         req_data = [
             [Paragraph("ID Permohonan", label_style), Paragraph(f": {spec.request_id}", val_style)],
             [Paragraph("Judul Dokumen", label_style), Paragraph(f": {spec.document_title}", val_style)],
             [Paragraph("Nama Pemohon (PIC)", label_style), Paragraph(f": {spec.requester_name}", val_style)],
             [Paragraph("Unit Kerja / Divisi", label_style), Paragraph(f": {spec.requester_department}", val_style)],
+            [Paragraph("Tipe Proses Bisnis", label_style), Paragraph(f": {b_proc}", val_style)],
             [Paragraph("Tujuan Penggunaan", label_style), Paragraph(f": {spec.business_purpose}", val_style)],
             [Paragraph("Periode Data Diizinkan", label_style), Paragraph(f": {spec.time_range_start} s/d {spec.time_range_end}", val_style)],
             [Paragraph("Proteksi Privasi PII", label_style), Paragraph(": Aktif (Masking Dinamis NIK, Nama, dan No HP)", val_style)]

@@ -57,6 +57,7 @@ def generate_sample_pdf_1(filepath: str):
         [Paragraph("Nama Pemohon (PIC)", label_style), Paragraph(": Ahmad Fauzi, S.Kom", body_style)],
         [Paragraph("Unit Kerja / Divisi", label_style), Paragraph(": Internal Bea dan Cukai", body_style)],
         [Paragraph("Sub-Unit / Direktorat", label_style), Paragraph(": Direktorat Penindakan dan Penyidikan (P2)", body_style)],
+        [Paragraph("Tipe Proses Bisnis", label_style), Paragraph(": Ekspor", body_style)],
         [Paragraph("Tujuan Penggunaan Data", label_style), Paragraph(": Evaluasi Profil Risiko Pelanggaran Kepabeanan & Analisis Pola Transaksi Ekspor-Impor Q3", body_style)],
         [Paragraph("Periode Data Diminta", label_style), Paragraph(": 2026-07-01 s/d 2026-09-30", body_style)],
         [Paragraph("Klasifikasi Akses", label_style), Paragraph(": Rahasia Negara / Terbatas (Regulasi PDP & Kepabeanan)", body_style)]
@@ -154,6 +155,7 @@ def generate_sample_pdf_2(filepath: str):
         [Paragraph("Nama Pemohon (PIC)", label_style), Paragraph(": Siti Sarah, S.T.", body_style)],
         [Paragraph("Unit Kerja / Divisi", label_style), Paragraph(": Internal Kemenkeu", body_style)],
         [Paragraph("Sub-Unit / Instansi", label_style), Paragraph(": Direktorat Potensi, Kepatuhan dan Penerimaan", body_style)],
+        [Paragraph("Tipe Proses Bisnis", label_style), Paragraph(": Penerimaan", body_style)],
         [Paragraph("Tujuan Penggunaan Data", label_style), Paragraph(": Rekonsiliasi Arus Transaksi Logistik Ekspedisi & Verifikasi PPN atas Jasa Pengiriman", body_style)],
         [Paragraph("Periode Data Diminta", label_style), Paragraph(": 2026-07-01 s/d 2026-09-30", body_style)],
         [Paragraph("Klasifikasi Akses", label_style), Paragraph(": Rahasia Jabatan / Operasional Kedinasan Kemenkeu", body_style)]
@@ -244,6 +246,7 @@ def generate_sample_pdf_3(filepath: str):
         [Paragraph("Nama Pejabat Pemohon", label_style), Paragraph(": Bambang Pratama, S.H., M.H.", body_style)],
         [Paragraph("Unit Kerja / Divisi", label_style), Paragraph(": Eksternal Kemenkeu", body_style)],
         [Paragraph("Instansi Pemohon", label_style), Paragraph(": Jaksa Agung Muda Tindak Pidana Khusus (Satgassus)", body_style)],
+        [Paragraph("Tipe Proses Bisnis", label_style), Paragraph(": Keberatan & Banding", body_style)],
         [Paragraph("Tujuan Penggunaan Data", label_style), Paragraph(": Data Dukung Audit Kepatuhan Devisa & Penegakan Hukum Tata Kelola Finansial Negara", body_style)],
         [Paragraph("Periode Data Diminta", label_style), Paragraph(": 2026-07-01 s/d 2026-09-30", body_style)],
         [Paragraph("Klasifikasi Akses", label_style), Paragraph(": Pro Justitia / Rahasia Negara Terbatas", body_style)]
