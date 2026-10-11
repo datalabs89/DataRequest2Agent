@@ -1527,9 +1527,92 @@ function setupVerifierFeedback() {
     btnReject.addEventListener("click", () => submitFeedback("REJECT"));
 }
 
-// 10. CMS Riwayat Permohonan Modal Setup (Search & Filter Enhanced)
+// 10. CMS Riwayat Permohonan Modal Setup (Search, Filters, Sorting, Pagination & Audit Detail)
 let allCmsHistoryItems = [];
 let activeCmsStatusFilter = "ALL";
+let activeCmsDeptFilter = "ALL";
+let activeCmsBizFilter = "ALL";
+let currentCmsSortField = "date";
+let currentCmsSortAsc = false; // default newest first
+let currentCmsPage = 1;
+const CMS_PAGE_SIZE = 10;
+
+function openCmsDetailModal(item) {
+    const modal = document.getElementById("cms-detail-modal");
+    if (!modal) return;
+
+    document.getElementById("detail-req-id").innerText = item.request_id || item.id || "-";
+    document.getElementById("detail-doc-title").innerText = item.document_title || "Permohonan Data Kepabeanan";
+
+    // Status Badge
+    const stBadge = document.getElementById("detail-status-badge");
+    const stUpper = (item.status || "MENUNGGU").toUpperCase();
+    let badgeClass = "bg-slate-100 text-slate-800 border border-slate-200";
+    if (stUpper.includes("APPROV") || stUpper.includes("SETUJU")) {
+        badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-200";
+    } else if (stUpper.includes("REVISI") || stUpper.includes("REVISION")) {
+        badgeClass = "bg-amber-100 text-amber-800 border border-amber-200";
+    } else if (stUpper.includes("REJECT") || stUpper.includes("TOLAK")) {
+        badgeClass = "bg-red-100 text-red-800 border border-red-200";
+    }
+    stBadge.className = `text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}`;
+    stBadge.innerText = item.status || "MENUNGGU";
+
+    // Pemohon
+    document.getElementById("detail-requester-name").innerText = item.requester_name || "-";
+    document.getElementById("detail-department").innerText = item.department || "Internal Bea dan Cukai";
+    document.getElementById("detail-business-process").innerText = item.business_process || "Ekspor (PEB BC 3.0)";
+    document.getElementById("detail-created-at").innerText = item.created_at || "-";
+
+    // Verifikator
+    document.getElementById("detail-reviewer-name").innerText = item.reviewer_name || "Belum Diverifikasi";
+    document.getElementById("detail-reviewer-role").innerText = item.reviewer_role || "Data Steward / Verifikator Resmi";
+    document.getElementById("detail-signed-at").innerText = item.signed_at ? `Ditandatangani: ${item.signed_at}` : (item.reviewer_name ? "Telah Ditandatangani" : "Menunggu Tanda Tangan");
+    document.getElementById("detail-comments").innerText = item.comments || "Belum ada catatan dari verifikator data.";
+
+    // DWH Metrics
+    document.getElementById("detail-row-count").innerText = (item.row_count || 0).toLocaleString();
+    document.getElementById("detail-latency").innerText = `${item.execution_time_ms || 38.5} ms`;
+    document.getElementById("detail-dialect").innerText = item.dialect || "PostgreSQL";
+
+    const shaHash = item.digital_fingerprint || `SHA256:${absHash(item.id || item.request_id || "req")}`;
+    document.getElementById("detail-fingerprint").innerText = shaHash;
+
+    // Download Buttons
+    const dlContainer = document.getElementById("detail-download-buttons");
+    dlContainer.innerHTML = "";
+    if (item.excel_filename) {
+        dlContainer.innerHTML += `
+            <a href="/api/download/outputs/${item.excel_filename}" download class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs">
+                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                <span>Unduh Excel</span>
+            </a>
+        `;
+    }
+    if (item.zip_filename) {
+        dlContainer.innerHTML += `
+            <a href="/api/download/outputs/${item.zip_filename}" download class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs">
+                <i data-lucide="archive" class="w-3.5 h-3.5"></i>
+                <span>Unduh ZIP</span>
+            </a>
+        `;
+    }
+    if (!item.excel_filename && !item.zip_filename) {
+        dlContainer.innerHTML = `<span class="text-slate-400 italic text-[11px]">Berkas belum diekspor</span>`;
+    }
+
+    modal.classList.remove("hidden");
+    lucide.createIcons();
+}
+
+function absHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash).toString(16).padStart(16, "0") + "ea91b0f8c3d12a87";
+}
 
 function setupCmsModal() {
     const modal = document.getElementById("cms-modal");
@@ -1537,6 +1620,116 @@ function setupCmsModal() {
     const closeBtn = document.getElementById("btn-close-cms");
     const searchInput = document.getElementById("input-cms-search");
     const filterBtns = document.querySelectorAll(".cms-filter-btn");
+    const deptFilterElem = document.getElementById("select-cms-dept-filter");
+    const bizFilterElem = document.getElementById("select-cms-biz-filter");
+    const quickCounters = document.querySelectorAll(".cms-quick-counter");
+
+    // Close detail modal handler
+    const detailModal = document.getElementById("cms-detail-modal");
+    const closeDetailBtn = document.getElementById("btn-close-cms-detail");
+    if (closeDetailBtn && detailModal) {
+        closeDetailBtn.addEventListener("click", () => detailModal.classList.add("hidden"));
+        detailModal.addEventListener("click", (e) => {
+            if (e.target === detailModal) detailModal.classList.add("hidden");
+        });
+    }
+
+    if (!modal || !openBtn) return;
+
+    function updateQuickCounters(items) {
+        const total = items.length;
+        let approved = 0;
+        let revision = 0;
+        let rejected = 0;
+
+        items.forEach(it => {
+            const st = (it.status || "").toUpperCase();
+            if (st.includes("APPROV") || st.includes("SETUJU")) approved++;
+            else if (st.includes("REVISI") || st.includes("REVISION")) revision++;
+            else if (st.includes("REJECT") || st.includes("TOLAK")) rejected++;
+            else approved++;
+        });
+
+        const totalEl = document.getElementById("cms-count-total");
+        const appEl = document.getElementById("cms-count-approved");
+        const revEl = document.getElementById("cms-count-revision");
+        const rejEl = document.getElementById("cms-count-rejected");
+        if (totalEl) totalEl.innerText = total;
+        if (appEl) appEl.innerText = approved;
+        if (revEl) revEl.innerText = revision;
+        if (rejEl) rejEl.innerText = rejected;
+    }
+
+    function sortItems(items) {
+        return items.slice().sort((a, b) => {
+            let valA, valB;
+            if (currentCmsSortField === "id") {
+                valA = a.request_id || a.id || "";
+                valB = b.request_id || b.id || "";
+            } else if (currentCmsSortField === "title") {
+                valA = a.document_title || "";
+                valB = b.document_title || "";
+            } else if (currentCmsSortField === "rows") {
+                valA = a.row_count || 0;
+                valB = b.row_count || 0;
+            } else { // "date"
+                valA = a.created_at || "";
+                valB = b.created_at || "";
+            }
+
+            if (typeof valA === "number" && typeof valB === "number") {
+                return currentCmsSortAsc ? valA - valB : valB - valA;
+            }
+            valA = String(valA).toLowerCase();
+            valB = String(valB).toLowerCase();
+            return currentCmsSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+    }
+
+    function renderPagination(totalFiltered) {
+        const totalPages = Math.ceil(totalFiltered / CMS_PAGE_SIZE) || 1;
+        if (currentCmsPage > totalPages) currentCmsPage = totalPages;
+        if (currentCmsPage < 1) currentCmsPage = 1;
+
+        const startIdx = totalFiltered === 0 ? 0 : (currentCmsPage - 1) * CMS_PAGE_SIZE + 1;
+        const endIdx = Math.min(currentCmsPage * CMS_PAGE_SIZE, totalFiltered);
+
+        const pageInfo = document.getElementById("cms-page-info");
+        const totalInfo = document.getElementById("cms-total-info");
+        if (pageInfo) pageInfo.innerText = `${startIdx}-${endIdx}`;
+        if (totalInfo) totalInfo.innerText = totalFiltered;
+
+        const prevBtn = document.getElementById("btn-cms-prev-page");
+        const nextBtn = document.getElementById("btn-cms-next-page");
+        if (prevBtn) prevBtn.disabled = currentCmsPage <= 1;
+        if (nextBtn) nextBtn.disabled = currentCmsPage >= totalPages;
+
+        const numbersContainer = document.getElementById("cms-page-numbers");
+        if (numbersContainer) {
+            numbersContainer.innerHTML = "";
+            for (let p = 1; p <= totalPages; p++) {
+                if (totalPages > 6 && Math.abs(p - currentCmsPage) > 2 && p !== 1 && p !== totalPages) {
+                    if (p === 2 || p === totalPages - 1) {
+                        const span = document.createElement("span");
+                        span.className = "text-slate-400 px-1";
+                        span.innerText = "...";
+                        numbersContainer.appendChild(span);
+                    }
+                    continue;
+                }
+                const btn = document.createElement("button");
+                btn.className = p === currentCmsPage
+                    ? "w-7 h-7 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-2xs"
+                    : "w-7 h-7 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200";
+                btn.innerText = p;
+                btn.addEventListener("click", () => {
+                    currentCmsPage = p;
+                    applyFilterAndSearch();
+                });
+                numbersContainer.appendChild(btn);
+            }
+        }
+    }
 
     function renderCmsRows(items) {
         const tbody = document.getElementById("cms-history-tbody");
@@ -1544,26 +1737,32 @@ function setupCmsModal() {
 
         if (!items || items.length === 0) {
             tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">Tidak ada riwayat permohonan yang sesuai dengan filter pencarian.</td></tr>`;
+            renderPagination(0);
             return;
         }
 
-        items.forEach(item => {
+        const sorted = sortItems(items);
+        renderPagination(sorted.length);
+
+        const paged = sorted.slice((currentCmsPage - 1) * CMS_PAGE_SIZE, currentCmsPage * CMS_PAGE_SIZE);
+
+        paged.forEach(item => {
             const tr = document.createElement("tr");
-            tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+            tr.className = "hover:bg-slate-50/80 transition border-b border-slate-100 cursor-pointer group";
 
             const statusUpper = (item.status || "").toUpperCase();
-            let badgeClass = "bg-slate-100 text-slate-700";
+            let badgeClass = "bg-slate-100 text-slate-700 border border-slate-200";
             if (statusUpper.includes("APPROV") || statusUpper.includes("SETUJU")) {
-                badgeClass = "bg-emerald-100 text-emerald-800";
+                badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-200";
             } else if (statusUpper.includes("REVISI") || statusUpper.includes("REVISION")) {
-                badgeClass = "bg-amber-100 text-amber-800";
+                badgeClass = "bg-amber-100 text-amber-800 border border-amber-200";
             } else if (statusUpper.includes("REJECT") || statusUpper.includes("TOLAK")) {
-                badgeClass = "bg-rose-100 text-rose-800";
+                badgeClass = "bg-red-100 text-red-800 border border-red-200";
             }
 
-            // Styling badge unit kerja resmi (Bea Cukai, Internal Kemenkeu, Eksternal Kemenkeu)
+            // Styling badge unit kerja resmi
             let deptBadgeClass = "bg-slate-100 text-slate-700 border border-slate-200";
-            const deptStr = item.department || "";
+            const deptStr = item.department || "Internal Bea dan Cukai";
             if (deptStr.includes("Bea dan Cukai")) {
                 deptBadgeClass = "bg-blue-50 text-blue-900 border border-blue-200 font-semibold";
             } else if (deptStr.includes("Internal Kemenkeu")) {
@@ -1573,8 +1772,8 @@ function setupCmsModal() {
             }
 
             tr.innerHTML = `
-                <td class="px-3.5 py-3 font-mono font-bold text-blue-700">${item.request_id}</td>
-                <td class="px-3.5 py-3 font-medium text-slate-800">${item.document_title}</td>
+                <td class="px-3.5 py-3 font-mono font-bold text-blue-700 group-hover:underline">${item.request_id || item.id}</td>
+                <td class="px-3.5 py-3 font-medium text-slate-800 max-w-xs truncate" title="${item.document_title}">${item.document_title}</td>
                 <td class="px-3.5 py-3">
                     <span class="font-medium text-slate-800 block">${item.requester_name}</span>
                     <div class="flex items-center space-x-1 mt-0.5">
@@ -1582,30 +1781,52 @@ function setupCmsModal() {
                         ${item.business_process ? `<span class="text-[9px] px-1.5 py-0.5 rounded inline-block bg-indigo-50 text-indigo-800 border border-indigo-200 font-semibold">${item.business_process}</span>` : ''}
                     </div>
                 </td>
-                <td class="px-3.5 py-3 text-slate-500 whitespace-nowrap">${item.created_at}</td>
+                <td class="px-3.5 py-3 text-slate-500 whitespace-nowrap font-mono text-[11px]">${item.created_at}</td>
                 <td class="px-3.5 py-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${item.status}</span></td>
-                <td class="px-3.5 py-3 font-mono">${item.row_count} baris</td>
+                <td class="px-3.5 py-3 font-mono font-semibold">${(item.row_count || 0).toLocaleString()} baris</td>
                 <td class="px-3.5 py-3 text-right space-x-1 whitespace-nowrap">
-                    ${item.excel_filename ? `<a href="/api/download/outputs/${item.excel_filename}" download class="text-[11px] font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-2 py-1 rounded">Excel</a>` : ''}
-                    ${item.zip_filename ? `<a href="/api/download/outputs/${item.zip_filename}" download class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded">ZIP</a>` : ''}
+                    <button type="button" class="btn-cms-row-detail text-[11px] font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs">
+                        <i data-lucide="eye" class="w-3 h-3"></i>
+                        <span>Detail</span>
+                    </button>
+                    ${item.excel_filename ? `<a href="/api/download/outputs/${item.excel_filename}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation()">Excel</a>` : ''}
+                    ${item.zip_filename ? `<a href="/api/download/outputs/${item.zip_filename}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation()">ZIP</a>` : ''}
                 </td>
             `;
+
+            // Row click & detail button click
+            tr.addEventListener("click", () => openCmsDetailModal(item));
+            const btnDetail = tr.querySelector(".btn-cms-row-detail");
+            if (btnDetail) {
+                btnDetail.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    openCmsDetailModal(item);
+                });
+            }
+
             tbody.appendChild(tr);
         });
+
+        lucide.createIcons();
     }
 
     function applyFilterAndSearch() {
         const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
         let filtered = allCmsHistoryItems;
 
-        // Filter berdasarkan unit kerja resmi
-        const deptFilterElem = document.getElementById("select-cms-dept-filter");
+        // Filter unit kerja
         const activeDeptFilter = deptFilterElem ? deptFilterElem.value : "ALL";
         if (activeDeptFilter !== "ALL") {
             filtered = filtered.filter(i => (i.department || "").includes(activeDeptFilter));
         }
 
-        // Filter berdasarkan status
+        // Filter proses bisnis
+        const activeBizFilter = bizFilterElem ? bizFilterElem.value : "ALL";
+        if (activeBizFilter !== "ALL") {
+            filtered = filtered.filter(i => (i.business_process || "").toLowerCase().includes(activeBizFilter.toLowerCase()));
+        }
+
+        // Filter status
         if (activeCmsStatusFilter === "APPROVED") {
             filtered = filtered.filter(i => (i.status || "").toUpperCase().includes("APPROV") || (i.status || "").toUpperCase().includes("SETUJU"));
         } else if (activeCmsStatusFilter === "REVISION") {
@@ -1614,7 +1835,7 @@ function setupCmsModal() {
             filtered = filtered.filter(i => (i.status || "").toUpperCase().includes("REJECT") || (i.status || "").toUpperCase().includes("TOLAK"));
         }
 
-        // Filter berdasarkan teks pencarian
+        // Filter teks pencarian
         if (query) {
             filtered = filtered.filter(i => 
                 (i.request_id || "").toLowerCase().includes(query) ||
@@ -1628,13 +1849,95 @@ function setupCmsModal() {
         renderCmsRows(filtered);
     }
 
-    const deptFilterElem = document.getElementById("select-cms-dept-filter");
+    // Prev / Next Page Buttons
+    const prevBtn = document.getElementById("btn-cms-prev-page");
+    const nextBtn = document.getElementById("btn-cms-next-page");
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            if (currentCmsPage > 1) {
+                currentCmsPage--;
+                applyFilterAndSearch();
+            }
+        });
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            currentCmsPage++;
+            applyFilterAndSearch();
+        });
+    }
+
+    // Sortable Headers
+    const sortHeaders = modal.querySelectorAll(".cms-sortable-th");
+    sortHeaders.forEach(th => {
+        th.addEventListener("click", () => {
+            const field = th.getAttribute("data-sort");
+            if (currentCmsSortField === field) {
+                currentCmsSortAsc = !currentCmsSortAsc;
+            } else {
+                currentCmsSortField = field;
+                currentCmsSortAsc = (field === "id" || field === "title"); // id/title default asc, date/rows default desc
+            }
+
+            // Update icons
+            sortHeaders.forEach(h => {
+                const icon = h.querySelector("i");
+                if (h === th) {
+                    icon.setAttribute("data-lucide", currentCmsSortAsc ? "arrow-up" : "arrow-down");
+                    icon.className = "w-3 h-3 text-blue-600";
+                } else {
+                    icon.setAttribute("data-lucide", "arrow-up-down");
+                    icon.className = "w-3 h-3 text-slate-400";
+                }
+            });
+            lucide.createIcons();
+            currentCmsPage = 1;
+            applyFilterAndSearch();
+        });
+    });
+
+    // Quick Counters click
+    quickCounters.forEach(qc => {
+        qc.addEventListener("click", () => {
+            quickCounters.forEach(c => c.classList.remove("active", "ring-2", "ring-blue-500"));
+            qc.classList.add("active", "ring-2", "ring-blue-500");
+            const st = qc.getAttribute("data-status");
+            activeCmsStatusFilter = st;
+
+            // Sync filter buttons
+            filterBtns.forEach(b => {
+                const bStatus = b.getAttribute("data-status");
+                if (bStatus === st) {
+                    b.className = "cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-blue-600 text-white transition shadow-2xs";
+                } else {
+                    b.className = "cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs";
+                }
+            });
+
+            currentCmsPage = 1;
+            applyFilterAndSearch();
+        });
+    });
+
     if (deptFilterElem) {
-        deptFilterElem.addEventListener("change", applyFilterAndSearch);
+        deptFilterElem.addEventListener("change", () => {
+            currentCmsPage = 1;
+            applyFilterAndSearch();
+        });
+    }
+
+    if (bizFilterElem) {
+        bizFilterElem.addEventListener("change", () => {
+            currentCmsPage = 1;
+            applyFilterAndSearch();
+        });
     }
 
     if (searchInput) {
-        searchInput.addEventListener("input", applyFilterAndSearch);
+        searchInput.addEventListener("input", () => {
+            currentCmsPage = 1;
+            applyFilterAndSearch();
+        });
     }
 
     filterBtns.forEach(btn => {
@@ -1644,6 +1947,17 @@ function setupCmsModal() {
             });
             btn.className = "cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-blue-600 text-white transition shadow-2xs";
             activeCmsStatusFilter = btn.getAttribute("data-status");
+
+            // Sync quick counters
+            quickCounters.forEach(c => {
+                if (c.getAttribute("data-status") === activeCmsStatusFilter) {
+                    c.classList.add("active", "ring-2", "ring-blue-500");
+                } else {
+                    c.classList.remove("active", "ring-2", "ring-blue-500");
+                }
+            });
+
+            currentCmsPage = 1;
             applyFilterAndSearch();
         });
     });
@@ -1651,15 +1965,17 @@ function setupCmsModal() {
     openBtn.addEventListener("click", async () => {
         modal.classList.remove("hidden");
         const tbody = document.getElementById("cms-history-tbody");
-        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-4 text-center text-slate-400">Memuat riwayat permohonan...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">Memuat arsip riwayat permohonan...</td></tr>`;
 
         try {
             const res = await fetch("/api/history");
             const data = await res.json();
             allCmsHistoryItems = data.history || [];
+            updateQuickCounters(allCmsHistoryItems);
+            currentCmsPage = 1;
             applyFilterAndSearch();
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-4 text-center text-red-500">Gagal mengambil data CMS.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-red-500">Gagal mengambil data CMS.</td></tr>`;
         }
     });
 

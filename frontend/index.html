@@ -980,14 +980,20 @@
     </main>
 
     <!-- CMS / Request History Modal -->
-    <div id="cms-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="inbox" class="w-5 h-5 text-indigo-600"></i>
+    <div id="cms-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
+        <div class="bg-white rounded-2xl max-w-6xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 flex-shrink-0">
+                        <i data-lucide="inbox" class="w-5 h-5"></i>
+                    </div>
                     <div>
-                        <h3 class="font-bold text-base text-slate-900">CMS Repositori & Riwayat Permohonan Data</h3>
-                        <p class="text-xs text-slate-500">Arsip seluruh permohonan data yang pernah diproses oleh sistem tata kelola.</p>
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-bold text-base sm:text-lg text-slate-900">CMS Repositori & Riwayat Permohonan Data</h3>
+                            <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-200 uppercase tracking-wider">Arsip CEISA</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Pencarian, audit trail verifikator, filter proses bisnis kepabeanan, dan pengunduhan arsip pemenuhan.</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -995,49 +1001,243 @@
                         <i data-lucide="download" class="w-3.5 h-3.5"></i>
                         <span>Ekspor CSV</span>
                     </a>
-                    <button id="btn-close-cms" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <button id="btn-close-cms" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4">
-                <!-- Search & Status Filter Toolbar -->
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div class="relative w-full sm:w-80">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
-                        <input type="text" id="input-cms-search" placeholder="Cari nomor ID, nama pemohon, atau judul..." class="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+
+            <!-- Modal Content -->
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-4">
+                <!-- Quick Counter Badges Strip -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div class="cms-quick-counter active bg-blue-50/80 border border-blue-200 hover:border-blue-400 rounded-xl p-2.5 cursor-pointer transition flex items-center justify-between shadow-2xs" data-status="ALL">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="layers" class="w-4 h-4 text-blue-600"></i>
+                            <span class="text-xs font-semibold text-blue-900">Total Permohonan</span>
+                        </div>
+                        <span id="cms-count-total" class="font-mono font-bold text-sm text-blue-950">0</span>
                     </div>
-                    <div class="flex items-center space-x-1.5 w-full sm:w-auto overflow-x-auto text-xs">
+                    <div class="cms-quick-counter bg-emerald-50/80 border border-emerald-200 hover:border-emerald-400 rounded-xl p-2.5 cursor-pointer transition flex items-center justify-between shadow-2xs" data-status="APPROVED">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+                            <span class="text-xs font-semibold text-emerald-900">Disetujui Resmi</span>
+                        </div>
+                        <span id="cms-count-approved" class="font-mono font-bold text-sm text-emerald-950">0</span>
+                    </div>
+                    <div class="cms-quick-counter bg-amber-50/80 border border-amber-200 hover:border-amber-400 rounded-xl p-2.5 cursor-pointer transition flex items-center justify-between shadow-2xs" data-status="REVISION">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+                            <span class="text-xs font-semibold text-amber-900">Perlu Revisi</span>
+                        </div>
+                        <span id="cms-count-revision" class="font-mono font-bold text-sm text-amber-950">0</span>
+                    </div>
+                    <div class="cms-quick-counter bg-red-50/80 border border-red-200 hover:border-red-400 rounded-xl p-2.5 cursor-pointer transition flex items-center justify-between shadow-2xs" data-status="REJECTED">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="x-circle" class="w-4 h-4 text-red-600"></i>
+                            <span class="text-xs font-semibold text-red-900">Ditolak / Disangkal</span>
+                        </div>
+                        <span id="cms-count-rejected" class="font-mono font-bold text-sm text-red-950">0</span>
+                    </div>
+                </div>
+
+                <!-- Search & Filters Toolbar -->
+                <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div class="relative w-full lg:w-72">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
+                        <input type="text" id="input-cms-search" placeholder="Cari ID, nama pemohon, atau judul..." class="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                        <!-- Filter Unit Kerja -->
                         <select id="select-cms-dept-filter" class="px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-700 border border-slate-300 hover:border-slate-400 transition shadow-2xs outline-none">
                             <option value="ALL">Semua Unit Kerja</option>
                             <option value="Internal Bea dan Cukai">Internal Bea dan Cukai</option>
                             <option value="Internal Kemenkeu">Internal Kemenkeu</option>
                             <option value="Eksternal Kemenkeu">Eksternal Kemenkeu</option>
                         </select>
-                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-blue-600 text-white transition shadow-2xs" data-status="ALL">Semua</button>
-                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="APPROVED">Disetujui</button>
-                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="REVISION">Perlu Revisi</button>
-                        <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="REJECTED">Ditolak</button>
+                        <!-- Filter Proses Bisnis -->
+                        <select id="select-cms-biz-filter" class="px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-700 border border-slate-300 hover:border-slate-400 transition shadow-2xs outline-none">
+                            <option value="ALL">Semua Proses Bisnis</option>
+                            <option value="Ekspor">Ekspor (PEB BC 3.0)</option>
+                            <option value="Impor">Impor (PIB BC 2.0)</option>
+                            <option value="Cukai">Cukai (BKC)</option>
+                            <option value="Manifest">Manifest (BC 1.1)</option>
+                        </select>
+                        <!-- Status Buttons -->
+                        <div class="flex items-center space-x-1">
+                            <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-blue-600 text-white transition shadow-2xs" data-status="ALL">Semua</button>
+                            <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="APPROVED">Disetujui</button>
+                            <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="REVISION">Perlu Revisi</button>
+                            <button class="cms-filter-btn px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition shadow-2xs" data-status="REJECTED">Ditolak</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-xs">
-                    <table class="w-full text-xs text-left text-slate-600">
-                        <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
-                            <tr>
-                                <th class="px-3.5 py-3">ID Permohonan</th>
-                                <th class="px-3.5 py-3">Judul Dokumen</th>
-                                <th class="px-3.5 py-3">Pemohon</th>
-                                <th class="px-3.5 py-3">Waktu Buat</th>
-                                <th class="px-3.5 py-3">Status</th>
-                                <th class="px-3.5 py-3">Baris</th>
-                                <th class="px-3.5 py-3 text-right">Aksi Unduh</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cms-history-tbody" class="divide-y divide-slate-100">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
+                <!-- Table with sortable headers -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs bg-white">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-600">
+                            <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200 select-none">
+                                <tr>
+                                    <th class="px-3.5 py-3 cursor-pointer hover:bg-slate-200/70 transition cms-sortable-th" data-sort="id">
+                                        <div class="flex items-center space-x-1">
+                                            <span>ID Permohonan</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-3.5 py-3 cursor-pointer hover:bg-slate-200/70 transition cms-sortable-th" data-sort="title">
+                                        <div class="flex items-center space-x-1">
+                                            <span>Judul Dokumen</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-3.5 py-3">Pemohon & Unit Kerja</th>
+                                    <th class="px-3.5 py-3 cursor-pointer hover:bg-slate-200/70 transition cms-sortable-th" data-sort="date">
+                                        <div class="flex items-center space-x-1">
+                                            <span>Waktu Buat</span>
+                                            <i data-lucide="arrow-down" class="w-3 h-3 text-blue-600"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-3.5 py-3">Status Tata Kelola</th>
+                                    <th class="px-3.5 py-3 cursor-pointer hover:bg-slate-200/70 transition cms-sortable-th" data-sort="rows">
+                                        <div class="flex items-center space-x-1">
+                                            <span>Baris Data</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="px-3.5 py-3 text-right">Aksi & Arsip</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cms-history-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Footer -->
+                    <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                        <div class="text-slate-500">
+                            Menampilkan <span id="cms-page-info" class="font-semibold text-slate-700">1-10</span> dari <span id="cms-total-info" class="font-semibold text-slate-700">0</span> permohonan
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <button id="btn-cms-prev-page" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 disabled:opacity-40 disabled:pointer-events-none transition flex items-center space-x-1">
+                                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                                <span>Sebelumnya</span>
+                            </button>
+                            <div id="cms-page-numbers" class="flex items-center space-x-1">
+                                <!-- Populated via JS -->
+                            </div>
+                            <button id="btn-cms-next-page" class="px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 disabled:opacity-40 disabled:pointer-events-none transition flex items-center space-x-1">
+                                <span>Berikutnya</span>
+                                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CMS Audit Trail Detail Modal -->
+    <div id="cms-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                        <i data-lucide="file-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-bold text-base text-slate-900" id="detail-req-id">REQ-2026-BC-089</h3>
+                            <span id="detail-status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">APPROVED</span>
+                        </div>
+                        <p class="text-xs text-slate-500 truncate max-w-md" id="detail-doc-title">Formulir Permohonan Data Kepabeanan</p>
+                    </div>
+                </div>
+                <button id="btn-close-cms-detail" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-5 overflow-y-auto space-y-4 text-xs">
+                <!-- Section 1: Informasi Pemohon -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Identitas Pemohon & Dokumen</span>
+                    <div class="grid grid-cols-2 gap-2 text-slate-700">
+                        <div>
+                            <span class="text-slate-400 block text-[11px]">Nama Pemohon:</span>
+                            <strong id="detail-requester-name" class="text-slate-900 font-semibold">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[11px]">Unit Kerja / Instansi:</span>
+                            <span id="detail-department" class="font-medium text-slate-800">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[11px]">Proses Bisnis:</span>
+                            <span id="detail-business-process" class="font-medium text-slate-800">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[11px]">Waktu Diajukan:</span>
+                            <span id="detail-created-at" class="font-mono text-slate-700">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Audit Verifikator / Data Steward -->
+                <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3.5 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Hasil Audit Verifikator (Data Steward)</span>
+                        <span id="detail-signed-at" class="text-[10px] text-emerald-700 font-mono">-</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-slate-700">
+                        <div>
+                            <span class="text-slate-500 block text-[11px]">Nama Verifikator:</span>
+                            <strong id="detail-reviewer-name" class="text-slate-900 font-semibold">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block text-[11px]">Peran / Jabatan:</span>
+                            <span id="detail-reviewer-role" class="text-slate-800 font-medium">-</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block text-[11px] mb-0.5">Catatan / Feedback Verifikasi:</span>
+                        <div id="detail-comments" class="bg-white p-2.5 rounded-lg border border-emerald-200 text-slate-700 text-xs italic">
+                            -
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Metrik Eksekusi DWH & Keamanan -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Metrik Eksekusi DWH & Keamanan</span>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-white p-2 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-400 uppercase block">Baris DWH</span>
+                            <span id="detail-row-count" class="font-bold font-mono text-slate-900 text-sm">0</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-400 uppercase block">Latensi Kueri</span>
+                            <span id="detail-latency" class="font-bold font-mono text-indigo-700 text-sm">0 ms</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border border-slate-200">
+                            <span class="text-[10px] text-slate-400 uppercase block">Dialect Database</span>
+                            <span id="detail-dialect" class="font-bold font-mono text-emerald-700 text-sm">PostgreSQL</span>
+                        </div>
+                    </div>
+                    <div class="pt-1">
+                        <span class="text-slate-400 block text-[10px]">Segel Kriptografis SHA-256 (Anti-Tampering):</span>
+                        <code id="detail-fingerprint" class="block font-mono text-[10px] bg-slate-900 text-emerald-400 p-2 rounded-lg break-all select-all mt-0.5">SHA256:7f83b165...</code>
+                    </div>
+                </div>
+
+                <!-- Section 4: File Output Terkait -->
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <span class="text-slate-500 text-[11px]">Arsip Berkas Siap Unduh:</span>
+                    <div class="flex items-center space-x-2" id="detail-download-buttons">
+                        <!-- Populated via JS -->
+                    </div>
                 </div>
             </div>
         </div>
