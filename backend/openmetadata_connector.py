@@ -17,7 +17,7 @@ class OpenMetadataConnector:
         self.offline_catalog = self._init_offline_catalog()
 
     def _init_offline_catalog(self) -> List[OpenMetadataTable]:
-        """Built-in Enterprise DWH Catalog for DJBC Customs, Excise, Banking, and Logistics."""
+        """Built-in Enterprise DWH Catalog for DJBC Customs, Excise, Facility, Revenue, and Disputes."""
         return [
             # 1. TABEL UTAMA KEPABEANAN: fct_peb_ekspor (Fakta Dokumen Ekspor PEB)
             OpenMetadataTable(
@@ -168,18 +168,18 @@ class OpenMetadataConnector:
                     OpenMetadataColumn(name="tanggal_terdaftar", data_type="DATE", description="Tanggal perolehan NIB/Akses Kepabeanan", tags=["Temporal"])
                 ]
             ),
-            # 6. TABEL FAKTA KEPABEANAN EKSPOR & TRANSAKSI BC 3.0: fct_transactions
+            # 6. TABEL FAKTA FASILITAS KEPABEANAN & TRANSAKSI: fct_transactions
             OpenMetadataTable(
-                fqn="dwh_production.sales.fct_transactions",
+                fqn="dwh_ceisa.fasilitas.fct_transactions",
                 service_name="CEISA40-PostgreSQL-DWH",
-                database_name="dwh_production",
-                schema_name="sales",
+                database_name="dwh_ceisa",
+                schema_name="fasilitas",
                 table_name="fct_transactions",
-                description="Tabel fakta transaksi ekspor barang pabean (PEB BC 3.0) terintegrasi, memuat tarif bea keluar, bea keluar barang, pph ekspor, nilai FOB, kode HS komoditas, dan kelengkapan dokumen pabean.",
+                description="Tabel fakta transaksi fasilitas kepabeanan (KITE, Kawasan Berikat, Kemudahan Ekspor/Impor) dan transaksi pabean terintegrasi, memuat tarif pembebasan, bea keluar/masuk, devisa, dan kelengkapan dokumen.",
                 tier="Tier 1 - Mission Critical",
-                owner="Subdit Ekspor & Pengelolaan Data DWH",
-                lineage_upstream=["staging_ceisa.stg_peb_header", "staging_ceisa.stg_peb_barang", "staging_ceisa.stg_dokumen_pelengkap"],
-                lineage_downstream=["datamart_ceisa.dm_kinerja_ekspor_bulanan", "datamart_ceisa.dm_devisa_ekspor"],
+                owner="Direktorat Fasilitas Kepabeanan",
+                lineage_upstream=["staging_ceisa.stg_peb_header", "staging_ceisa.stg_peb_barang", "staging_ceisa.stg_fasilitas_kite"],
+                lineage_downstream=["datamart_ceisa.dm_kinerja_ekspor_bulanan", "datamart_ceisa.dm_fasilitas_tpb"],
                 columns=[
                     OpenMetadataColumn(name="nomor_aju", data_type="VARCHAR(32)", description="Nomor Pengajuan 26-digit Dokumen PEB BC 3.0", tags=["PK", "Core"]),
                     OpenMetadataColumn(name="nomor_daftar", data_type="VARCHAR(16)", description="Nomor Pendaftaran PEB / Nopen resmi 6 digit", tags=["Core"]),
@@ -230,7 +230,7 @@ class OpenMetadataConnector:
                 tier="Tier 2",
                 owner="Direktorat Teknis Kepabeanan",
                 lineage_upstream=["staging_ceisa.stg_dokumen_pelengkap"],
-                lineage_downstream=["dwh_ceisa.ekspor.fct_peb_ekspor", "dwh_production.sales.fct_transactions"],
+                lineage_downstream=["dwh_ceisa.ekspor.fct_peb_ekspor", "dwh_ceisa.fasilitas.fct_transactions"],
                 columns=[
                     OpenMetadataColumn(name="nomor_aju", data_type="VARCHAR(32)", description="Nomor Pengajuan 26-digit Dokumen PEB (FK)", tags=["PK", "FK"]),
                     OpenMetadataColumn(name="nomor_peb", data_type="VARCHAR(16)", description="Nomor Pendaftaran PEB (Nopen)", tags=["FK"]),
@@ -241,88 +241,88 @@ class OpenMetadataConnector:
                 ]
             ),
             OpenMetadataTable(
-                fqn="dwh_production.sales.dim_customers",
-                service_name="PostgreSQL-DWH",
-                database_name="dwh_production",
-                schema_name="sales",
+                fqn="dwh_ceisa.fasilitas.dim_customers",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="fasilitas",
                 table_name="dim_customers",
-                description="Master data profil nasabah / pelanggan, demografi, dan segmentasi loyalitas.",
+                description="Master data profil perusahaan penerima fasilitas kepabeanan, importir produsen KITE/TPB, dan segmentasi kepatuhan.",
                 tier="Tier 1",
-                owner="CRM & Customer Analytics",
-                lineage_upstream=["staging.stg_crm_master"],
-                lineage_downstream=["dwh_production.sales.fct_transactions"],
+                owner="Direktorat Fasilitas Kepabeanan",
+                lineage_upstream=["staging_ceisa.stg_profil_perusahaan_kemenkeu"],
+                lineage_downstream=["dwh_ceisa.fasilitas.fct_transactions"],
                 columns=[
-                    OpenMetadataColumn(name="customer_id", data_type="VARCHAR(32)", description="Primary key unik nasabah", tags=["PK"]),
-                    OpenMetadataColumn(name="customer_name", data_type="VARCHAR(128)", description="Nama lengkap nasabah", tags=["PII"], is_pii=True),
-                    OpenMetadataColumn(name="email", data_type="VARCHAR(128)", description="Alamat email aktif nasabah", tags=["PII"], is_pii=True),
-                    OpenMetadataColumn(name="phone_number", data_type="VARCHAR(32)", description="Nomor handphone terdaftar", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="customer_id", data_type="VARCHAR(32)", description="Primary key unik nasabah/perusahaan", tags=["PK"]),
+                    OpenMetadataColumn(name="customer_name", data_type="VARCHAR(128)", description="Nama lengkap badan usaha/nasabah", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="email", data_type="VARCHAR(128)", description="Alamat email aktif perusahaan", tags=["PII"], is_pii=True),
+                    OpenMetadataColumn(name="phone_number", data_type="VARCHAR(32)", description="Nomor handphone/kontak terdaftar", tags=["PII"], is_pii=True),
                     OpenMetadataColumn(name="nik", data_type="VARCHAR(16)", description="Nomor Induk Kependudukan (16 digit)", tags=["PII", "Restricted"], is_pii=True),
-                    OpenMetadataColumn(name="customer_segment", data_type="VARCHAR(32)", description="Segmen nasabah: PRIORITAS, REGULER, CORPORATE, MASS_AFFLUENT", tags=["Dimension", "Segmentation"]),
-                    OpenMetadataColumn(name="city", data_type="VARCHAR(64)", description="Kota domisili nasabah", tags=["Geography"]),
-                    OpenMetadataColumn(name="province", data_type="VARCHAR(64)", description="Provinsi domisili nasabah", tags=["Geography"]),
-                    OpenMetadataColumn(name="registration_date", data_type="DATE", description="Tanggal pertama kali terdaftar", tags=["Temporal"]),
-                    OpenMetadataColumn(name="is_active", data_type="BOOLEAN", description="Status keaktifan akun (TRUE/FALSE)", tags=["Flag"])
+                    OpenMetadataColumn(name="customer_segment", data_type="VARCHAR(32)", description="Segmen fasilitas: PRIORITAS, KITE_INDUSTRI, TPB_BERIKAT, REGULER", tags=["Dimension", "Segmentation"]),
+                    OpenMetadataColumn(name="city", data_type="VARCHAR(64)", description="Kota domisili perusahaan", tags=["Geography"]),
+                    OpenMetadataColumn(name="province", data_type="VARCHAR(64)", description="Provinsi domisili perusahaan", tags=["Geography"]),
+                    OpenMetadataColumn(name="registration_date", data_type="DATE", description="Tanggal pertama kali terdaftar fasilitas", tags=["Temporal"]),
+                    OpenMetadataColumn(name="is_active", data_type="BOOLEAN", description="Status keaktifan fasilitas akun (TRUE/FALSE)", tags=["Flag"])
                 ]
             ),
             OpenMetadataTable(
-                fqn="dwh_production.sales.dim_stores",
-                service_name="PostgreSQL-DWH",
-                database_name="dwh_production",
-                schema_name="sales",
+                fqn="dwh_ceisa.fasilitas.dim_stores",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="fasilitas",
                 table_name="dim_stores",
-                description="Tabel dimensi cabang/toko, wilayah operasional, dan tipe outlet.",
+                description="Tabel dimensi kantor wilayah pengawas fasilitas, lokasi gudang berikat/kawasan industri, dan tipe tempat penimbunan berikat (TPB).",
                 tier="Tier 2",
-                owner="Retail Operations",
-                lineage_upstream=["staging.stg_outlet_master"],
-                lineage_downstream=["dwh_production.sales.fct_transactions"],
+                owner="Direktorat Fasilitas Kepabeanan",
+                lineage_upstream=["staging_ceisa.stg_lokasi_tpb"],
+                lineage_downstream=["dwh_ceisa.fasilitas.fct_transactions"],
                 columns=[
-                    OpenMetadataColumn(name="store_id", data_type="VARCHAR(32)", description="Kode unik cabang/toko", tags=["PK"]),
-                    OpenMetadataColumn(name="store_name", data_type="VARCHAR(128)", description="Nama cabang / outlet", tags=["Dimension"]),
+                    OpenMetadataColumn(name="store_id", data_type="VARCHAR(32)", description="Kode unik pos/lokasi fasilitas", tags=["PK"]),
+                    OpenMetadataColumn(name="store_name", data_type="VARCHAR(128)", description="Nama kawasan berikat / unit pengawas", tags=["Dimension"]),
                     OpenMetadataColumn(name="region", data_type="VARCHAR(64)", description="Wilayah: Jabodetabek, Jawa Barat, Jawa Tengah, Jawa Timur, Luar Jawa", tags=["Geography"]),
-                    OpenMetadataColumn(name="store_type", data_type="VARCHAR(32)", description="Tipe: Flagship, Outlet, Express, Digital Hub", tags=["Dimension"]),
-                    OpenMetadataColumn(name="manager_name", data_type="VARCHAR(64)", description="Nama branch manager", tags=["Dimension"])
+                    OpenMetadataColumn(name="store_type", data_type="VARCHAR(32)", description="Tipe fasilitas: Kawasan Berikat, Gudang Berikat, KITE, Pusat Logistik Berikat", tags=["Dimension"]),
+                    OpenMetadataColumn(name="manager_name", data_type="VARCHAR(64)", description="Nama kepala seksi / penanggung jawab pengawas", tags=["Dimension"])
                 ]
             ),
             OpenMetadataTable(
-                fqn="dwh_production.logistics.fct_shipments",
-                service_name="PostgreSQL-DWH",
-                database_name="dwh_production",
-                schema_name="logistics",
+                fqn="dwh_ceisa.keberatan.fct_shipments",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="keberatan",
                 table_name="fct_shipments",
-                description="Tabel tracking logistik, ekspedisi kurir, dan waktu pengiriman barang.",
+                description="Tabel pelacakan berkas perkara permohonan keberatan penetapan bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
                 tier="Tier 2",
-                owner="Logistics & Supply Chain",
-                lineage_upstream=["staging.stg_wms_orders"],
-                lineage_downstream=["datamart.dm_logistics_sla"],
+                owner="Direktorat Keberatan dan Banding",
+                lineage_upstream=["staging_ceisa.stg_permohonan_keberatan"],
+                lineage_downstream=["datamart_ceisa.dm_kinerja_keberatan_banding"],
                 columns=[
-                    OpenMetadataColumn(name="shipment_id", data_type="VARCHAR(64)", description="Nomor resi/pengiriman unik", tags=["PK"]),
-                    OpenMetadataColumn(name="transaction_id", data_type="VARCHAR(64)", description="Foreign key transaksi terkait", tags=["FK"]),
-                    OpenMetadataColumn(name="courier_name", data_type="VARCHAR(32)", description="Nama kurir/ekspedisi (JNE, SiCepat, Internal)", tags=["Dimension"]),
-                    OpenMetadataColumn(name="delivery_status", data_type="VARCHAR(32)", description="Status kirim: DELIVERED, IN_TRANSIT, FAILED, RETURNED", tags=["Dimension", "Filter"]),
-                    OpenMetadataColumn(name="shipping_cost", data_type="NUMERIC(10,2)", description="Ongkos kirim (IDR)", tags=["Metric"]),
-                    OpenMetadataColumn(name="dispatch_date", data_type="TIMESTAMP", description="Waktu barang keluar gudang", tags=["Temporal"]),
-                    OpenMetadataColumn(name="received_date", data_type="TIMESTAMP", description="Waktu barang diterima pembeli", tags=["Temporal"])
+                    OpenMetadataColumn(name="shipment_id", data_type="VARCHAR(64)", description="Nomor resi/berkas perkara unik", tags=["PK"]),
+                    OpenMetadataColumn(name="transaction_id", data_type="VARCHAR(64)", description="Foreign key dokumen pabean terkait", tags=["FK"]),
+                    OpenMetadataColumn(name="courier_name", data_type="VARCHAR(32)", description="Nama ekspedisi/kurir kedinasan dokumen", tags=["Dimension"]),
+                    OpenMetadataColumn(name="delivery_status", data_type="VARCHAR(32)", description="Status kirim/sidang: DELIVERED, IN_TRANSIT, FAILED, SIDANG_BANDING", tags=["Dimension", "Filter"]),
+                    OpenMetadataColumn(name="shipping_cost", data_type="NUMERIC(10,2)", description="Biaya penanganan administrasi (IDR)", tags=["Metric"]),
+                    OpenMetadataColumn(name="dispatch_date", data_type="TIMESTAMP", description="Waktu dokumen dikirimkan ke pemohon", tags=["Temporal"]),
+                    OpenMetadataColumn(name="received_date", data_type="TIMESTAMP", description="Waktu tanda terima keputusan oleh pemohon", tags=["Temporal"])
                 ]
             ),
             OpenMetadataTable(
-                fqn="dwh_production.finance.fct_credit_applications",
-                service_name="PostgreSQL-DWH",
-                database_name="dwh_production",
-                schema_name="finance",
+                fqn="dwh_ceisa.penerimaan.fct_credit_applications",
+                service_name="CEISA40-PostgreSQL-DWH",
+                database_name="dwh_ceisa",
+                schema_name="penerimaan",
                 table_name="fct_credit_applications",
-                description="Pengajuan pinjaman/kredit, limit fasilitas, dan status evaluasi risiko.",
+                description="Tabel fakta monitoring target dan realisasi penerimaan negara (Bea Masuk, Bea Keluar, Cukai, dan Pajak Dalam Rangka Impor/PDRI), penetapan piutang, dan evaluasi kepatuhan fiskal.",
                 tier="Tier 1",
-                owner="Risk & Credit Analytics",
-                lineage_upstream=["staging.stg_loan_origination"],
-                lineage_downstream=["datamart.dm_npl_monitoring"],
+                owner="Direktorat Penerimaan dan Perencanaan Strategis",
+                lineage_upstream=["staging_ceisa.stg_billing_mpn_penerimaan"],
+                lineage_downstream=["datamart_ceisa.dm_realisasi_penerimaan_fiskal"],
                 columns=[
-                    OpenMetadataColumn(name="application_id", data_type="VARCHAR(64)", description="ID pengajuan kredit", tags=["PK"]),
-                    OpenMetadataColumn(name="customer_id", data_type="VARCHAR(32)", description="Foreign key ke nasabah", tags=["FK"]),
-                    OpenMetadataColumn(name="loan_amount", data_type="NUMERIC(15,2)", description="Plafon kredit yang diajukan (IDR)", tags=["Metric"]),
-                    OpenMetadataColumn(name="tenor_months", data_type="INTEGER", description="Jangka waktu pinjaman (bulan)", tags=["Metric"]),
-                    OpenMetadataColumn(name="approval_status", data_type="VARCHAR(32)", description="Status: APPROVED, REJECTED, IN_REVIEW", tags=["Filter"]),
-                    OpenMetadataColumn(name="application_date", data_type="TIMESTAMP", description="Waktu pengajuan diajukan", tags=["Temporal"]),
-                    OpenMetadataColumn(name="credit_score", data_type="INTEGER", description="Skor BI-Checking / SLIK internal (300-850)", tags=["Metric"])
+                    OpenMetadataColumn(name="application_id", data_type="VARCHAR(64)", description="ID pengajuan penetapan piutang/anggaran", tags=["PK"]),
+                    OpenMetadataColumn(name="customer_id", data_type="VARCHAR(32)", description="Foreign key wajib pajak/wajib bayar", tags=["FK"]),
+                    OpenMetadataColumn(name="loan_amount", data_type="NUMERIC(15,2)", description="Nominal target/ketetapan penerimaan (IDR)", tags=["Metric"]),
+                    OpenMetadataColumn(name="tenor_months", data_type="INTEGER", description="Jangka waktu pelunasan (bulan)", tags=["Metric"]),
+                    OpenMetadataColumn(name="approval_status", data_type="VARCHAR(32)", description="Status: APPROVED, REJECTED, IN_REVIEW, LUNAS", tags=["Filter"]),
+                    OpenMetadataColumn(name="application_date", data_type="TIMESTAMP", description="Waktu ketetapan diterbitkan", tags=["Temporal"]),
+                    OpenMetadataColumn(name="credit_score", data_type="INTEGER", description="Skor profil risiko kepatuhan fiskal (300-850)", tags=["Metric"])
                 ]
             )
         ]

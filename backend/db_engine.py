@@ -213,16 +213,58 @@ class EnterpriseDatabaseEngine:
         );
         """)
 
+        # 9. Tabel DJBC Fakta Manifest: fct_manifest_bc11
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fct_manifest_bc11 (
+            nomor_bc11 TEXT PRIMARY KEY,
+            tanggal_bc11 TEXT,
+            nomor_pos TEXT,
+            nama_sarana_pengangkut TEXT,
+            nama_nahkoda_pilot TEXT,
+            pelabuhan_muat TEXT,
+            pelabuhan_tujuan TEXT,
+            jumlah_kemasan INTEGER,
+            berat_kotor_kg NUMERIC,
+            status_segel TEXT
+        );
+        """)
+
+        # 10. Tabel Fakta Penerimaan/Keuangan: fct_credit_applications
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fct_credit_applications (
+            application_id TEXT PRIMARY KEY,
+            customer_id TEXT,
+            loan_amount NUMERIC,
+            tenor_months INTEGER,
+            approval_status TEXT,
+            application_date TEXT,
+            credit_score INTEGER,
+            FOREIGN KEY (customer_id) REFERENCES dim_customers(customer_id)
+        );
+        """)
+
         cursor.execute("SELECT COUNT(*) FROM dim_customers")
         count = cursor.fetchone()[0]
 
         cursor.execute("SELECT COUNT(*) FROM dim_perusahaan")
         p_count = cursor.fetchone()[0]
 
+        cursor.execute("SELECT COUNT(*) FROM fct_manifest_bc11")
+        m_count = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM fct_credit_applications")
+        c_count = cursor.fetchone()[0]
+
         if count == 0:
             self._seed_mock_data(cursor)
         elif p_count == 0:
             self._seed_djbc_mock_data(cursor)
+
+        if m_count == 0:
+            self._seed_manifest_data(cursor)
+
+        if c_count == 0:
+            self._seed_credit_data(cursor)
 
         conn.commit()
         conn.close()
@@ -364,6 +406,36 @@ class EnterpriseDatabaseEngine:
                            (bid, doc_cukai, t_str, comp[0], comp[1], random.choice(["SKT", "SKM", "SPM"]),
                             random.choice([665.0, 985.0, 1150.0]), penerimaan, "LUNAS"))
 
+    def _seed_manifest_data(self, cursor: sqlite3.Cursor):
+        """Seed 30 data manifest kedatangan kapal/pesawat (BC 1.1)."""
+        vessels = ["MV Meratus Java", "MV Samudera Mas", "KM Tanto Express", "MV WAN HAI 315", "GA-872 Boeing 777"]
+        captains = ["Capt. Herman Susilo", "Capt. Tan Wei Lun", "Capt. Agus Salim", "Capt. James Miller"]
+        ports_load = ["SGSIN - Singapore", "MYPKG - Port Klang", "CNSHA - Shanghai", "JPTYO - Tokyo"]
+        ports_dest = ["IDTPP - Tanjung Priok", "IDTPS - Tanjung Perak", "IDBLW - Belawan"]
+        for i in range(1, 31):
+            bc11 = f"BC11-2026-{1000 + i}"
+            t_str = f"2026-08-{random.randint(1, 28):02d} {random.randint(6, 22):02d}:00:00"
+            cursor.execute("INSERT OR REPLACE INTO fct_manifest_bc11 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                           (bc11, t_str, f"POS-{i:03d}", random.choice(vessels), random.choice(captains),
+                            random.choice(ports_load), random.choice(ports_dest), random.randint(150, 2400),
+                            round(random.uniform(5000, 180000), 2), random.choice(["AMAN", "DIPERIKSA"])))
+
+    def _seed_credit_data(self, cursor: sqlite3.Cursor):
+        """Seed 40 data target dan realisasi penerimaan negara / fasilitas anggaran."""
+        cursor.execute("SELECT customer_id FROM dim_customers LIMIT 30")
+        cust_rows = cursor.fetchall()
+        cids = [r[0] for r in cust_rows] if cust_rows else [f"CUST-{i:03d}" for i in range(1, 31)]
+        for i in range(1, 41):
+            app_id = f"APP-PNBP-2026-{2000 + i}"
+            cid = random.choice(cids)
+            amount = random.choice([50000000.0, 120000000.0, 350000000.0, 750000000.0, 1500000000.0])
+            tenor = random.choice([6, 12, 24, 36])
+            status = random.choice(["APPROVED", "LUNAS", "IN_REVIEW"])
+            t_str = f"2026-08-{random.randint(1, 28):02d} 10:00:00"
+            score = random.randint(650, 850)
+            cursor.execute("INSERT OR REPLACE INTO fct_credit_applications VALUES (?, ?, ?, ?, ?, ?, ?)",
+                           (app_id, cid, amount, tenor, status, t_str, score))
+
     def execute_query(self, sql_query: str) -> Tuple[List[str], List[Dict[str, Any]]]:
         """
         Mengeksekusi query SQL dengan Circuit Breaker dan Read-Only Security Guard.
@@ -385,8 +457,11 @@ class EnterpriseDatabaseEngine:
         # Adaptasi FQN schema untuk SQLite (hilangkan prefix skema)
         adapted_sql = clean_sql
         prefixes_to_strip = [
-            "dwh_ceisa.ekspor.", "dwh_ceisa.impor.", "dwh_ceisa.cukai.", "dwh_ceisa.manifest.", "dwh_ceisa.master.", "dwh_ceisa.",
-            "dwh_production.sales.", "dwh_production.logistics.", "dwh_production.finance.", "dwh_production."
+            "dwh_ceisa.ekspor.", "dwh_ceisa.impor.", "dwh_ceisa.cukai.", "dwh_ceisa.manifest.", "dwh_ceisa.master.",
+            "dwh_ceisa.fasilitas.", "dwh_ceisa.penerimaan.", "dwh_ceisa.keberatan.", "dwh_ceisa.",
+            "dwh_production.sales.", "dwh_production.logistics.", "dwh_production.finance.",
+            "dwh_production.fasilitas.", "dwh_production.penerimaan.", "dwh_production.keberatan.", "dwh_production.",
+            "fasilitas.", "penerimaan.", "keberatan.", "sales.", "logistics.", "finance."
         ]
         for prefix in prefixes_to_strip:
             adapted_sql = adapted_sql.replace(prefix, "")
