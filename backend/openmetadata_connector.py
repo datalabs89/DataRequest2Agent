@@ -284,16 +284,16 @@ class OpenMetadataConnector:
                 ]
             ),
             OpenMetadataTable(
-                fqn="dwh_ceisa.keberatan.fct_shipments",
+                fqn="dwh_ceisa.perbendaharaan.fct_shipments",
                 service_name="CEISA40-PostgreSQL-DWH",
                 database_name="dwh_ceisa",
-                schema_name="keberatan",
+                schema_name="perbendaharaan",
                 table_name="fct_shipments",
-                description="Tabel pelacakan berkas perkara permohonan keberatan penetapan bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
+                description="Tabel pelacakan berkas perkara permohonan perbendaharaan, pengembalian bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
                 tier="Tier 2",
                 owner="Direktorat Keberatan Banding dan Peraturan",
-                lineage_upstream=["staging_ceisa.stg_permohonan_keberatan"],
-                lineage_downstream=["datamart_ceisa.dm_kinerja_keberatan_banding"],
+                lineage_upstream=["staging_ceisa.stg_permohonan_perbendaharaan"],
+                lineage_downstream=["datamart_ceisa.dm_kinerja_perbendaharaan"],
                 columns=[
                     OpenMetadataColumn(name="shipment_id", data_type="VARCHAR(64)", description="Nomor resi/berkas perkara unik", tags=["PK"]),
                     OpenMetadataColumn(name="transaction_id", data_type="VARCHAR(64)", description="Foreign key dokumen pabean terkait", tags=["FK"]),

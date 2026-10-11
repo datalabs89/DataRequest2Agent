@@ -246,7 +246,7 @@ def generate_sample_pdf_3(filepath: str):
         [Paragraph("Nama Pejabat Pemohon", label_style), Paragraph(": Bambang Pratama, S.H., M.H.", body_style)],
         [Paragraph("Unit Kerja / Divisi", label_style), Paragraph(": Eksternal Kemenkeu", body_style)],
         [Paragraph("Instansi Pemohon", label_style), Paragraph(": Jaksa Agung Muda Tindak Pidana Khusus (Satgassus)", body_style)],
-        [Paragraph("Tipe Proses Bisnis", label_style), Paragraph(": Keberatan & Banding", body_style)],
+        [Paragraph("Tipe Proses Bisnis", label_style), Paragraph(": Perbendaharaan", body_style)],
         [Paragraph("Tujuan Penggunaan Data", label_style), Paragraph(": Data Dukung Audit Kepatuhan Devisa & Penegakan Hukum Tata Kelola Finansial Negara", body_style)],
         [Paragraph("Periode Data Diminta", label_style), Paragraph(": 2026-07-01 s/d 2026-09-30", body_style)],
         [Paragraph("Klasifikasi Akses", label_style), Paragraph(": Pro Justitia / Rahasia Negara Terbatas", body_style)]

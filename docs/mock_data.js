@@ -1553,12 +1553,12 @@ window.MOCK_DATA = {
         "match_rationale": ""
       },
       {
-        "fqn": "dwh_ceisa.keberatan.fct_shipments",
+        "fqn": "dwh_ceisa.perbendaharaan.fct_shipments",
         "service_name": "CEISA40-PostgreSQL-DWH",
         "database_name": "dwh_ceisa",
-        "schema_name": "keberatan",
+        "schema_name": "perbendaharaan",
         "table_name": "fct_shipments",
-        "description": "Tabel pelacakan berkas perkara permohonan keberatan penetapan bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
+        "description": "Tabel pelacakan berkas perkara permohonan perbendaharaan, pengembalian bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
         "columns": [
           {
             "name": "shipment_id",
@@ -1635,10 +1635,10 @@ window.MOCK_DATA = {
         "tier": "Tier 2",
         "owner": "Direktorat Keberatan Banding dan Peraturan",
         "lineage_upstream": [
-          "staging_ceisa.stg_permohonan_keberatan"
+          "staging_ceisa.stg_permohonan_perbendaharaan"
         ],
         "lineage_downstream": [
-          "datamart_ceisa.dm_kinerja_keberatan_banding"
+          "datamart_ceisa.dm_kinerja_perbendaharaan"
         ],
         "match_score": 0.0,
         "match_rationale": ""
@@ -1762,7 +1762,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 23:48:35",
       "status": "APPROVED",
       "row_count": 35,
@@ -1782,7 +1782,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 23:42:26",
       "status": "APPROVED",
       "row_count": 35,
@@ -1822,7 +1822,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 23:28:00",
       "status": "APPROVED",
       "row_count": 35,
@@ -1842,7 +1842,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 23:10:05",
       "status": "APPROVED",
       "row_count": 35,
@@ -1862,7 +1862,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 23:09:29",
       "status": "APPROVED",
       "row_count": 35,
@@ -1882,7 +1882,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 22:28:50",
       "status": "APPROVED",
       "row_count": 35,
@@ -1902,7 +1902,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 22:11:06",
       "status": "APPROVED",
       "row_count": 35,
@@ -1962,7 +1962,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 22:03:53",
       "status": "APPROVED",
       "row_count": 35,
@@ -1982,7 +1982,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 21:55:21",
       "status": "APPROVED",
       "row_count": 35,
@@ -2002,7 +2002,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 21:48:15",
       "status": "APPROVED",
       "row_count": 35,
@@ -2022,7 +2022,7 @@ window.MOCK_DATA = {
       "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
       "requester_name": "Bambang Pratama, S.H., M.H.",
       "department": "Eksternal Kemenkeu",
-      "business_process": "Keberatan & Banding",
+      "business_process": "Perbendaharaan",
       "created_at": "2026-10-11 21:36:44",
       "status": "APPROVED",
       "row_count": 35,
@@ -4422,12 +4422,12 @@ window.MOCK_DATA = {
       "catalog_match": {
         "selected_tables": [
           {
-            "fqn": "dwh_ceisa.keberatan.fct_shipments",
+            "fqn": "dwh_ceisa.perbendaharaan.fct_shipments",
             "service_name": "CEISA40-PostgreSQL-DWH",
             "database_name": "dwh_ceisa",
-            "schema_name": "keberatan",
+            "schema_name": "perbendaharaan",
             "table_name": "fct_shipments",
-            "description": "Tabel pelacakan berkas perkara permohonan keberatan penetapan bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
+            "description": "Tabel pelacakan berkas perkara permohonan perbendaharaan, pengembalian bea masuk/keluar, sanksi administrasi, pengiriman dokumen keputusan, dan proses banding Pengadilan Pajak.",
             "columns": [
               {
                 "name": "shipment_id",
@@ -4504,10 +4504,10 @@ window.MOCK_DATA = {
             "tier": "Tier 2",
             "owner": "Direktorat Keberatan Banding dan Peraturan",
             "lineage_upstream": [
-              "staging_ceisa.stg_permohonan_keberatan"
+              "staging_ceisa.stg_permohonan_perbendaharaan"
             ],
             "lineage_downstream": [
-              "datamart_ceisa.dm_kinerja_keberatan_banding"
+              "datamart_ceisa.dm_kinerja_perbendaharaan"
             ],
             "match_score": 0.85,
             "match_rationale": "Cocok pada deskripsi tabel: 'pengiriman'; Kolom mendukung entitas: 'status'; Kolom mendukung entitas: 'transaction_id'"
@@ -5048,7 +5048,7 @@ window.MOCK_DATA = {
       },
       "generated_sql": {
         "dialect": "PostgreSQL",
-        "query": "-- ====================================================================\n-- Query Otomatis Dibuat oleh DataRequest2Agent\n-- Berdasarkan Dokumen: FORMULIR PERMOHONAN REKONSILIASI DATA TRANSAKSI PENERIMAAN NEGARA (ID: REQ-2026-KMK-114)\n-- Pemohon: Siti Sarah, S.T. (Internal Kemenkeu)\n-- Metadata Divalidasi via: OpenMetadata Service CEISA40-PostgreSQL-DWH\n-- Target Database: PostgreSQL\n-- ====================================================================\n\nSELECT\n    t.transaction_id,\n    t.status\nFROM dwh_ceisa.keberatan.fct_shipments AS t\nLEFT JOIN dwh_ceisa.keberatan.fct_shipments AS t\n    ON fct_transactions.transaction_id = t.transaction_id\nWHERE\n    t.transaction_date >= '2026-07-01 00:00:00'\n  AND t.transaction_date <= '2026-09-30 23:59:59'\nORDER BY\n    t.transaction_date DESC\nLIMIT 500;",
+        "query": "-- ====================================================================\n-- Query Otomatis Dibuat oleh DataRequest2Agent\n-- Berdasarkan Dokumen: FORMULIR PERMOHONAN REKONSILIASI DATA TRANSAKSI PENERIMAAN NEGARA (ID: REQ-2026-KMK-114)\n-- Pemohon: Siti Sarah, S.T. (Internal Kemenkeu)\n-- Metadata Divalidasi via: OpenMetadata Service CEISA40-PostgreSQL-DWH\n-- Target Database: PostgreSQL\n-- ====================================================================\n\nSELECT\n    t.transaction_id,\n    t.status\nFROM dwh_ceisa.perbendaharaan.fct_shipments AS t\nLEFT JOIN dwh_ceisa.perbendaharaan.fct_shipments AS t\n    ON fct_transactions.transaction_id = t.transaction_id\nWHERE\n    t.transaction_date >= '2026-07-01 00:00:00'\n  AND t.transaction_date <= '2026-09-30 23:59:59'\nORDER BY\n    t.transaction_date DESC\nLIMIT 500;",
         "explanation": "Query disusun untuk database PostgreSQL dengan menggabungkan tabel fakta `fct_shipments` dan tabel dimensi `fct_pib_impor, fct_transactions`. Filter diaplikasikan secara ketat sesuai spesifikasi dokumen permohonan. Atribut PII (Nama, NIK, NPWP, No Telepon) telah diproteksi dengan fungsi masking dinamis sesuai kepatuhan UU PDP & kerahasiaan data kepabeanan/perpajakan.",
         "selected_columns": [
           "transaction_id",
@@ -5058,7 +5058,7 @@ window.MOCK_DATA = {
           "Rentang Tanggal: 2026-07-01 s/d 2026-09-30"
         ],
         "tables_used": [
-          "dwh_ceisa.keberatan.fct_shipments",
+          "dwh_ceisa.perbendaharaan.fct_shipments",
           "dwh_ceisa.impor.fct_pib_impor",
           "dwh_ceisa.fasilitas.fct_transactions"
         ]
@@ -5290,7 +5290,7 @@ window.MOCK_DATA = {
         "document_title": "SURAT PERMINTAAN DATA DUKUNG PENGAWASAN & AUDIT KEPATUHAN NEGARA",
         "requester_name": "Bambang Pratama, S.H., M.H.",
         "requester_department": "Eksternal Kemenkeu",
-        "business_process": "Keberatan & Banding",
+        "business_process": "Perbendaharaan",
         "request_date": "10 Oktober 2026",
         "business_purpose": "Data",
         "primary_entity": "ekspor",

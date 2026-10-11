@@ -458,10 +458,10 @@ class EnterpriseDatabaseEngine:
         adapted_sql = clean_sql
         prefixes_to_strip = [
             "dwh_ceisa.ekspor.", "dwh_ceisa.impor.", "dwh_ceisa.cukai.", "dwh_ceisa.manifest.", "dwh_ceisa.master.",
-            "dwh_ceisa.fasilitas.", "dwh_ceisa.penerimaan.", "dwh_ceisa.keberatan.", "dwh_ceisa.",
+            "dwh_ceisa.fasilitas.", "dwh_ceisa.penerimaan.", "dwh_ceisa.perbendaharaan.", "dwh_ceisa.keberatan.", "dwh_ceisa.",
             "dwh_production.sales.", "dwh_production.logistics.", "dwh_production.finance.",
-            "dwh_production.fasilitas.", "dwh_production.penerimaan.", "dwh_production.keberatan.", "dwh_production.",
-            "fasilitas.", "penerimaan.", "keberatan.", "sales.", "logistics.", "finance."
+            "dwh_production.fasilitas.", "dwh_production.penerimaan.", "dwh_production.perbendaharaan.", "dwh_production.keberatan.", "dwh_production.",
+            "fasilitas.", "penerimaan.", "perbendaharaan.", "keberatan.", "sales.", "logistics.", "finance."
         ]
         for prefix in prefixes_to_strip:
             adapted_sql = adapted_sql.replace(prefix, "")

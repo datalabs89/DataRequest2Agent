@@ -66,7 +66,8 @@ def _compute_metrics_for_items(items: List[dict]) -> dict:
         "Impor (PIB BC 2.0)": 0,
         "Cukai (BKC)": 0,
         "Manifest (BC 1.1)": 0,
-        "TPB / Fasilitas Berikat": 0
+        "TPB / Fasilitas Berikat": 0,
+        "Perbendaharaan": 0
     }
     dialect_dist = {
         "PostgreSQL": 0,
@@ -120,7 +121,9 @@ def _compute_metrics_for_items(items: List[dict]) -> dict:
         # Business Process
         bp = (item.get("business_process") or "").lower()
         doc_title = (item.get("document_title") or "").lower()
-        if "impor" in bp or "impor" in doc_title or "bc 2.0" in bp:
+        if "perbendaharaan" in bp or "keberatan" in bp:
+            biz_dist["Perbendaharaan"] += 1
+        elif "impor" in bp or "impor" in doc_title or "bc 2.0" in bp:
             biz_dist["Impor (PIB BC 2.0)"] += 1
         elif "cukai" in bp or "cukai" in doc_title or "bkc" in bp:
             biz_dist["Cukai (BKC)"] += 1

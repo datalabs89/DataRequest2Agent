@@ -601,7 +601,7 @@ function renderResults(data) {
         else if (bProcText === "Cukai") bProcBadge = "bg-purple-50 text-purple-900 border-purple-200";
         else if (bProcText === "Penerimaan") bProcBadge = "bg-emerald-50 text-emerald-900 border-emerald-200";
         else if (bProcText === "Fasilitas") bProcBadge = "bg-cyan-50 text-cyan-900 border-cyan-200";
-        else if (bProcText.includes("Keberatan")) bProcBadge = "bg-amber-50 text-amber-900 border-amber-200";
+        else if (bProcText.includes("Keberatan") || bProcText.includes("Perbendaharaan")) bProcBadge = "bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/50";
         bProcElem.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${bProcBadge}">${bProcText}</span>`;
     }
 
@@ -2998,6 +2998,8 @@ function setupCatalogModal() {
                 const fqn = (tbl.fqn || "").toLowerCase();
                 if (activeCatalogSchemaFilter === "master") {
                     if (!schema.includes("master") && !fqn.includes("dim_") && !fqn.includes("master")) return false;
+                } else if (activeCatalogSchemaFilter === "perbendaharaan" || activeCatalogSchemaFilter === "keberatan") {
+                    if (!schema.includes("perbendaharaan") && !schema.includes("keberatan") && !fqn.includes("perbendaharaan") && !fqn.includes("keberatan")) return false;
                 } else if (!schema.includes(activeCatalogSchemaFilter) && !fqn.includes(activeCatalogSchemaFilter)) {
                     return false;
                 }

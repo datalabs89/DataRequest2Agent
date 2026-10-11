@@ -48,7 +48,7 @@ OFFICIAL_BUSINESS_PROCESSES = [
     "Fasilitas",
     "Manifest",
     "Penerimaan",
-    "Keberatan & Banding",
+    "Perbendaharaan",
     "Dukungan Manajemen",
     "Lainnya"
 ]

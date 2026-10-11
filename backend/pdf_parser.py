@@ -83,7 +83,7 @@ class PDFRequestParser:
         """
         Mendeteksi tipe proses bisnis kepabeanan & tata kelola dari dokumen:
         - Ekspor, Impor, Cukai, Fasilitas, Manifest, Penerimaan,
-        - Keberatan & Banding, Dukungan Manajemen, Lainnya
+        - Perbendaharaan, Dukungan Manajemen, Lainnya
         """
         lower = text.lower()
         if any(k in lower for k in ["ekspor", "peb", "export", "bc 3.0", "bc 30"]):
@@ -98,8 +98,8 @@ class PDFRequestParser:
             return "Manifest"
         elif any(k in lower for k in ["penerimaan", "kas negara", "bea masuk", "bea keluar", "setoran", "pajak impor"]):
             return "Penerimaan"
-        elif any(k in lower for k in ["keberatan", "banding", "sengketa", "pengadilan pajak", "gugatan"]):
-            return "Keberatan & Banding"
+        elif any(k in lower for k in ["perbendaharaan", "keberatan", "banding", "sengketa", "pengadilan pajak", "gugatan", "bendahara"]):
+            return "Perbendaharaan"
         elif any(k in lower for k in ["dukungan manajemen", "kepegawaian", "sdm", "sarpras", "keuangan internal", "tik", "sekretariat"]):
             return "Dukungan Manajemen"
         return "Lainnya"
@@ -319,7 +319,7 @@ class PDFRequestParser:
         business_process = "Lainnya"
         if bproc_match:
             raw_bproc = bproc_match.group(1).strip()
-            for opt in ["Ekspor", "Impor", "Cukai", "Fasilitas", "Manifest", "Penerimaan", "Keberatan & Banding", "Dukungan Manajemen", "Lainnya"]:
+            for opt in ["Ekspor", "Impor", "Cukai", "Fasilitas", "Manifest", "Penerimaan", "Perbendaharaan", "Dukungan Manajemen", "Lainnya"]:
                 if opt.lower() in raw_bproc.lower():
                     business_process = opt
                     break
