@@ -756,47 +756,220 @@
 
             <!-- Tab 5: Delivery Content -->
             <div id="tab-delivery" class="tab-content hidden p-6 space-y-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-emerald-50/60 border border-emerald-200 rounded-xl p-4">
-                    <div>
-                        <h4 class="text-sm font-bold text-emerald-950 flex items-center space-x-2">
-                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
-                            <span>Data Berhasil Diekstraksi & Divalidasi</span>
-                        </h4>
-                        <p class="text-xs text-emerald-800 mt-1" id="delivery-stats-text">35 baris diekstrak dalam 42.5 ms.</p>
+                <!-- Delivery Executive Metrics Banner -->
+                <div class="bg-gradient-to-r from-emerald-900 to-slate-900 text-white rounded-2xl p-5 border border-emerald-800/60 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+                                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold tracking-wide">Data Berhasil Diekstraksi, Dimasking & Disahkan Resmi</h4>
+                                <p class="text-xs text-slate-300 mt-0.5" id="delivery-stats-text">Seluruh dataset telah siap didistribusikan sesuai ketentuan tata kelola data.</p>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold px-3 py-1 rounded-full flex items-center space-x-1.5 w-fit">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                            <span>Siap Diunduh & Terlindungi</span>
+                        </span>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <a id="btn-download-cert" href="#" download class="text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 rounded-xl shadow-md shadow-rose-600/20 flex items-center space-x-1.5 transition">
-                            <i data-lucide="award" class="w-4 h-4"></i>
-                            <span>Sertifikat PDF Resmi</span>
-                        </a>
-                        <a id="btn-download-zip" href="#" download class="text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl shadow-md shadow-indigo-600/20 flex items-center space-x-1.5 transition">
-                            <i data-lucide="archive" class="w-4 h-4"></i>
-                            <span>Unduh Paket Lengkap (.ZIP)</span>
-                        </a>
-                        <a id="btn-download-excel" href="#" download class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 flex items-center space-x-1.5 transition">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                            <span>Excel (.xlsx 3-Sheet)</span>
-                        </a>
-                        <a id="btn-download-csv" href="#" download class="text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2.5 rounded-xl shadow-xs flex items-center space-x-1.5 transition">
-                            <i data-lucide="file-text" class="w-4 h-4"></i>
-                            <span>CSV</span>
-                        </a>
+
+                    <!-- 4 Metric Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-800 text-xs">
+                        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Total Baris Data</span>
+                            <span id="delivery-metric-rows" class="text-sm font-bold text-emerald-400 mt-0.5 block">35 Baris</span>
+                        </div>
+                        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Waktu Ekstraksi</span>
+                            <span id="delivery-metric-time" class="text-sm font-bold text-slate-200 mt-0.5 block">42.5 ms</span>
+                        </div>
+                        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Proteksi PII / PDP</span>
+                            <span id="delivery-metric-pii" class="text-sm font-bold text-amber-300 mt-0.5 block">Masking Dinamis</span>
+                        </div>
+                        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+                            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Target Database</span>
+                            <span id="delivery-metric-engine" class="text-sm font-bold text-indigo-300 mt-0.5 block">PostgreSQL DWH</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Preview Table -->
+                <!-- Artifact Download Cards Grid (4 Cards) -->
                 <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Preview 10 Baris Pertama:</h4>
-                        <span class="text-[11px] text-slate-400">Atribut PII otomatis dimasking</span>
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center space-x-2">
+                        <i data-lucide="package" class="w-4 h-4 text-indigo-600"></i>
+                        <span>Paket Berkas & Artefak Luaran Resmi:</span>
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Card 1: PDF Certificate -->
+                        <div class="bg-white border border-rose-200/80 hover:border-rose-300 rounded-2xl p-4 flex flex-col justify-between shadow-xs transition hover:shadow-md space-y-3">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+                                        <i data-lucide="award" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">PDF Sah</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-slate-900">Sertifikat Otorisasi Data</h5>
+                                <p class="text-[11px] text-slate-500 mt-1">Sertifikat digital berkepala resmi, disahkan Kepala Seksi Analisa dan Layanan Data dengan segel SHA-256.</p>
+                            </div>
+                            <a id="btn-download-cert" href="#" download class="w-full text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition shadow-2xs">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                <span>Unduh Sertifikat (.pdf)</span>
+                            </a>
+                        </div>
+
+                        <!-- Card 2: Styled Excel -->
+                        <div class="bg-white border border-emerald-200/80 hover:border-emerald-300 rounded-2xl p-4 flex flex-col justify-between shadow-xs transition hover:shadow-md space-y-3">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">3-Sheet XLSX</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-slate-900">Workbook Excel Resmi</h5>
+                                <p class="text-[11px] text-slate-500 mt-1">Format korporat rapi: Sheet DATA_HASIL, AUDIT_PROVENANCE, dan KAMUS_DATA OpenMetadata.</p>
+                            </div>
+                            <a id="btn-download-excel" href="#" download class="w-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition shadow-2xs">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                <span>Unduh Excel (.xlsx)</span>
+                            </a>
+                        </div>
+
+                        <!-- Card 3: ZIP Bundle -->
+                        <div class="bg-white border border-indigo-200/80 hover:border-indigo-300 rounded-2xl p-4 flex flex-col justify-between shadow-xs transition hover:shadow-md space-y-3">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                                        <i data-lucide="archive" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">Paket Arsip</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-slate-900">Paket Lengkap (.ZIP)</h5>
+                                <p class="text-[11px] text-slate-500 mt-1">Arsip komprehensif berisi Excel, CSV, JSON, Kueri SQL, Spesifikasi JSON, dan README_MANIFEST.</p>
+                            </div>
+                            <a id="btn-download-zip" href="#" download class="w-full text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition shadow-2xs">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                <span>Unduh Paket (.zip)</span>
+                            </a>
+                        </div>
+
+                        <!-- Card 4: Raw CSV & JSON -->
+                        <div class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-4 flex flex-col justify-between shadow-xs transition hover:shadow-md space-y-3">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
+                                        <i data-lucide="file-code" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">Raw Data</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-slate-900">Format Mesin (CSV & JSON)</h5>
+                                <p class="text-[11px] text-slate-500 mt-1">Data mentah UTF-8 siap diintegrasikan ke Python pandas, R, PowerBI, atau ETL otomatis.</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <a id="btn-download-csv" href="#" download class="text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-2 py-2 rounded-xl text-center flex items-center justify-center space-x-1 transition">
+                                    <i data-lucide="file-text" class="w-3 h-3"></i>
+                                    <span>CSV</span>
+                                </a>
+                                <a id="btn-download-json" href="#" download class="text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-2 py-2 rounded-xl text-center flex items-center justify-center space-x-1 transition">
+                                    <i data-lucide="brackets" class="w-3 h-3"></i>
+                                    <span>JSON</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-xs">
-                        <table class="w-full text-xs text-left text-slate-600" id="preview-table">
-                            <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
-                                <tr id="preview-thead-row"></tr>
-                            </thead>
-                            <tbody id="preview-tbody" class="divide-y divide-slate-100"></tbody>
-                        </table>
+                </div>
+
+                <!-- Pratinjau Multi-Sheet Excel Langsung di Browser (Sheet Switcher & Inspector) -->
+                <div class="border border-slate-200 rounded-2xl bg-white shadow-xs overflow-hidden space-y-0">
+                    <!-- Sheet Switcher Header -->
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <!-- Sub-Tab Buttons -->
+                        <div class="flex items-center space-x-1.5 bg-slate-200/80 p-1 rounded-xl w-fit">
+                            <button id="btn-sheet-tab-data" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-700 shadow-2xs transition flex items-center space-x-1.5" data-sheet="data">
+                                <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                                <span>Sheet 1: DATA_HASIL</span>
+                            </button>
+                            <button id="btn-sheet-tab-audit" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5" data-sheet="audit">
+                                <i data-lucide="file-check" class="w-3.5 h-3.5"></i>
+                                <span>Sheet 2: AUDIT_PROVENANCE</span>
+                            </button>
+                            <button id="btn-sheet-tab-dict" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5" data-sheet="dict">
+                                <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                                <span>Sheet 3: KAMUS_DATA</span>
+                            </button>
+                        </div>
+
+                        <!-- Right Search & Copy Bar -->
+                        <div class="flex items-center space-x-2">
+                            <div class="relative">
+                                <input type="text" id="input-delivery-search" placeholder="Cari dalam pratinjau..." class="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-indigo-500 outline-none w-48 sm:w-56">
+                                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2"></i>
+                            </div>
+                            <button id="btn-copy-delivery-data" class="text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-2xs">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span id="copy-data-btn-text">Salin TSV</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Container Sheet 1: DATA_HASIL -->
+                    <div id="container-sheet-data" class="p-4 space-y-2">
+                        <div class="flex items-center justify-between text-[11px] text-slate-500 pb-1">
+                            <span>Menampilkan baris hasil kueri dengan penyamaran PII dinamis (UU PDP).</span>
+                            <span id="delivery-row-counter" class="font-semibold text-slate-700">10 baris ditampilkan</span>
+                        </div>
+                        <div class="border border-slate-200 rounded-xl overflow-x-auto">
+                            <table class="w-full text-xs text-left text-slate-600" id="preview-table">
+                                <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                    <tr id="preview-thead-row"></tr>
+                                </thead>
+                                <tbody id="preview-tbody" class="divide-y divide-slate-100 font-sans"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Container Sheet 2: AUDIT_PROVENANCE -->
+                    <div id="container-sheet-audit" class="hidden p-4 space-y-4">
+                        <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4">
+                            <h5 class="text-xs font-bold text-indigo-950 uppercase tracking-wide flex items-center space-x-2">
+                                <i data-lucide="shield" class="w-4 h-4 text-indigo-600"></i>
+                                <span>Rekam Jejak Provenance & Legalitas Data Permohonan</span>
+                            </h5>
+                            <p class="text-[11px] text-indigo-800 mt-1">Lembar ini disematkan permanen di dalam berkas Excel sebagai bukti autentik pemenuhan tata kelola data.</p>
+                        </div>
+                        <div class="border border-slate-200 rounded-xl overflow-hidden">
+                            <table class="w-full text-xs text-left">
+                                <tbody id="delivery-audit-sheet-tbody" class="divide-y divide-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Container Sheet 3: KAMUS_DATA -->
+                    <div id="container-sheet-dict" class="hidden p-4 space-y-4">
+                        <div class="bg-purple-50/50 border border-purple-100 rounded-xl p-4">
+                            <h5 class="text-xs font-bold text-purple-950 uppercase tracking-wide flex items-center space-x-2">
+                                <i data-lucide="book-marked" class="w-4 h-4 text-purple-600"></i>
+                                <span>Kamus Data Resmi (Metadata Catalog Grounding)</span>
+                            </h5>
+                            <p class="text-[11px] text-purple-800 mt-1">Definisi, tipe data, dan klasifikasi sensitivitas atribut yang diekstraksi langsung dari OpenMetadata Catalog.</p>
+                        </div>
+                        <div class="border border-slate-200 rounded-xl overflow-x-auto">
+                            <table class="w-full text-xs text-left">
+                                <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-2.5 font-bold">Nama Kolom</th>
+                                        <th class="px-4 py-2.5 font-bold">Tipe Data</th>
+                                        <th class="px-4 py-2.5 font-bold">Deskripsi Resmi</th>
+                                        <th class="px-4 py-2.5 font-bold">Klasifikasi PII</th>
+                                        <th class="px-4 py-2.5 font-bold">Tabel Sumber</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="delivery-dict-sheet-tbody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

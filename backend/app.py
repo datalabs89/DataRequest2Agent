@@ -293,6 +293,8 @@ def download_file(folder_type: str, filename: str):
         media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     elif filename.endswith(".csv"):
         media_type = "text/csv"
+    elif filename.endswith(".json"):
+        media_type = "application/json"
     elif filename.endswith(".zip"):
         media_type = "application/zip"
     elif filename.endswith(".pdf"):

@@ -139,6 +139,7 @@ class ExecutionResult(BaseModel):
     preview_rows: List[Dict[str, Any]]
     excel_path: Optional[str] = None
     csv_path: Optional[str] = None
+    json_path: Optional[str] = None
     zip_path: Optional[str] = None
     certificate_path: Optional[str] = None
     execution_time_ms: float

@@ -21,6 +21,8 @@ outputs/*.xlsx
 outputs/*.csv
 outputs/*.pdf
 outputs/*.db
+outputs/*.json
+!outputs/history.json
 
 # Ignore transient uploaded PDFs
 uploads/*.pdf

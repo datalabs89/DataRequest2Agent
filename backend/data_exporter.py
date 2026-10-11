@@ -63,15 +63,18 @@ class DataExporter:
 
         excel_filename = f"DataExport_{safe_req_id}_{timestamp_str}.xlsx"
         csv_filename = f"DataExport_{safe_req_id}_{timestamp_str}.csv"
+        json_filename = f"DataExport_{safe_req_id}_{timestamp_str}.json"
         cert_filename = f"Sertifikat_Otorisasi_{safe_req_id}_{timestamp_str}.pdf"
 
         excel_path = os.path.join(self.output_dir, excel_filename)
         csv_path = os.path.join(self.output_dir, csv_filename)
+        json_path = os.path.join(self.output_dir, json_filename)
         cert_path = os.path.join(self.output_dir, cert_filename)
 
-        # 1. Simpan ke CSV
+        # 1. Simpan ke CSV & JSON
         df = pd.DataFrame(rows)
         df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+        df.to_json(json_path, orient="records", indent=2, force_ascii=False)
 
         # 2. Simpan ke Excel Multi-Sheet Berformat Rapi
         self._create_styled_excel(
@@ -98,6 +101,7 @@ class DataExporter:
             zip_path=zip_path,
             excel_path=excel_path,
             csv_path=csv_path,
+            json_path=json_path,
             cert_path=cert_path,
             spec=spec,
             sql_result=sql_result,
@@ -112,20 +116,23 @@ class DataExporter:
             preview_rows=rows[:10],
             excel_path=excel_path,
             csv_path=csv_path,
+            json_path=json_path,
             zip_path=zip_path,
             certificate_path=cert_path,
             execution_time_ms=exec_time,
             dialect=sql_result.dialect
         )
 
-    def _create_fulfillment_zip(self, zip_path: str, excel_path: str, csv_path: str, cert_path: str, spec: DataRequestSpec, sql_result: SQLGenerationResult, verification: VerificationReport):
+    def _create_fulfillment_zip(self, zip_path: str, excel_path: str, csv_path: str, json_path: str, cert_path: str, spec: DataRequestSpec, sql_result: SQLGenerationResult, verification: VerificationReport):
         import zipfile
         import json
 
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-            # Tambahkan Excel, CSV & Sertifikat PDF
+            # Tambahkan Excel, CSV, JSON & Sertifikat PDF
             zf.write(excel_path, arcname=os.path.basename(excel_path))
             zf.write(csv_path, arcname=os.path.basename(csv_path))
+            if os.path.exists(json_path):
+                zf.write(json_path, arcname=os.path.basename(json_path))
             if os.path.exists(cert_path):
                 zf.write(cert_path, arcname=os.path.basename(cert_path))
 
@@ -171,55 +178,168 @@ Proteksi PII       : Aktif (Masking NIK, Nama, dan No HP)
 BERKAS DALAM PAKET INI:
 1. {os.path.basename(excel_path)}  - Workbook Excel (Data Hasil, Audit, Kamus Data)
 2. {os.path.basename(csv_path)}    - Raw Data CSV (UTF-8)
-3. query_audit.sql                  - Kueri SQL yang dieksekusi
-4. request_specification.json       - Struktur spesifikasi kebutuhan hasil ekstraksi PDF
-5. audit_verification_report.json   - Checklist kepatuhan dan jaminan keamanan
+3. {os.path.basename(json_path)}   - Raw Data JSON (Machine-Readable Records)
+4. {os.path.basename(cert_path)}   - Sertifikat Otorisasi & Tata Kelola Data (PDF)
+5. query_audit.sql                  - Kueri SQL yang dieksekusi
+6. request_specification.json       - Struktur spesifikasi kebutuhan hasil ekstraksi PDF
+7. audit_verification_report.json   - Checklist kepatuhan dan jaminan keamanan
 ================================================================================
 """
             zf.writestr("README_MANIFEST.txt", readme_text)
 
     def _generate_realistic_data(self, spec: DataRequestSpec, row_count: int = 35) -> List[Dict[str, Any]]:
-        """Menghasilkan baris data transaksi nasabah prioritas sesuai kriteria permohonan."""
+        """Menghasilkan baris data kontekstual sesuai proses bisnis (Ekspor/Impor/Cukai/Manifest DJBC atau Umum)."""
         data = []
-        cities = ["Jakarta Selatan", "Surabaya", "Bandung", "Medan", "Semarang", "Denpasar", "Tangerang"]
-        channels = ["Mobile App", "Online", "Flagship Store"]
-        payments = ["QRIS", "Credit Card", "Bank Transfer"]
-        names = ["Budi Santoso", "Dewi Lestari", "Agus Setiawan", "Siti Rahmawati", "Hendro Wijaya", "Rina Marlina", "Eko Prasetyo", "Indah Permata", "Bambang Haryanto", "Maya Anggraini"]
+        biz_proc = (getattr(spec, "business_process", "") or "").upper()
+        doc_title = (spec.document_title or "").upper()
+        purpose = (spec.business_purpose or "").upper()
+        context_str = f"{biz_proc} {doc_title} {purpose}"
 
         start_date = datetime.date(2026, 7, 1)
         end_date = datetime.date(2026, 9, 30)
         days_between = (end_date - start_date).days
 
-        for i in range(1, row_count + 1):
-            random_days = random.randint(0, max(days_between, 1))
-            tx_date = start_date + datetime.timedelta(days=random_days)
-            tx_time = f"{random.randint(8, 21):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
-            tx_datetime = f"{tx_date.strftime('%Y-%m-%d')} {tx_time}"
+        # 1. KASUS BISNIS: EKSPOR / PEB
+        if "EKSPOR" in context_str or "PEB" in context_str:
+            eksportir_list = ["PT INDOFOOD CBP MAKMUR", "PT MAYORA INDAH TBK", "PT ASTRA AGRO LESTARI", "PT KRAKATAU STEEL", "PT KALBE FARMA TBK", "PT UNILEVER INDONESIA"]
+            negara_list = ["Jepang", "Amerika Serikat", "Tiongkok", "Singapura", "Belanda", "India", "Australia"]
+            komoditas_list = ["Tekstil & Garmen", "CPO & Minyak Nabati", "Produk Karet & Ban", "Kopi & Rempah-rempah", "Komponen Elektronik", "Alas Kaki"]
+            pelabuhan_muat_list = ["IDTPP (Tanjung Priok, Jakarta)", "IDTPS (Tanjung Perak, Surabaya)", "IDBLW (Belawan, Medan)", "IDSRG (Tanjung Emas, Semarang)"]
+            pelabuhan_tujuan_list = ["JPTYO (Tokyo, Jepang)", "USLAX (Los Angeles, USA)", "CNSHG (Shanghai, Tiongkok)", "SGSIN (Singapore Port)", "NLRTM (Rotterdam, Belanda)"]
 
-            raw_name = random.choice(names)
-            masked_name = f"{raw_name[:3]}*** {raw_name[-3:]}"
-            masked_nik = f"317{random.randint(100, 999)}******{random.randint(1000, 9999)}"
-            masked_phone = f"0812****{random.randint(100, 999)}"
+            for i in range(1, row_count + 1):
+                random_days = random.randint(0, max(days_between, 1))
+                tx_date = start_date + datetime.timedelta(days=random_days)
+                tgl_str = tx_date.strftime("%Y-%m-%d")
 
-            amount = random.choice([2500000, 4750000, 8900000, 15000000, 27500000, 42000000, 65000000])
+                raw_company = random.choice(eksportir_list)
+                comp_parts = raw_company.split(" ")
+                masked_company = f"{comp_parts[0]} {comp_parts[1][:3]}*** {' '.join(comp_parts[2:])}" if len(comp_parts) >= 3 else f"{raw_company[:6]}***"
+                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(1,9)}-{random.randint(100,999)}.000"
 
-            row = {
-                "transaction_id": f"TRX-2026{tx_date.strftime('%m%d')}-{10000 + i}",
-                "transaction_date": tx_datetime,
-                "total_amount": amount,
-                "payment_method": random.choice(payments),
-                "status": "SUCCESS",
-                "customer_id": f"CUST-{random.randint(1001, 1099)}",
-                "customer_name_masked": masked_name,
-                "nik_masked": masked_nik,
-                "phone_masked": masked_phone,
-                "customer_segment": "PRIORITAS",
-                "city": random.choice(cities)
-            }
-            data.append(row)
+                devisa_usd = random.choice([25000, 48000, 75000, 120000, 185000, 240000, 310000, 520000])
+                bea_keluar = random.choice([0, 0, 0, 12500000, 24000000, 45000000])
 
-        # Urutkan berdasarkan tanggal transaksi terbaru
-        data.sort(key=lambda x: x["transaction_date"], reverse=True)
+                row = {
+                    "nomor_peb": f"00{random.randint(10,99)}00-00{random.randint(1000,9999)}-{tx_date.strftime('%Y%m%d')}-{1000 + i}",
+                    "tanggal_peb": tgl_str,
+                    "nama_eksportir_masked": masked_company,
+                    "npwp_eksportir_masked": masked_npwp,
+                    "negara_tujuan": random.choice(negara_list),
+                    "pelabuhan_muat": random.choice(pelabuhan_muat_list),
+                    "pelabuhan_bongkar": random.choice(pelabuhan_tujuan_list),
+                    "jenis_komoditas": random.choice(komoditas_list),
+                    "nilai_devisa_usd": devisa_usd,
+                    "bea_keluar_idr": bea_keluar,
+                    "status_jalur": random.choice(["HIJAU", "HIJAU", "HIJAU", "KUNING", "MERAH"]),
+                    "status_dokumen": "SELESAI (SPPB EKSPOR)"
+                }
+                data.append(row)
+
+        # 2. KASUS BISNIS: IMPOR / PIB
+        elif "IMPOR" in context_str or "PIB" in context_str:
+            importir_list = ["PT SAMSUNG ELECTRONICS INDONESIA", "PT TOYOTA MOTOR MANUFACTURING", "PT LG ELECTRONICS", "PT ANEKA KIMIA RAYA", "PT BUKIT MAKMUR MANDIRI"]
+            negara_asal_list = ["Tiongkok", "Jepang", "Jerman", "Korea Selatan", "Amerika Serikat", "Taiwan"]
+            komoditas_impor = ["Mesin Industri & Komponen", "Bahan Baku Farmasi", "Resin Polimer & Plastik", "Besi Baja Canai Dingin", "Mikroprosesor & IC"]
+
+            for i in range(1, row_count + 1):
+                random_days = random.randint(0, max(days_between, 1))
+                tx_date = start_date + datetime.timedelta(days=random_days)
+                tgl_str = tx_date.strftime("%Y-%m-%d")
+
+                raw_company = random.choice(importir_list)
+                comp_parts = raw_company.split(" ")
+                masked_company = f"{comp_parts[0]} {comp_parts[1][:3]}***"
+                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(1,9)}-{random.randint(100,999)}.000"
+
+                cif_usd = random.choice([35000, 68000, 110000, 175000, 260000, 410000])
+                bm_idr = int(cif_usd * 15500 * random.choice([0.05, 0.075, 0.10]))
+                ppn_idr = int(cif_usd * 15500 * 0.11)
+
+                row = {
+                    "nomor_pib": f"01{random.randint(10,99)}00-00{random.randint(1000,9999)}-{tx_date.strftime('%Y%m%d')}-{2000 + i}",
+                    "tanggal_pib": tgl_str,
+                    "nama_importir_masked": masked_company,
+                    "npwp_importir_masked": masked_npwp,
+                    "negara_asal": random.choice(negara_asal_list),
+                    "pelabuhan_bongkar": "IDTPP (Tanjung Priok, Jakarta)",
+                    "jenis_komoditas": random.choice(komoditas_impor),
+                    "nilai_cif_usd": cif_usd,
+                    "bea_masuk_idr": bm_idr,
+                    "ppn_idr": ppn_idr,
+                    "status_jalur": random.choice(["HIJAU", "HIJAU", "KUNING", "MERAH"]),
+                    "status_dokumen": "SELESAI (SPPB IMPOR)"
+                }
+                data.append(row)
+
+        # 3. KASUS BISNIS: CUKAI / BILLING CK
+        elif "CUKAI" in context_str or "BILLING" in context_str:
+            pabrik_list = ["PT GUDANG GARAM TBK", "PT HM SAMPOERNA TBK", "PT DJARUM", "PT MULTI BINTANG INDONESIA", "PT BALI HAI BREWERY"]
+            bkck_list = ["Hasil Tembakau (SKM)", "Hasil Tembakau (SPM)", "Hasil Tembakau (SKT)", "Minuman Mengandung Etil Alkohol (MMEA)", "Liquid Vape (REL)"]
+
+            for i in range(1, row_count + 1):
+                random_days = random.randint(0, max(days_between, 1))
+                tx_date = start_date + datetime.timedelta(days=random_days)
+                tgl_str = tx_date.strftime("%Y-%m-%d")
+
+                raw_company = random.choice(pabrik_list)
+                masked_company = f"{raw_company[:6]}*** {' '.join(raw_company.split(' ')[2:]) if len(raw_company.split(' ')) > 2 else ''}"
+                masked_npwp = f"0{random.randint(1,9)}.{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(1,9)}-{random.randint(100,999)}.000"
+
+                tagihan = random.choice([150000000, 320000000, 750000000, 1250000000, 2400000000])
+
+                row = {
+                    "kode_billing_cukai": f"BILL-CK-{tx_date.strftime('%Y%m')}-{50000 + i}",
+                    "tanggal_billing": tgl_str,
+                    "nama_pabrik_masked": masked_company,
+                    "npwp_masked": masked_npwp,
+                    "jenis_bkck": random.choice(bkck_list),
+                    "golongan_tarif": random.choice(["Golongan I", "Golongan II", "Golongan III"]),
+                    "total_tagihan_cukai_idr": tagihan,
+                    "status_bayar": "LUNAS (NTPN RESMI)",
+                    "kantor_pelayanan": random.choice(["KPPBC KEDIRI", "KPPBC KUDUS", "KPPBC PASURUAN", "KPPBC MALANG"])
+                }
+                data.append(row)
+
+        # 4. KASUS BISNIS UMUM / KEUANGAN (FALLBACK)
+        else:
+            cities = ["Jakarta Selatan", "Surabaya", "Bandung", "Medan", "Semarang", "Denpasar", "Tangerang"]
+            payments = ["QRIS", "Credit Card", "Bank Transfer"]
+            names = ["Budi Santoso", "Dewi Lestari", "Agus Setiawan", "Siti Rahmawati", "Hendro Wijaya", "Rina Marlina", "Eko Prasetyo", "Indah Permata", "Bambang Haryanto", "Maya Anggraini"]
+
+            for i in range(1, row_count + 1):
+                random_days = random.randint(0, max(days_between, 1))
+                tx_date = start_date + datetime.timedelta(days=random_days)
+                tx_time = f"{random.randint(8, 21):02d}:{random.randint(0, 59):02d}:{random.randint(0, 59):02d}"
+                tx_datetime = f"{tx_date.strftime('%Y-%m-%d')} {tx_time}"
+
+                raw_name = random.choice(names)
+                masked_name = f"{raw_name[:3]}*** {raw_name[-3:]}"
+                masked_nik = f"317{random.randint(100, 999)}******{random.randint(1000, 9999)}"
+                masked_phone = f"0812****{random.randint(100, 999)}"
+
+                amount = random.choice([2500000, 4750000, 8900000, 15000000, 27500000, 42000000, 65000000])
+
+                row = {
+                    "transaction_id": f"TRX-2026{tx_date.strftime('%m%d')}-{10000 + i}",
+                    "transaction_date": tx_datetime,
+                    "total_amount": amount,
+                    "payment_method": random.choice(payments),
+                    "status": "SUCCESS",
+                    "customer_id": f"CUST-{random.randint(1001, 1099)}",
+                    "customer_name_masked": masked_name,
+                    "nik_masked": masked_nik,
+                    "phone_masked": masked_phone,
+                    "customer_segment": "PRIORITAS",
+                    "city": random.choice(cities)
+                }
+                data.append(row)
+
+        # Urutkan berdasarkan tanggal terbaru
+        first_date_col = next((k for k in ["tanggal_peb", "tanggal_pib", "tanggal_billing", "transaction_date"] if k in data[0]), None)
+        if first_date_col:
+            data.sort(key=lambda x: x[first_date_col], reverse=True)
+
         return data
 
     def _create_styled_excel(
@@ -265,11 +385,16 @@ BERKAS DALAM PAKET INI:
                 cell.border = border_thin
                 cell.font = Font(name="Calibri", size=10)
 
-                # Format Khusus Angka Nominal
-                if headers[col_idx - 1] in ["total_amount", "discount_amount", "tax_amount"]:
+                col_name_lower = headers[col_idx - 1].lower()
+
+                # Format Khusus Angka Nominal IDR & USD
+                if any(x in col_name_lower for x in ["total_amount", "discount_amount", "tax_amount", "bea_keluar_idr", "bea_masuk_idr", "ppn_idr", "pph_idr", "total_tagihan_cukai_idr"]):
                     cell.number_format = 'Rp #,##0'
                     cell.alignment = Alignment(horizontal="right")
-                elif "date" in headers[col_idx - 1]:
+                elif any(x in col_name_lower for x in ["usd", "devisa", "cif"]):
+                    cell.number_format = '$#,##0.00'
+                    cell.alignment = Alignment(horizontal="right")
+                elif "date" in col_name_lower or "tanggal" in col_name_lower:
                     cell.alignment = Alignment(horizontal="center")
 
         # Auto-adjust Column Width
