@@ -39,7 +39,7 @@
 - **🛡️ SQLite DWH Engine dengan Circuit Breaker Read-Only**:
   Database warehouse lokal (`outputs/dwh_enterprise.db`) dengan 250+ baris data transaksi terstruktur. Sistem mengisolasi eksekusi dalam mode *read-only URI* (`file:...mode=ro`) yang secara fisik memblokir query perusak (DROP, DELETE, UPDATE, INSERT).
 - **🔐 Keamanan & Kontrol Akses Ketat (Server-Side RBAC & Segregation of Duties)**:
-  Pemisahan wewenang 4 peran (*Pemohon Data / Analyst*, *Data Steward*, *Data Engineer*, dan *Auditor IT*). Endpoint otorisasi diproteksi di lapisan backend FastAPI dengan header `X-User-Role`, mencegah *self-approval* secara absolut.
+  Pemisahan wewenang peran (*Data Analyst*, *Data Steward*, *Data Engineer*, dan *Auditor IT*). Endpoint otorisasi diproteksi di lapisan backend FastAPI dengan header `X-User-Role`, mencegah *self-approval* secara absolut.
 - **🔏 Integritas Kriptografis Anti-Manipulasi (SHA-256 Digital Fingerprint)**:
   Setiap pengesahan data menghasilkan kode *hash* digital satu arah yang mengikat ID Permohonan, SQL final, nama verifikator, keputusan, dan stempel waktu. Kode ini dicantumkan pada Sertifikat PDF resmi, sheet *AUDIT_PROVENANCE* berkas Excel, dan manifes ZIP.
 - **🔄 Alur Revisi & Penyesuaian Interaktif**:

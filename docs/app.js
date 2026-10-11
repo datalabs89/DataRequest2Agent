@@ -1671,7 +1671,7 @@ function setupVerifierFeedback() {
                         instructionElem.innerText = `Catatan Data Steward: "${comments}". Klik tombol di samping untuk mengoreksi tanggal atau kolom.`;
                     }
                 }
-                alert("Catatan Permintaan Revisi berhasil dicatat. Pemohon Data dapat membuka form penyesuaian.");
+                alert("Catatan Permintaan Revisi berhasil dicatat. Data Analyst dapat membuka form penyesuaian.");
             } else {
                 if (revisionBox) revisionBox.classList.add("hidden");
                 alert(`Sign-off Verifikator berhasil dicatat dengan status: ${action}`);
@@ -2971,7 +2971,7 @@ function applyPersona(persona) {
     ];
 
     if (persona === "analyst") {
-        // Pemohon Data (Business Analyst)
+        // Data Analyst (Business & Query Analyst)
         if (editSqlBtn) editSqlBtn.classList.add("hidden");
         if (reverifyBtn) reverifyBtn.disabled = true;
         if (btnApprove) btnApprove.disabled = true;
@@ -2986,15 +2986,15 @@ function applyPersona(persona) {
                 <div class="flex items-center space-x-2">
                     <i data-lucide="info" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
                     <div>
-                        <span class="font-bold">Mode Peninjauan Pemohon Data (Read-Only)</span>
-                        <p class="text-[11px] text-blue-700">Sebagai Pemohon Data, Anda dapat memantau status audit dan mengunduh berkas data yang telah disahkan. Otorisasi sign-off merupakan wewenang Data Steward.</p>
+                        <span class="font-bold">Mode Peninjauan Data Analyst (Read-Only)</span>
+                        <p class="text-[11px] text-blue-700">Sebagai Data Analyst, Anda dapat memantau status audit dan mengunduh berkas data yang telah disahkan. Otorisasi sign-off merupakan wewenang Data Steward.</p>
                     </div>
                 </div>
                 <span class="bg-blue-200/80 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Read-Only</span>
             `;
             lucide.createIcons();
         }
-        appendConsoleLog("RBAC", "Peran aktif: 👤 Pemohon Data (Analyst). Akses dibatasi pada peninjauan spesifikasi dan pengunduhan.");
+        appendConsoleLog("RBAC", "Peran aktif: 👤 Data Analyst. Akses dibatasi pada peninjauan spesifikasi dan pengunduhan.");
     } else if (persona === "steward") {
         // Data Steward (Compliance & Governance Officer)
         if (editSqlBtn) editSqlBtn.classList.remove("hidden");
