@@ -508,11 +508,18 @@ html.dark [id*="btn-sheet-tab-"].bg-white {
     box-shadow: none !important;
 }
 
-/* 12. Tab 4 Independent Audit Card (Executive Banner) & Verification Checklist */
-#verif-compliance-card {
+/* 12. Executive Banners (Tab 1 Spec Purpose, Tab 4 Independent Audit Card, HITL Spec Confirmation Header) */
+#verif-compliance-card,
+#spec-purpose-banner,
+#spec-confirmation-modal-header {
     background: linear-gradient(135deg, #090e1a 0%, #151a36 50%, #090e1a 100%) !important;
     border-color: rgba(99, 102, 241, 0.35) !important;
     color: #ffffff !important;
+}
+
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.85);
+    cursor: pointer;
 }
 
 html.dark .verif-filter-btn:not(.bg-indigo-600) {

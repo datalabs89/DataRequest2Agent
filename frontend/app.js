@@ -613,14 +613,14 @@ function renderResults(data) {
     fContainer.innerHTML = "";
     data.spec.filters.forEach(f => {
         const item = document.createElement("div");
-        item.className = "p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between";
+        item.className = "p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs";
         const valStr = Array.isArray(f.value) ? f.value.join(" s/d ") : f.value;
         item.innerHTML = `
             <div>
-                <span class="font-bold text-slate-800">${f.field_description}</span>
-                <p class="text-[11px] text-slate-500">${f.rationale}</p>
+                <span class="font-bold text-slate-800 dark:text-slate-100">${f.field_description}</span>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">${f.rationale}</p>
             </div>
-            <span class="bg-blue-100 text-blue-800 font-mono text-[11px] px-2 py-0.5 rounded">${f.target_column} ${f.operator} '${valStr}'</span>
+            <span class="bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-500/40 font-mono text-[11px] px-2.5 py-0.5 rounded-lg font-semibold flex-shrink-0">${f.target_column} ${f.operator} '${valStr}'</span>
         `;
         fContainer.appendChild(item);
     });
@@ -630,14 +630,14 @@ function renderResults(data) {
     fldContainer.innerHTML = "";
     data.spec.requested_fields.forEach(fld => {
         const item = document.createElement("div");
-        item.className = "p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs flex items-center justify-between";
+        item.className = "p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs flex items-center justify-between shadow-2xs";
         const piiBadge = fld.pii_sensitive 
-            ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">PII / Masking</span>` 
-            : `<span class="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded">Standar</span>`;
+            ? `<span class="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40 text-[10px] font-bold px-2 py-0.5 rounded-md">PII / Masking</span>` 
+            : `<span class="bg-slate-200/80 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-medium px-2 py-0.5 rounded-md">Standar</span>`;
         item.innerHTML = `
             <div>
-                <span class="font-medium text-slate-800">${fld.description}</span>
-                <span class="font-mono text-slate-400 text-[11px] ml-1">(${fld.name})</span>
+                <span class="font-medium text-slate-800 dark:text-slate-100">${fld.description}</span>
+                <span class="font-mono text-slate-400 dark:text-slate-400 text-[11px] ml-1">(${fld.name})</span>
             </div>
             ${piiBadge}
         `;
@@ -4054,14 +4054,14 @@ function openSpecConfirmationModal(spec) {
     } else {
         spec.requested_fields.forEach((f, idx) => {
             const item = document.createElement("div");
-            item.className = "flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-blue-400 transition";
+            item.className = "flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:border-blue-400 dark:hover:border-blue-500 transition shadow-2xs";
             item.innerHTML = `
-                <label class="flex items-center space-x-2 cursor-pointer flex-1 mr-2 truncate">
-                    <input type="checkbox" class="conf-field-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5" data-field-index="${idx}" checked>
-                    <span class="font-medium text-slate-800 truncate">${f.description || f.name}</span>
-                    <span class="text-[10px] text-slate-400 font-mono">(${f.name})</span>
+                <label class="flex items-center space-x-2.5 cursor-pointer flex-1 mr-2 truncate">
+                    <input type="checkbox" class="conf-field-checkbox rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" data-field-index="${idx}" checked>
+                    <span class="font-medium text-slate-800 dark:text-slate-100 truncate">${f.description || f.name}</span>
+                    <span class="text-[10px] text-slate-400 dark:text-slate-400 font-mono">(${f.name})</span>
                 </label>
-                ${f.pii_sensitive ? `<span class="bg-rose-50 text-rose-700 border border-rose-200 text-[9px] font-bold px-1.5 py-0.5 rounded flex-shrink-0">PII / PDP</span>` : `<span class="bg-slate-100 text-slate-600 text-[9px] px-1.5 py-0.5 rounded flex-shrink-0">Standar</span>`}
+                ${f.pii_sensitive ? `<span class="bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 text-[9px] font-bold px-2 py-0.5 rounded-md flex-shrink-0">PII / PDP</span>` : `<span class="bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 text-[9px] font-medium px-2 py-0.5 rounded-md flex-shrink-0">Standar</span>`}
             `;
             fieldsContainer.appendChild(item);
         });
@@ -4075,17 +4075,17 @@ function openSpecConfirmationModal(spec) {
     } else {
         spec.filters.forEach((filt, fIdx) => {
             const item = document.createElement("div");
-            item.className = "p-2 rounded-lg bg-white border border-slate-200 space-y-0.5 hover:border-emerald-400 transition";
+            item.className = "p-2.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-1 hover:border-emerald-400 dark:hover:border-emerald-500 transition shadow-2xs";
             const valDisplay = Array.isArray(filt.value) ? filt.value.join(" s/d ") : filt.value;
             item.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <label class="flex items-center space-x-2 cursor-pointer flex-1 mr-2 truncate">
-                        <input type="checkbox" class="conf-filter-checkbox rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5" data-filter-index="${fIdx}" checked>
-                        <span class="font-semibold text-slate-800 text-xs truncate">${filt.field_description}</span>
+                    <label class="flex items-center space-x-2.5 cursor-pointer flex-1 mr-2 truncate">
+                        <input type="checkbox" class="conf-filter-checkbox rounded border-slate-300 dark:border-slate-600 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer" data-filter-index="${fIdx}" checked>
+                        <span class="font-semibold text-slate-800 dark:text-slate-100 text-xs truncate">${filt.field_description}</span>
                     </label>
-                    <span class="font-mono text-[10px] bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200 font-semibold">${filt.target_column} ${filt.operator} '${valDisplay}'</span>
+                    <span class="font-mono text-[10px] bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-500/40 font-semibold">${filt.target_column} ${filt.operator} '${valDisplay}'</span>
                 </div>
-                ${filt.rationale ? `<p class="text-[10px] text-slate-500 pl-5.5">${filt.rationale}</p>` : ''}
+                ${filt.rationale ? `<p class="text-[10px] text-slate-500 dark:text-slate-400 pl-6">${filt.rationale}</p>` : ''}
             `;
             filtersContainer.appendChild(item);
         });
