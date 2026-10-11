@@ -130,19 +130,20 @@ header select {
     border-bottom-right-radius: 0.875rem;
 }
 
-/* ================= DARK MODE OVERRIDES (ENTERPRISE HIGH READABILITY) ================= */
+/* ================= DARK MODE OVERRIDES (ENTERPRISE HIGH READABILITY — ALL LAYERS & STAGES) ================= */
 html.dark {
     color-scheme: dark;
 }
 
+/* 1. Base Canvas & Elevation Hierarchy */
 html.dark body {
-    background-color: #0a0f1d !important;
+    background-color: #080c16 !important;
     color: #e2e8f0 !important;
 }
 
-/* Header & Navigation Bar */
+/* Surface Level 1: Main Panels, Header, Footer */
 html.dark header {
-    background-color: rgba(15, 23, 42, 0.96) !important;
+    background-color: rgba(13, 20, 36, 0.96) !important;
     border-color: #1e293b !important;
 }
 
@@ -158,7 +159,6 @@ html.dark header select {
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
 }
 
-/* Surfaces & Card Containers */
 html.dark .bg-white {
     background-color: #0f172a !important;
     color: #e2e8f0 !important;
@@ -167,23 +167,32 @@ html.dark .bg-white {
 
 html.dark .bg-white\/80,
 html.dark .bg-white\/90 {
-    background-color: rgba(15, 23, 42, 0.9) !important;
+    background-color: rgba(15, 23, 42, 0.92) !important;
     border-color: #334155 !important;
 }
 
+/* Surface Level 2: Inner Cards, Wells & Sub-Panels */
 html.dark .bg-slate-50,
 html.dark .bg-slate-100 {
-    background-color: #151f33 !important;
+    background-color: #131c2e !important;
     color: #e2e8f0 !important;
-    border-color: #26354d !important;
+    border-color: #243247 !important;
 }
 
 html.dark .bg-slate-50\/70,
-html.dark .bg-slate-50\/50 {
-    background-color: #131c2e !important;
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-100\/80 {
+    background-color: #111a2b !important;
+    border-color: #243247 !important;
 }
 
-/* Typography & Text Contrast (WCAG High Readability) */
+html.dark .bg-slate-200\/80,
+html.dark .bg-slate-200 {
+    background-color: #0b1120 !important;
+    border-color: #1e293b !important;
+}
+
+/* 2. Global Typography & Neutral Text Contrast */
 html.dark .text-slate-900,
 html.dark .text-slate-800 {
     color: #f8fafc !important;
@@ -197,153 +206,190 @@ html.dark .text-slate-600 {
     color: #cbd5e1 !important;
 }
 
-html.dark .text-slate-500 {
-    color: #94a3b8 !important;
-}
-
+html.dark .text-slate-500,
 html.dark .text-slate-400 {
     color: #94a3b8 !important;
 }
 
-/* Transform Dark Colored Text to Vibrant High-Contrast Light Variants */
-html.dark .text-blue-950,
-html.dark .text-blue-900,
-html.dark .text-blue-800,
-html.dark .text-blue-700 {
+/* 3. Universal High-Contrast Color Text Wildcards (No Dark Text On Dark Backgrounds) */
+html.dark [class*="text-blue-9"],
+html.dark [class*="text-blue-8"],
+html.dark [class*="text-blue-7"] {
     color: #93c5fd !important;
 }
-
 html.dark .text-blue-600 {
     color: #60a5fa !important;
 }
 
-html.dark .text-indigo-950,
-html.dark .text-indigo-900,
-html.dark .text-indigo-800,
-html.dark .text-indigo-700 {
+html.dark [class*="text-indigo-9"],
+html.dark [class*="text-indigo-8"],
+html.dark [class*="text-indigo-7"] {
     color: #a5b4fc !important;
 }
-
 html.dark .text-indigo-600 {
     color: #818cf8 !important;
 }
 
-html.dark .text-emerald-950,
-html.dark .text-emerald-900,
-html.dark .text-emerald-800,
-html.dark .text-emerald-700 {
+html.dark [class*="text-emerald-9"],
+html.dark [class*="text-emerald-8"],
+html.dark [class*="text-emerald-7"] {
     color: #6ee7b7 !important;
 }
-
 html.dark .text-emerald-600 {
     color: #34d399 !important;
 }
 
-html.dark .text-amber-950,
-html.dark .text-amber-900,
-html.dark .text-amber-800,
-html.dark .text-amber-700 {
-    color: #fde047 !important;
+html.dark [class*="text-teal-9"],
+html.dark [class*="text-teal-8"],
+html.dark [class*="text-teal-7"] {
+    color: #5eead4 !important;
+}
+html.dark .text-teal-600 {
+    color: #2dd4bf !important;
 }
 
+html.dark [class*="text-cyan-9"],
+html.dark [class*="text-cyan-8"],
+html.dark [class*="text-cyan-7"] {
+    color: #67e8f9 !important;
+}
+html.dark .text-cyan-600 {
+    color: #22d3ee !important;
+}
+
+html.dark [class*="text-amber-9"],
+html.dark [class*="text-amber-8"],
+html.dark [class*="text-amber-7"] {
+    color: #fde047 !important;
+}
 html.dark .text-amber-600 {
     color: #fbbf24 !important;
 }
 
-html.dark .text-rose-950,
-html.dark .text-rose-900,
-html.dark .text-rose-800,
-html.dark .text-rose-700 {
+html.dark [class*="text-rose-9"],
+html.dark [class*="text-rose-8"],
+html.dark [class*="text-rose-7"],
+html.dark [class*="text-red-9"],
+html.dark [class*="text-red-8"],
+html.dark [class*="text-red-7"] {
     color: #fda4af !important;
 }
-
-html.dark .text-rose-600 {
+html.dark .text-rose-600,
+html.dark .text-red-600 {
     color: #f43f5e !important;
 }
 
-html.dark .text-purple-950,
-html.dark .text-purple-900,
-html.dark .text-purple-800,
-html.dark .text-purple-700 {
+html.dark [class*="text-purple-9"],
+html.dark [class*="text-purple-8"],
+html.dark [class*="text-purple-7"] {
     color: #d8b4fe !important;
 }
-
 html.dark .text-purple-600 {
     color: #c084fc !important;
 }
 
-/* Light / Pastel Background Containers to Dark Translucent Cards */
-html.dark .bg-blue-50,
-html.dark .bg-blue-100,
-html.dark .bg-blue-50\/50,
-html.dark .bg-blue-50\/30 {
+/* 4. Universal Pastel Container Wildcards -> Dark Translucent Cards (No Blinding Pastel Boxes) */
+html.dark [class*="bg-blue-50"],
+html.dark [class*="bg-blue-100"] {
     background-color: rgba(30, 58, 138, 0.35) !important;
     border-color: rgba(96, 165, 250, 0.35) !important;
 }
 
-html.dark .bg-indigo-50,
-html.dark .bg-indigo-100,
-html.dark .bg-indigo-50\/60,
-html.dark .bg-indigo-50\/40 {
+html.dark [class*="bg-indigo-50"],
+html.dark [class*="bg-indigo-100"] {
     background-color: rgba(49, 46, 129, 0.35) !important;
     border-color: rgba(129, 140, 248, 0.35) !important;
 }
 
-html.dark .bg-emerald-50,
-html.dark .bg-emerald-100 {
+html.dark [class*="bg-emerald-50"],
+html.dark [class*="bg-emerald-100"] {
     background-color: rgba(6, 78, 59, 0.35) !important;
     border-color: rgba(52, 211, 153, 0.35) !important;
 }
 
-html.dark .bg-amber-50,
-html.dark .bg-amber-100 {
+html.dark [class*="bg-teal-50"],
+html.dark [class*="bg-teal-100"] {
+    background-color: rgba(19, 78, 74, 0.35) !important;
+    border-color: rgba(45, 212, 191, 0.35) !important;
+}
+
+html.dark [class*="bg-cyan-50"],
+html.dark [class*="bg-cyan-100"] {
+    background-color: rgba(22, 78, 99, 0.35) !important;
+    border-color: rgba(34, 211, 238, 0.35) !important;
+}
+
+html.dark [class*="bg-amber-50"],
+html.dark [class*="bg-amber-100"] {
     background-color: rgba(120, 53, 15, 0.35) !important;
     border-color: rgba(251, 191, 36, 0.35) !important;
 }
 
-html.dark .bg-rose-50,
-html.dark .bg-rose-100,
-html.dark .bg-red-50,
-html.dark .bg-red-100 {
+html.dark [class*="bg-rose-50"],
+html.dark [class*="bg-rose-100"],
+html.dark [class*="bg-red-50"],
+html.dark [class*="bg-red-100"] {
     background-color: rgba(136, 19, 55, 0.35) !important;
     border-color: rgba(251, 113, 133, 0.35) !important;
 }
 
-html.dark .bg-purple-50,
-html.dark .bg-purple-100 {
+html.dark [class*="bg-purple-50"],
+html.dark [class*="bg-purple-100"] {
     background-color: rgba(88, 28, 135, 0.35) !important;
     border-color: rgba(192, 132, 252, 0.35) !important;
 }
 
-/* Borders & Dividers */
+/* 5. Borders & Dividers Across All Panels */
 html.dark .border-slate-100,
 html.dark .border-slate-200,
 html.dark .border-slate-300 {
-    border-color: #27354a !important;
+    border-color: #243247 !important;
 }
 
-html.dark .border-blue-100,
-html.dark .border-blue-200 {
+html.dark [class*="border-blue-100"],
+html.dark [class*="border-blue-200"] {
     border-color: rgba(59, 130, 246, 0.4) !important;
 }
 
-html.dark .border-indigo-100,
-html.dark .border-indigo-200 {
+html.dark [class*="border-indigo-100"],
+html.dark [class*="border-indigo-200"] {
     border-color: rgba(99, 102, 241, 0.4) !important;
 }
 
-html.dark .border-emerald-100,
-html.dark .border-emerald-200 {
+html.dark [class*="border-emerald-100"],
+html.dark [class*="border-emerald-200"] {
     border-color: rgba(16, 185, 129, 0.4) !important;
 }
 
-/* Inputs, Selects & Forms */
+html.dark [class*="border-teal-100"],
+html.dark [class*="border-teal-200"] {
+    border-color: rgba(20, 184, 166, 0.4) !important;
+}
+
+html.dark [class*="border-amber-100"],
+html.dark [class*="border-amber-200"] {
+    border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+html.dark [class*="border-rose-100"],
+html.dark [class*="border-rose-200"],
+html.dark [class*="border-red-100"],
+html.dark [class*="border-red-200"] {
+    border-color: rgba(244, 63, 94, 0.4) !important;
+}
+
+html.dark [class*="border-purple-100"],
+html.dark [class*="border-purple-200"] {
+    border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+/* 6. Form Controls, Dropdowns & Inputs */
 html.dark input[type="text"],
 html.dark input[type="password"],
 html.dark select,
 html.dark textarea {
     background-color: #0b1120 !important;
-    border-color: #3b4d66 !important;
+    border-color: #354763 !important;
     color: #f8fafc !important;
 }
 
@@ -352,25 +398,32 @@ html.dark textarea::placeholder {
     color: #64748b !important;
 }
 
-/* Secondary Action Buttons & Sample List Buttons */
+html.dark input[type="checkbox"] {
+    background-color: #0b1120 !important;
+    border-color: #475569 !important;
+    accent-color: #3b82f6;
+}
+
+/* 7. Buttons: White Secondary Buttons & Sample Cards */
 html.dark button.bg-white,
 html.dark a.bg-white,
 html.dark #sample-list button {
-    background-color: #172236 !important;
-    border-color: #334460 !important;
+    background-color: #152033 !important;
+    border-color: #2b3d57 !important;
     color: #e2e8f0 !important;
 }
 
 html.dark button.bg-white:hover,
+html.dark a.bg-white:hover,
 html.dark #sample-list button:hover {
-    background-color: #1f2d48 !important;
+    background-color: #1e2c45 !important;
     color: #ffffff !important;
-    border-color: #4b6284 !important;
+    border-color: #435b80 !important;
 }
 
-/* Stepper Pipeline Cards */
+/* 8. Stepper Pipeline Indicator (Stage 1) */
 html.dark .step-card {
-    border-color: #2a374d !important;
+    border-color: #243247 !important;
 }
 
 html.dark .step-card:not(.active):not(.done) {
@@ -378,17 +431,22 @@ html.dark .step-card:not(.active):not(.done) {
     color: #cbd5e1 !important;
 }
 
+html.dark .step-card:not(.active):not(.done) > div:first-child {
+    background-color: #172236 !important;
+    color: #94a3b8 !important;
+}
+
 html.dark .step-card.active {
-    background-color: #17243c !important;
+    background-color: #16243d !important;
     border-color: #3b82f6 !important;
 }
 
 html.dark .step-card.done {
-    background-color: #0d281e !important;
+    background-color: #0b241a !important;
     border-color: #059669 !important;
 }
 
-/* Tabs Navigation */
+/* 9. Tab Navigation Bar (Stage 2) */
 html.dark .tab-btn.active {
     color: #60a5fa !important;
     border-color: #3b82f6 !important;
@@ -401,30 +459,30 @@ html.dark .tab-btn:not(.active) {
 }
 
 html.dark .tab-btn:not(.active):hover {
-    background-color: rgba(30, 41, 59, 0.6) !important;
+    background-color: rgba(30, 41, 59, 0.5) !important;
     color: #f8fafc !important;
 }
 
-/* Data Tables & Previews (High Contrast Grid) */
+/* 10. Data Tables & Grids (Tab 5 Delivery, CMS History, Schemas) */
 html.dark table {
-    border-color: #27354a !important;
+    border-color: #243247 !important;
 }
 
 html.dark table thead th {
-    background-color: #162032 !important;
+    background-color: #152033 !important;
     color: #cbd5e1 !important;
-    border-color: #27354a !important;
+    border-color: #243247 !important;
     font-weight: 600 !important;
 }
 
 html.dark table tbody td {
     background-color: #0f172a !important;
     color: #e2e8f0 !important;
-    border-color: #1e293b !important;
+    border-color: #1a2538 !important;
 }
 
 html.dark table tbody tr:nth-child(even) td {
-    background-color: #131d2e !important;
+    background-color: #121a2a !important;
 }
 
 html.dark table tbody tr:hover td {
@@ -432,10 +490,49 @@ html.dark table tbody tr:hover td {
     color: #ffffff !important;
 }
 
-/* File Dropzone */
+/* 11. Tab 5 Delivery Inspector & Sheet Sub-Tabs */
+html.dark [id*="btn-sheet-tab-"] {
+    color: #94a3b8 !important;
+    background-color: transparent !important;
+}
+
+html.dark [id*="btn-sheet-tab-"]:hover {
+    color: #f8fafc !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark [id*="btn-sheet-tab-"].bg-white {
+    background-color: #1e293b !important;
+    color: #a5b4fc !important;
+    border: 1px solid #334155 !important;
+    box-shadow: none !important;
+}
+
+/* 12. Tab 4 Audit Filters & Verification Checklist */
+html.dark .verif-filter-btn:not(.bg-indigo-600) {
+    background-color: #152033 !important;
+    color: #cbd5e1 !important;
+    border: 1px solid #28374d !important;
+}
+
+html.dark .verif-filter-btn:not(.bg-indigo-600):hover {
+    background-color: #1e2c45 !important;
+    color: #ffffff !important;
+}
+
+html.dark #verif-checks-list > div {
+    background-color: #0f172a !important;
+    border-color: #243247 !important;
+}
+
+html.dark #verif-checks-list > div:hover {
+    border-color: #3b82f6 !important;
+}
+
+/* 13. File Dropzone (Stage 1) */
 html.dark #dropzone {
-    border-color: #3b4d66 !important;
-    background-color: rgba(21, 31, 51, 0.5) !important;
+    border-color: #334460 !important;
+    background-color: rgba(19, 28, 46, 0.5) !important;
 }
 
 html.dark #dropzone:hover {
@@ -447,30 +544,77 @@ html.dark #file-display-name {
     color: #f8fafc !important;
 }
 
-/* Inline Code & Chips */
+/* 14. Inline Code, Tags & Chips */
 html.dark code:not([class*="language-"]) {
-    background-color: #172236 !important;
+    background-color: #152033 !important;
     color: #93c5fd !important;
-    border: 1px solid #2a3b54 !important;
+    border: 1px solid #28374d !important;
 }
 
-/* Modal Dialogs */
-html.dark #modal-catalog > div > div,
-html.dark #modal-cms-history > div > div,
-html.dark #modal-om-settings > div > div,
-html.dark #modal-analytics > div > div,
-html.dark #modal-spec-confirmation > div > div {
+/* 15. All Modal Dialogs (CMS, Analytics, Settings, Spec Confirmation, Catalog) */
+html.dark #cms-modal > div,
+html.dark #cms-detail-modal > div,
+html.dark #analytics-modal > div,
+html.dark #om-settings-modal > div,
+html.dark #spec-confirmation-modal > div,
+html.dark #catalog-modal > div {
     background-color: #0f172a !important;
     border: 1px solid #334155 !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85) !important;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9) !important;
+    color: #f8fafc !important;
 }
 
-/* Footer */
+html.dark #cms-modal .border-b,
+html.dark #cms-detail-modal .border-b,
+html.dark #analytics-modal .border-b,
+html.dark #om-settings-modal .border-b,
+html.dark #spec-confirmation-modal .border-b,
+html.dark #catalog-modal .border-b {
+    border-color: #1e293b !important;
+}
+
+html.dark #cms-modal .border-t,
+html.dark #cms-detail-modal .border-t,
+html.dark #analytics-modal .border-t,
+html.dark #om-settings-modal .border-t,
+html.dark #spec-confirmation-modal .border-t,
+html.dark #catalog-modal .border-t {
+    border-color: #1e293b !important;
+}
+
+/* Modal Filter Buttons */
+html.dark .catalog-filter-btn:not(.bg-blue-600),
+html.dark .btn-period-filter:not(.bg-blue-600) {
+    background-color: #152033 !important;
+    color: #cbd5e1 !important;
+    border: 1px solid #28374d !important;
+}
+
+html.dark .catalog-filter-btn:not(.bg-blue-600):hover,
+html.dark .btn-period-filter:not(.bg-blue-600):hover {
+    background-color: #1e2c45 !important;
+    color: #ffffff !important;
+}
+
+/* 16. Footer */
 html.dark footer {
-    background-color: #0f172a !important;
+    background-color: #090e1a !important;
     border-color: #1e293b !important;
     color: #94a3b8 !important;
 }
+
+/* 17. Custom Scrollbars in Dark Mode */
+html.dark ::-webkit-scrollbar-track {
+    background: #0b1120 !important;
+}
+html.dark ::-webkit-scrollbar-thumb {
+    background: #243247 !important;
+    border-radius: 4px;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #334460 !important;
+}
+
 
 
 
