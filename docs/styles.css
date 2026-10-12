@@ -635,13 +635,14 @@ html.dark code:not([class*="language-"]) {
     border: 1px solid #28374d !important;
 }
 
-/* 15. All Modal Dialogs (CMS, Analytics, Settings, Spec Confirmation, Catalog) */
+/* 15. All Modal Dialogs (CMS, Analytics, Settings, Spec Confirmation, Catalog, Shortcuts) */
 html.dark #cms-modal > div,
 html.dark #cms-detail-modal > div,
 html.dark #analytics-modal > div,
 html.dark #om-settings-modal > div,
 html.dark #spec-confirmation-modal > div,
-html.dark #catalog-modal > div {
+html.dark #catalog-modal > div,
+html.dark #shortcuts-modal > div {
     background-color: #0f172a !important;
     border: 1px solid #334155 !important;
     box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9) !important;
@@ -653,7 +654,8 @@ html.dark #cms-detail-modal .border-b,
 html.dark #analytics-modal .border-b,
 html.dark #om-settings-modal .border-b,
 html.dark #spec-confirmation-modal .border-b,
-html.dark #catalog-modal .border-b {
+html.dark #catalog-modal .border-b,
+html.dark #shortcuts-modal .border-b {
     border-color: #1e293b !important;
 }
 
@@ -662,7 +664,8 @@ html.dark #cms-detail-modal .border-t,
 html.dark #analytics-modal .border-t,
 html.dark #om-settings-modal .border-t,
 html.dark #spec-confirmation-modal .border-t,
-html.dark #catalog-modal .border-t {
+html.dark #catalog-modal .border-t,
+html.dark #shortcuts-modal .border-t {
     border-color: #1e293b !important;
 }
 

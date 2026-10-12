@@ -280,12 +280,15 @@ function showToast(message, type = "info", duration = 3500) {
     setTimeout(dismissToast, duration);
 }
 
-// Global Keyboard Shortcuts (Escape to dismiss modals in hierarchy)
+// Global Keyboard Shortcuts (UI/UX Pro Max Power-User UX)
 function setupGlobalKeyHandlers() {
     document.addEventListener("keydown", (e) => {
+        const isInputFocused = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName);
+
+        // 1. Escape key: dismiss active modals in hierarchy
         if (e.key === "Escape" || e.keyCode === 27) {
-            // Priority order: Child/Detailed modals first, then parent/main modals
             const modalStack = [
+                "shortcuts-modal",
                 "cms-detail-modal",
                 "spec-confirmation-modal",
                 "om-settings-modal",
@@ -300,8 +303,83 @@ function setupGlobalKeyHandlers() {
                     break; // Dismiss top-most active modal only
                 }
             }
+            return;
+        }
+
+        // 2. Ctrl + K / Cmd + K: Open & Focus Catalog Search
+        if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
+            e.preventDefault();
+            const openCatalogBtn = document.getElementById("btn-browse-catalog");
+            if (openCatalogBtn) openCatalogBtn.click();
+            setTimeout(() => {
+                const searchInput = document.getElementById("input-catalog-modal-search");
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }, 80);
+            return;
+        }
+
+        // 3. Ctrl + Enter / Cmd + Enter: Run streaming pipeline
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            e.preventDefault();
+            const procBtn = document.getElementById("btn-process");
+            if (procBtn && !procBtn.disabled) {
+                procBtn.click();
+                showToast("Memulai eksekusi pipeline...", "info");
+            }
+            return;
+        }
+
+        // 4. Alt + M: Toggle dark mode
+        if (e.altKey && (e.key === "m" || e.key === "M")) {
+            e.preventDefault();
+            const darkBtn = document.getElementById("btn-toggle-dark-mode");
+            if (darkBtn) darkBtn.click();
+            return;
+        }
+
+        // 5. Alt + 1..5: Switch Tabs
+        if (e.altKey && ["1", "2", "3", "4", "5"].includes(e.key)) {
+            e.preventDefault();
+            const tabMap = {
+                "1": "tab-spec",
+                "2": "tab-metadata",
+                "3": "tab-sql",
+                "4": "tab-verif",
+                "5": "tab-delivery"
+            };
+            const tabTarget = tabMap[e.key];
+            const tabBtn = document.querySelector(`[data-tab="${tabTarget}"]`);
+            if (tabBtn) tabBtn.click();
+            return;
+        }
+
+        // 6. '?' key: Open Shortcuts Cheatsheet modal (only when not typing in inputs)
+        if (e.key === "?" && !isInputFocused && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            e.preventDefault();
+            const shortcutsModal = document.getElementById("shortcuts-modal");
+            if (shortcutsModal) shortcutsModal.classList.remove("hidden");
+            return;
         }
     });
+
+    // Wire up Shortcuts modal open/close buttons & backdrop click
+    const openShortcutsBtn = document.getElementById("btn-open-shortcuts");
+    const closeShortcutsBtn = document.getElementById("btn-close-shortcuts");
+    const shortcutsModal = document.getElementById("shortcuts-modal");
+    if (openShortcutsBtn && shortcutsModal) {
+        openShortcutsBtn.addEventListener("click", () => shortcutsModal.classList.remove("hidden"));
+    }
+    if (closeShortcutsBtn && shortcutsModal) {
+        closeShortcutsBtn.addEventListener("click", () => shortcutsModal.classList.add("hidden"));
+    }
+    if (shortcutsModal) {
+        shortcutsModal.addEventListener("click", (e) => {
+            if (e.target === shortcutsModal) shortcutsModal.classList.add("hidden");
+        });
+    }
 }
 
 async function initApp() {
@@ -1137,9 +1215,9 @@ function renderDeliveryDataPreview(query = "") {
                 }
             }
 
-            // Highlight masked values
+            // Highlight masked values (UU PDP No. 27/2022 Compliance)
             if (valStr.includes("***") || valStr.includes("******") || valStr.includes("[TERLINDUNGI")) {
-                td.innerHTML = `<span class="bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded font-mono font-semibold">${val}</span>`;
+                td.innerHTML = `<span class="bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded font-mono font-semibold cursor-help" title="Disamarkan secara otomatis sesuai mandat UU PDP No. 27/2022 Pasal 34 demi perlindungan data pribadi.">${val}</span>`;
             } else if (colLower === "status_jalur") {
                 let badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
                 if (valStr === "KUNING") badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
@@ -3506,7 +3584,33 @@ function setupCatalogModal() {
         const content = document.getElementById("modal-catalog-content");
 
         if (!allCatalogTablesCache || allCatalogTablesCache.length === 0) {
-            content.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Memuat katalog OpenMetadata...</div>`;
+            content.innerHTML = `
+                <div class="space-y-4" role="status" aria-busy="true" aria-label="Memuat katalog tabel OpenMetadata">
+                    ${[1, 2, 3].map(() => `
+                        <div class="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4 animate-pulse">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                                <div class="flex items-center space-x-2">
+                                    <div class="h-6 w-48 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+                                    <div class="h-5 w-16 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
+                                    <div class="h-5 w-24 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="h-7 w-20 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+                                    <div class="h-7 w-28 bg-blue-100 dark:bg-blue-900/40 rounded-lg"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                                <div class="h-3 w-3/4 bg-slate-100 dark:bg-slate-800 rounded"></div>
+                            </div>
+                            <div class="h-10 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center px-3 space-x-2">
+                                <div class="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                                <div class="h-4 w-32 bg-slate-100 dark:bg-slate-700 rounded"></div>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
             try {
                 const res = await fetch("/api/catalog");
                 if (!res.ok) throw new Error("HTTP " + res.status);
