@@ -1,8 +1,47 @@
-/* Custom styles for DataRequestStudio */
+/* Custom styles for DataRequestStudio (UI/UX Pro Max Design System) */
 
-/* ================= TYPOGRAPHY (INTER + JETBRAINS MONO) ================= */
+:root {
+    --color-primary: #0F172A;
+    --color-on-primary: #FFFFFF;
+    --color-secondary: #334155;
+    --color-on-secondary: #FFFFFF;
+    --color-accent: #0369A1;
+    --color-on-accent: #FFFFFF;
+    --color-background: #F8FAFC;
+    --color-foreground: #020617;
+    --color-card: #FFFFFF;
+    --color-card-foreground: #020617;
+    --color-muted: #E8ECF1;
+    --color-muted-foreground: #475569;
+    --color-border: #E2E8F0;
+    --color-destructive: #DC2626;
+    --color-ring: #2563EB;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+}
+
+html.dark {
+    --color-primary: #0B0F19;
+    --color-on-primary: #F8FAFC;
+    --color-secondary: #1E293B;
+    --color-accent: #38BDF8;
+    --color-background: #070B14;
+    --color-foreground: #F8FAFC;
+    --color-card: #0F172A;
+    --color-card-foreground: #F8FAFC;
+    --color-muted: #152033;
+    --color-muted-foreground: #94A3B8;
+    --color-border: #1E293B;
+    --color-destructive: #EF4444;
+    --color-ring: #60A5FA;
+}
+
+/* ================= TYPOGRAPHY (PLUS JAKARTA SANS + INTER + JETBRAINS MONO) ================= */
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -16,6 +55,31 @@ code, pre, .font-mono, #sql-editor-input, #sql-code-block, #sql-edit-gutter, #sq
 /* Tabular figures for data tables and financial numbers */
 table, .tabular-nums {
     font-variant-numeric: tabular-nums;
+}
+
+/* ================= ACCESSIBILITY: WCAG FOCUS INDICATORS ================= */
+:focus-visible {
+    outline: 2px solid #2563eb !important;
+    outline-offset: 2px !important;
+}
+
+html.dark :focus-visible {
+    outline: 2px solid #60a5fa !important;
+    outline-offset: 2px !important;
+}
+
+button, a, input, select, textarea, [role="button"] {
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+/* ================= PREFERS REDUCED MOTION ================= */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 
