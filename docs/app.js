@@ -2356,7 +2356,7 @@ function openCmsDetailModal(item) {
     // Pemohon
     document.getElementById("detail-requester-name").innerText = item.requester_name || "-";
     document.getElementById("detail-department").innerText = item.department || "Internal Bea dan Cukai";
-    document.getElementById("detail-business-process").innerText = item.business_process || "Ekspor (PEB BC 3.0)";
+    document.getElementById("detail-business-process").innerText = item.business_process || "Ekspor";
     document.getElementById("detail-created-at").innerText = item.created_at || "-";
 
     // Verifikator
@@ -4024,11 +4024,12 @@ async function fetchAndRenderAnalytics(period = "all") {
                     chartBizProcessInstance = null;
                 }
                 const bizData = data.business_process_distribution || {
-                    "Ekspor (PEB BC 3.0)": reqCount,
-                    "Impor (PIB BC 2.0)": 0,
-                    "Cukai (BKC)": 0,
-                    "Manifest (BC 1.1)": 0,
-                    "TPB / Fasilitas Berikat": 0
+                    "Ekspor": reqCount,
+                    "Impor": 0,
+                    "Cukai": 0,
+                    "Fasilitas": 0,
+                    "Manifest": 0,
+                    "Perbendaharaan": 0
                 };
                 const bizLabels = Object.keys(bizData);
                 const bizValues = Object.values(bizData);

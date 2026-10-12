@@ -2214,7 +2214,7 @@ window.MOCK_DATA = {
       "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
       "requester_name": "Ahmad Fauzi, S.Kom",
       "department": "Internal Bea dan Cukai",
-      "business_process": "Ekspor",
+      "business_process": "Fasilitas",
       "created_at": "2026-10-10 19:34:00",
       "status": "APPROVED",
       "row_count": 35,
@@ -2812,11 +2812,12 @@ window.MOCK_DATA = {
       "Ditolak / Disangkal": 5
     },
     "business_process_distribution": {
-      "Ekspor (PEB BC 3.0)": 54,
-      "Impor (PIB BC 2.0)": 4,
-      "Cukai (BKC)": 2,
-      "Manifest (BC 1.1)": 2,
-      "TPB / Fasilitas Berikat": 0
+      "Ekspor": 50,
+      "Impor": 4,
+      "Cukai": 2,
+      "Fasilitas": 4,
+      "Manifest": 2,
+      "Perbendaharaan": 9
     },
     "dialect_distribution": {
       "PostgreSQL": 62,
