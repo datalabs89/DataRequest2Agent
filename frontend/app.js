@@ -1372,9 +1372,25 @@ function exportChartToImage(chartInstance, defaultFilename = "visualisasi_tren.p
     }
 }
 
+function syncDeliveryChartTypeButtons(activeType) {
+    const chartTypeBtns = document.querySelectorAll(".delivery-chart-type-btn");
+    chartTypeBtns.forEach(b => {
+        const isMatch = b.dataset.type === activeType;
+        if (isMatch) {
+            b.className = "delivery-chart-type-btn flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold transition bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs";
+        } else {
+            b.className = "delivery-chart-type-btn flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition";
+        }
+    });
+}
+
 function renderDeliveryCharts(chartType = "bar") {
     const emptyState = document.getElementById("delivery-chart-empty-state");
     const chartContent = document.getElementById("delivery-chart-content");
+
+    const hiddenChartType = document.getElementById("select-delivery-chart-type");
+    if (hiddenChartType) hiddenChartType.value = chartType;
+    syncDeliveryChartTypeButtons(chartType);
 
     if (!currentDeliveryRows || currentDeliveryRows.length === 0) {
         if (emptyState) emptyState.classList.remove("hidden");
@@ -1701,13 +1717,17 @@ function setupDeliveryInteractions() {
         });
     });
 
-    // Chart Type Selector
-    const chartTypeSelect = document.getElementById("select-delivery-chart-type");
-    if (chartTypeSelect) {
-        chartTypeSelect.addEventListener("change", (e) => {
-            renderDeliveryCharts(e.target.value);
+    // Segmented Pill Buttons untuk Bentuk Grafik
+    const chartTypeBtns = document.querySelectorAll(".delivery-chart-type-btn");
+    const hiddenChartType = document.getElementById("select-delivery-chart-type");
+    chartTypeBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const type = btn.dataset.type;
+            if (hiddenChartType) hiddenChartType.value = type;
+            syncDeliveryChartTypeButtons(type);
+            renderDeliveryCharts(type);
         });
-    }
+    });
 
     // Dynamic Metric Column Selector
     const metricColSelect = document.getElementById("select-delivery-metric-col");
