@@ -228,6 +228,81 @@ function updateSqlBreakdown(query, spec) {
     }
 }
 
+// ==================== FLOATING TOAST NOTIFICATION SYSTEM (UI/UX PRO MAX) ====================
+function showToast(message, type = "info", duration = 3500) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    let bgClasses = "bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 shadow-slate-900/10";
+    let iconName = "info";
+    let iconClass = "text-blue-600 dark:text-blue-400";
+
+    if (type === "success") {
+        bgClasses = "bg-emerald-50/95 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 shadow-emerald-900/10";
+        iconName = "check-circle";
+        iconClass = "text-emerald-600 dark:text-emerald-400";
+    } else if (type === "error") {
+        bgClasses = "bg-rose-50/95 dark:bg-rose-950/90 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100 shadow-rose-900/10";
+        iconName = "alert-circle";
+        iconClass = "text-rose-600 dark:text-rose-400";
+    } else if (type === "warning") {
+        bgClasses = "bg-amber-50/95 dark:bg-amber-950/90 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100 shadow-amber-900/10";
+        iconName = "alert-triangle";
+        iconClass = "text-amber-600 dark:text-amber-400";
+    }
+
+    toast.className = `toast-item flex items-center space-x-3 px-4 py-3 rounded-xl border shadow-lg text-xs font-medium pointer-events-auto max-w-sm backdrop-blur-md ${bgClasses}`;
+    toast.innerHTML = `
+        <i data-lucide="${iconName}" class="w-4 h-4 ${iconClass} flex-shrink-0"></i>
+        <div class="flex-1 leading-snug">${message}</div>
+        <button class="toast-close text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded transition flex-shrink-0" aria-label="Tutup notifikasi">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+    `;
+
+    container.appendChild(toast);
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
+    const dismissToast = () => {
+        if (toast.classList.contains("toast-out")) return;
+        toast.classList.add("toast-out");
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 220);
+    };
+
+    const closeBtn = toast.querySelector(".toast-close");
+    if (closeBtn) closeBtn.addEventListener("click", dismissToast);
+
+    setTimeout(dismissToast, duration);
+}
+
+// Global Keyboard Shortcuts (Escape to dismiss modals in hierarchy)
+function setupGlobalKeyHandlers() {
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" || e.keyCode === 27) {
+            // Priority order: Child/Detailed modals first, then parent/main modals
+            const modalStack = [
+                "cms-detail-modal",
+                "spec-confirmation-modal",
+                "om-settings-modal",
+                "catalog-modal",
+                "analytics-modal",
+                "cms-modal"
+            ];
+            for (const id of modalStack) {
+                const el = document.getElementById(id);
+                if (el && !el.classList.contains("hidden")) {
+                    el.classList.add("hidden");
+                    break; // Dismiss top-most active modal only
+                }
+            }
+        }
+    });
+}
 
 async function initApp() {
     checkHealth();
@@ -245,6 +320,7 @@ async function initApp() {
     setupDeliveryInteractions();
     setupDarkModeToggle();
     setupAiCopilot();
+    setupGlobalKeyHandlers();
 
     document.getElementById("btn-process").addEventListener("click", runStreamingPipeline);
     document.getElementById("btn-copy-sql").addEventListener("click", copySql);
@@ -1370,7 +1446,7 @@ function setupDeliveryInteractions() {
     if (btnCopy) {
         btnCopy.addEventListener("click", () => {
             if (!currentDeliveryRows || currentDeliveryRows.length === 0) {
-                alert("Tidak ada baris data untuk disalin.");
+                showToast("Tidak ada baris data untuk disalin.", "warning");
                 return;
             }
 
@@ -1382,6 +1458,7 @@ function setupDeliveryInteractions() {
             const tsvContent = `${headerRow}\n${dataRows}`;
 
             navigator.clipboard.writeText(tsvContent).then(() => {
+                showToast("Data hasil pemenuhan berhasil disalin ke format TSV!", "success");
                 if (copyText) copyText.innerText = "✓ Tersalin!";
                 btnCopy.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-300");
                 setTimeout(() => {
@@ -1389,7 +1466,7 @@ function setupDeliveryInteractions() {
                     btnCopy.classList.remove("bg-emerald-50", "text-emerald-700", "border-emerald-300");
                 }, 2000);
             }).catch(err => {
-                alert("Gagal menyalin: " + err.message);
+                showToast("Gagal menyalin: " + err.message, "error");
             });
         });
     }
@@ -2052,6 +2129,7 @@ function setupVerifierFeedback() {
             if (!hashText || hashText.includes("Menunggu")) return;
 
             navigator.clipboard.writeText(hashText).then(() => {
+                showToast("Sidik jari Digital Seal SHA-256 berhasil disalin!", "success");
                 if (copyHashBtnText) copyHashBtnText.innerText = "Tersalin!";
                 btnCopySealHash.classList.add("text-emerald-300");
                 setTimeout(() => {
@@ -2151,13 +2229,13 @@ function setupVerifierFeedback() {
                         instructionElem.innerText = `Catatan Data Steward: "${comments}". Klik tombol di samping untuk mengoreksi tanggal atau kolom.`;
                     }
                 }
-                alert("Catatan Permintaan Revisi berhasil dicatat. Data Analyst dapat membuka form penyesuaian.");
+                showToast("Catatan Permintaan Revisi berhasil dicatat. Form penyesuaian diaktifkan.", "warning");
             } else {
                 if (revisionBox) revisionBox.classList.add("hidden");
-                alert(`Sign-off Verifikator berhasil dicatat dengan status: ${action}`);
+                showToast(`Sign-off Verifikator berhasil dicatat dengan status: ${action}`, "success");
             }
         } catch (err) {
-            alert("Gagal menyimpan feedback: " + err.message);
+            showToast("Gagal menyimpan feedback: " + err.message, "error");
         }
     }
 
@@ -2377,7 +2455,36 @@ function setupCmsModal() {
         tbody.innerHTML = "";
 
         if (!items || items.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">Tidak ada riwayat permohonan yang sesuai dengan filter pencarian.</td></tr>`;
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center bg-white dark:bg-slate-900">
+                        <div class="flex flex-col items-center justify-center space-y-2 max-w-sm mx-auto">
+                            <i data-lucide="inbox" class="w-10 h-10 text-slate-300 dark:text-slate-600"></i>
+                            <p class="text-xs font-bold text-slate-700 dark:text-slate-200">Tidak ada riwayat permohonan yang sesuai</p>
+                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Coba ubah kata kunci pencarian, filter status permohonan, atau filter proses bisnis kepabeanan.</p>
+                            <button id="btn-reset-cms-filters" class="mt-2 inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold transition active:scale-[0.98]">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                <span>Reset Filter CMS</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            const resetCmsBtn = document.getElementById("btn-reset-cms-filters");
+            if (resetCmsBtn) {
+                resetCmsBtn.addEventListener("click", () => {
+                    if (searchInput) searchInput.value = "";
+                    if (deptFilterElem) deptFilterElem.value = "ALL";
+                    if (bizFilterElem) bizFilterElem.value = "ALL";
+                    activeCmsStatusFilter = "ALL";
+                    currentCmsPage = 1;
+                    quickCounters.forEach(c => {
+                        c.classList.toggle("active", c.dataset.status === "ALL");
+                    });
+                    applyFilterAndSearch();
+                });
+            }
+            if (window.lucide) lucide.createIcons();
             renderPagination(0);
             return;
         }
@@ -2674,6 +2781,7 @@ function copySql() {
     if (!queryToCopy) return;
 
     navigator.clipboard.writeText(queryToCopy).then(() => {
+        showToast("Query SQL berhasil disalin ke clipboard!", "success");
         const btnText = document.getElementById("btn-copy-sql-text");
         const icon = document.getElementById("icon-copy-sql");
         if (btnText) btnText.innerText = "Tersalin!";
@@ -3068,13 +3176,37 @@ function setupCatalogModal() {
 
         if (!tablesToRender || tablesToRender.length === 0) {
             content.innerHTML = `
-                <div class="p-12 text-center rounded-2xl border border-dashed border-slate-300 bg-white space-y-2">
-                    <i data-lucide="search-x" class="w-8 h-8 text-slate-300 mx-auto"></i>
-                    <p class="text-xs font-bold text-slate-700">Tidak ada tabel atau atribut yang cocok dengan "${rawQuery}"</p>
-                    <p class="text-[11px] text-slate-400">Pastikan ejaan benar, coba kata kunci lain (mis: peb, tarif, nilai, pelanggan, tanggal), atau reset filter skema ke 'Semua'.</p>
+                <div class="p-12 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 space-y-3">
+                    <i data-lucide="search-x" class="w-10 h-10 text-slate-400 mx-auto"></i>
+                    <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Tidak ada tabel atau atribut yang cocok dengan "${rawQuery || activeCatalogSchemaFilter}"</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 max-w-md mx-auto">Pastikan ejaan benar, coba kata kunci lain (mis: peb, tarif, nilai, perbendaharaan, tanggal), atau reset filter skema dan pencarian.</p>
+                    <div class="pt-1">
+                        <button id="btn-reset-catalog-filter" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition active:scale-[0.98]">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                            <span>Reset Semua Filter</span>
+                        </button>
+                    </div>
                 </div>
             `;
-            lucide.createIcons();
+            const resetBtn = document.getElementById("btn-reset-catalog-filter");
+            if (resetBtn) {
+                resetBtn.addEventListener("click", () => {
+                    if (searchInput) searchInput.value = "";
+                    if (clearSearchBtn) clearSearchBtn.classList.add("hidden");
+                    activeCatalogSchemaFilter = "all";
+                    activeCatalogTierFilter = "all";
+                    if (tierSelect) tierSelect.value = "all";
+                    schemaFilterBtns.forEach(b => {
+                        if (b.dataset.schema === "all") {
+                            b.className = "catalog-filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow-2xs transition";
+                        } else {
+                            b.className = "catalog-filter-btn px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition";
+                        }
+                    });
+                    renderModalTables();
+                });
+            }
+            if (window.lucide) lucide.createIcons();
             return;
         }
 
@@ -3611,8 +3743,9 @@ function setupOmSettingsModal() {
             modal.classList.add("hidden");
             checkHealth();
             appendConsoleLog("OpenMetadata", `Konfigurasi berhasil disimpan. Mode: ${data.preferred_mode}`);
+            showToast("Pengaturan OpenMetadata berhasil disimpan!", "success");
         } catch (err) {
-            alert(`Gagal menyimpan: ${err.message}`);
+            showToast(`Gagal menyimpan: ${err.message}`, "error");
         } finally {
             saveBtn.disabled = false;
             saveBtn.innerHTML = `<i data-lucide="save" class="w-3.5 h-3.5"></i><span>Simpan Pengaturan</span>`;

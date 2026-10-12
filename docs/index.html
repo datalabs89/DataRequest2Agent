@@ -46,6 +46,8 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+    <!-- WCAG 2.4.1 Skip Link (UI/UX Pro Max) -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:font-semibold focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white">Lewati ke konten utama</a>
 
     <!-- Top Navigation Header -->
     <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
@@ -95,12 +97,12 @@
                     </div>
 
                     <!-- Dark Mode Toggle Button -->
-                    <button id="btn-toggle-dark-mode" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-amber-500 dark:hover:text-amber-400 flex-shrink-0" title="Beralih Mode Gelap / Terang">
+                    <button id="btn-toggle-dark-mode" aria-label="Beralih mode gelap atau terang" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-amber-500 dark:hover:text-amber-400 flex-shrink-0" title="Beralih Mode Gelap / Terang">
                         <i data-lucide="moon" class="w-4 h-4" id="icon-dark-mode"></i>
                     </button>
 
                     <!-- OpenMetadata Settings Button -->
-                    <button id="btn-open-om-settings" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0" title="Pengaturan Koneksi OpenMetadata">
+                    <button id="btn-open-om-settings" aria-label="Buka pengaturan OpenMetadata" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0" title="Pengaturan Koneksi OpenMetadata">
                         <i data-lucide="settings" class="w-4 h-4"></i>
                     </button>
 
@@ -115,7 +117,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         <!-- Banner / Hero Summary -->
         <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
@@ -427,11 +429,11 @@
                             <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-600"></i>
                             <span id="btn-toggle-edit-text">Buka Mode Editor SQL</span>
                         </button>
-                        <button id="btn-copy-sql" class="text-xs font-semibold flex items-center space-x-1.5 bg-white border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-xl text-slate-700 transition shadow-2xs">
+                        <button id="btn-copy-sql" aria-label="Salin kode SQL ke clipboard" class="text-xs font-semibold flex items-center space-x-1.5 bg-white border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-xl text-slate-700 transition shadow-2xs">
                             <i data-lucide="copy" class="w-3.5 h-3.5 text-slate-500" id="icon-copy-sql"></i>
                             <span id="btn-copy-sql-text">Salin SQL</span>
                         </button>
-                        <button id="btn-download-sql" class="text-xs font-semibold flex items-center space-x-1.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-xl text-blue-800 transition shadow-2xs">
+                        <button id="btn-download-sql" aria-label="Unduh berkas SQL" class="text-xs font-semibold flex items-center space-x-1.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-xl text-blue-800 transition shadow-2xs">
                             <i data-lucide="download" class="w-3.5 h-3.5"></i>
                             <span>Unduh .sql</span>
                         </button>
@@ -734,7 +736,7 @@
                         <div class="space-y-2 bg-slate-800/50 p-3 rounded-xl border border-slate-700/60">
                             <div class="flex items-center justify-between">
                                 <span class="text-[11px] text-slate-400 uppercase font-semibold">Sidik Jari Kriptografis (SHA-256):</span>
-                                <button id="btn-copy-seal-hash" class="text-[11px] text-indigo-300 hover:text-indigo-200 flex items-center space-x-1 transition">
+                                <button id="btn-copy-seal-hash" aria-label="Salin sidik jari digital seal" class="text-[11px] text-indigo-300 hover:text-indigo-200 flex items-center space-x-1 transition">
                                     <i data-lucide="copy" class="w-3 h-3"></i>
                                     <span id="copy-hash-btn-text">Salin Hash</span>
                                 </button>
@@ -992,7 +994,7 @@
                                 <input type="text" id="input-delivery-search" placeholder="Cari dalam pratinjau..." class="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-indigo-500 outline-none w-48 sm:w-56">
                                 <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2"></i>
                             </div>
-                            <button id="btn-copy-delivery-data" class="text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-2xs">
+                            <button id="btn-copy-delivery-data" aria-label="Salin data pemenuhan ke format TSV" class="text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-2xs">
                                 <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                 <span id="copy-data-btn-text">Salin TSV</span>
                             </button>
@@ -1105,7 +1107,7 @@
     </main>
 
     <!-- CMS / Request History Modal -->
-    <div id="cms-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div id="cms-modal" role="dialog" aria-modal="true" aria-labelledby="cms-modal-title" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
         <div class="bg-white rounded-2xl max-w-6xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <!-- Modal Header -->
             <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
@@ -1115,7 +1117,7 @@
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h3 class="font-bold text-base sm:text-lg text-slate-900">CMS Repositori & Riwayat Permohonan Data</h3>
+                            <h3 id="cms-modal-title" class="font-bold text-base sm:text-lg text-slate-900">CMS Repositori & Riwayat Permohonan Data</h3>
                             <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-200 uppercase tracking-wider">Arsip CEISA</span>
                         </div>
                         <p class="text-xs text-slate-500">Pencarian, audit trail verifikator, filter proses bisnis kepabeanan, dan pengunduhan arsip pemenuhan.</p>
@@ -1126,7 +1128,7 @@
                         <i data-lucide="download" class="w-3.5 h-3.5"></i>
                         <span>Ekspor CSV</span>
                     </a>
-                    <button id="btn-close-cms" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                    <button id="btn-close-cms" aria-label="Tutup modal CMS riwayat" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -1265,7 +1267,7 @@
     </div>
 
     <!-- CMS Audit Trail Detail Modal -->
-    <div id="cms-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div id="cms-detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-req-id" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
         <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <!-- Modal Header -->
             <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
@@ -1281,7 +1283,7 @@
                         <p class="text-xs text-slate-500 truncate max-w-md" id="detail-doc-title">Formulir Permohonan Data Kepabeanan</p>
                     </div>
                 </div>
-                <button id="btn-close-cms-detail" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                <button id="btn-close-cms-detail" aria-label="Tutup detail riwayat permohonan" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1370,7 +1372,7 @@
     </div>
 
     <!-- Analytics & Compliance Insights Modal -->
-    <div id="analytics-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div id="analytics-modal" role="dialog" aria-modal="true" aria-labelledby="analytics-modal-title" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-5">
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <!-- Modal Header -->
             <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-850">
@@ -1380,7 +1382,7 @@
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h3 class="font-bold text-base sm:text-lg text-slate-900 dark:text-white">Dashboard Analitik & Tata Kelola Data</h3>
+                            <h3 id="analytics-modal-title" class="font-bold text-base sm:text-lg text-slate-900 dark:text-white">Dashboard Analitik & Tata Kelola Data</h3>
                             <span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">Live Metrik</span>
                         </div>
                         <p class="text-xs text-slate-500 dark:text-slate-400">SLA Pemenuhan, Audit Kepatuhan UU PDP No. 27/2022, Latensi DWH CEISA & Distribusi Permohonan.</p>
@@ -1395,7 +1397,7 @@
                         <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400"></i>
                         <span>Cetak</span>
                     </button>
-                    <button id="btn-close-analytics" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 transition">
+                    <button id="btn-close-analytics" aria-label="Tutup dashboard analitik" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 transition">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -1635,17 +1637,17 @@
     </div>
 
     <!-- OpenMetadata Connection Settings Modal -->
-    <div id="om-settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div id="om-settings-modal" role="dialog" aria-modal="true" aria-labelledby="om-settings-modal-title" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <div class="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                 <div class="flex items-center space-x-2">
                     <i data-lucide="settings" class="w-5 h-5 text-blue-600"></i>
                     <div>
-                        <h3 class="font-bold text-base text-slate-900">Pengaturan Koneksi OpenMetadata</h3>
+                        <h3 id="om-settings-modal-title" class="font-bold text-base text-slate-900">Pengaturan Koneksi OpenMetadata</h3>
                         <p class="text-xs text-slate-500">Konfigurasi endpoint REST API / MCP server tata kelola metadata.</p>
                     </div>
                 </div>
-                <button id="btn-close-om-settings" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <button id="btn-close-om-settings" aria-label="Tutup pengaturan OpenMetadata" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1684,7 +1686,7 @@
     </div>
 
     <!-- Spec Confirmation Modal (Human-in-the-Loop Checkpoint) -->
-    <div id="spec-confirmation-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div id="spec-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="spec-confirmation-modal-title" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <!-- Modal Header -->
             <div id="spec-confirmation-modal-header" class="p-4 sm:p-5 border-b border-indigo-900/50 flex items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white">
@@ -1694,13 +1696,13 @@
                     </div>
                     <div>
                         <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
-                            <h3 class="font-bold text-base text-white tracking-wide">Konfirmasi Spesifikasi Permohonan Data</h3>
+                            <h3 id="spec-confirmation-modal-title" class="font-bold text-base text-white tracking-wide">Konfirmasi Spesifikasi Permohonan Data</h3>
                             <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Human-in-the-Loop</span>
                         </div>
                         <p class="text-xs text-slate-300 mt-0.5">Tinjau dan sesuaikan parameter hasil ekstraksi sebelum query SQL dirumuskan dan dieksekusi di database.</p>
                     </div>
                 </div>
-                <button id="btn-close-spec-conf" class="text-slate-400 hover:text-white hover:bg-slate-800/80 p-1.5 rounded-lg transition" title="Tutup">
+                <button id="btn-close-spec-conf" aria-label="Tutup modal konfirmasi spesifikasi" class="text-slate-400 hover:text-white hover:bg-slate-800/80 p-1.5 rounded-lg transition" title="Tutup">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1881,7 +1883,7 @@
     </div>
 
     <!-- Catalog Browser Modal -->
-    <div id="catalog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div id="catalog-modal" role="dialog" aria-modal="true" aria-labelledby="catalog-modal-title" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <!-- Modal Header -->
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1891,7 +1893,7 @@
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h3 class="font-bold text-sm text-slate-900">Katalog Enterprise OpenMetadata</h3>
+                            <h3 id="catalog-modal-title" class="font-bold text-sm text-slate-900">Katalog Enterprise OpenMetadata</h3>
                             <span id="catalog-badge-total" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">0 Tabel</span>
                         </div>
                         <p class="text-[11px] text-slate-500">Kamus metadata resmi DWH CEISA 4.0, Klasifikasi PII, dan Data Lineage</p>
@@ -1901,11 +1903,11 @@
                     <div class="relative flex items-center">
                         <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
                         <input type="text" id="input-catalog-modal-search" placeholder="Cari nama tabel, FQN, atau atribut (mis: peb, npwp, tanggal)..." class="pl-8 pr-8 py-1.5 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 w-56 sm:w-80 shadow-2xs">
-                        <button id="btn-clear-catalog-modal-search" class="hidden absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 rounded transition">
+                        <button id="btn-clear-catalog-modal-search" aria-label="Hapus teks pencarian katalog" class="hidden absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 rounded transition">
                             <i data-lucide="x" class="w-3.5 h-3.5"></i>
                         </button>
                     </div>
-                    <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition">
+                    <button id="btn-close-modal" aria-label="Tutup modal katalog metadata" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -1969,6 +1971,9 @@
     <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
         <p>DataRequest Studio © 2026 — Unified Data Service & Metadata Platform.</p>
     </footer>
+
+    <!-- Floating Toast Notification System (WCAG 4.1.3 aria-live) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2.5 pointer-events-none max-w-sm w-full sm:w-auto" role="status" aria-live="polite"></div>
 
     <!-- App JavaScript -->
     <script src="mock_data.js"></script>
