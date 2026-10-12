@@ -1065,42 +1065,133 @@
 
                     <!-- Container Sheet 4: VISUALISASI_TREN -->
                     <div id="container-sheet-chart" class="hidden p-4 space-y-4">
-                        <div class="bg-blue-50/60 border border-blue-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div>
-                                <h5 class="text-xs font-bold text-blue-950 uppercase tracking-wide flex items-center space-x-2">
-                                    <i data-lucide="line-chart" class="w-4 h-4 text-blue-600"></i>
-                                    <span>Eksplorasi Tren & Distribusi Data Cepat</span>
-                                </h5>
-                                <p class="text-[11px] text-blue-800 mt-0.5" id="delivery-chart-subtitle">Visualisasi interaktif agregat dari dataset yang baru diekstrak.</p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-[11px] font-medium text-slate-600">Tipe Grafik:</span>
-                                <select id="select-delivery-chart-type" class="text-xs bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-slate-800 outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="bar">Grafik Batang (Bar)</option>
-                                    <option value="line">Grafik Tren (Line)</option>
-                                    <option value="doughnut">Komposisi (Doughnut)</option>
-                                </select>
+                        <!-- Empty State Container -->
+                        <div id="delivery-chart-empty-state" class="hidden border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center bg-slate-50/50 dark:bg-slate-900/50">
+                            <div class="flex flex-col items-center justify-center space-y-2.5 max-w-sm mx-auto">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-2xs">
+                                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+                                </div>
+                                <h6 class="text-xs font-bold text-slate-800 dark:text-slate-100">Belum Ada Dataset untuk Divisualisasikan</h6>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">Jalankan simulasi pemenuhan data atau pilih salah satu contoh permohonan terlebih dahulu untuk mengeksplorasi visualisasi tren.</p>
                             </div>
                         </div>
 
-                        <!-- Grid 2 Chart Cards -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div class="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs">
-                                <h6 class="text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
-                                    <span id="delivery-chart-1-title">Distribusi Nominal Transaksi</span>
-                                    <span class="text-[10px] text-slate-400 font-mono">Agregat Satuan</span>
-                                </h6>
-                                <div class="h-64 relative">
-                                    <canvas id="canvas-delivery-chart-1"></canvas>
+                        <!-- Active Chart Content Container -->
+                        <div id="delivery-chart-content" class="space-y-4">
+                            <!-- Top Bar: Judul & Multi-Selectors -->
+                            <div class="bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-2xs">
+                                <div>
+                                    <h5 class="text-xs font-bold text-blue-950 dark:text-blue-200 uppercase tracking-wide flex items-center space-x-2">
+                                        <i data-lucide="line-chart" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                                        <span>Eksplorasi Tren & Distribusi Data Cepat</span>
+                                    </h5>
+                                    <p class="text-[11px] text-blue-800 dark:text-blue-300/80 mt-0.5" id="delivery-chart-subtitle">Visualisasi interaktif agregat dari dataset yang baru diekstrak.</p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 text-xs">
+                                    <div class="flex items-center space-x-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 shadow-2xs">
+                                        <label for="select-delivery-metric-col" class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Metrik:</label>
+                                        <select id="select-delivery-metric-col" aria-label="Pilih kolom metrik numerik" class="bg-transparent text-slate-800 dark:text-slate-200 font-medium text-xs outline-none">
+                                            <!-- Populated dynamically via JS -->
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center space-x-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 shadow-2xs">
+                                        <label for="select-delivery-cat-col" class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Dimensi:</label>
+                                        <select id="select-delivery-cat-col" aria-label="Pilih kolom dimensi kategori" class="bg-transparent text-slate-800 dark:text-slate-200 font-medium text-xs outline-none">
+                                            <!-- Populated dynamically via JS -->
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center space-x-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 shadow-2xs">
+                                        <label for="select-delivery-chart-type" class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Bentuk:</label>
+                                        <select id="select-delivery-chart-type" aria-label="Pilih bentuk grafik" class="bg-transparent text-slate-800 dark:text-slate-200 font-medium text-xs outline-none">
+                                            <option value="bar">Batang (Bar)</option>
+                                            <option value="line">Garis (Line)</option>
+                                            <option value="doughnut">Donat (Doughnut)</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs">
-                                <h6 class="text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
-                                    <span id="delivery-chart-2-title">Komposisi Kategori / Entitas</span>
-                                    <span class="text-[10px] text-slate-400 font-mono">Frekuensi Data</span>
-                                </h6>
-                                <div class="h-64 relative">
-                                    <canvas id="canvas-delivery-chart-2"></canvas>
+
+                            <!-- 4 KPI Summary Cards -->
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                <!-- KPI 1: Total Akumulasi -->
+                                <div class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-2xs space-y-1">
+                                    <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Total Akumulasi</span>
+                                        <div class="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-base font-bold font-mono text-slate-900 dark:text-white" id="kpi-chart-total">-</div>
+                                    <div class="text-[10px] text-slate-400 truncate" id="kpi-chart-total-sub">Akumulasi seluruh transaksi</div>
+                                </div>
+                                <!-- KPI 2: Rata-Rata -->
+                                <div class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-2xs space-y-1">
+                                    <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Nilai Rata-Rata</span>
+                                        <div class="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-base font-bold font-mono text-slate-900 dark:text-white" id="kpi-chart-avg">-</div>
+                                    <div class="text-[10px] text-slate-400 truncate" id="kpi-chart-avg-sub">Rata-rata per transaksi</div>
+                                </div>
+                                <!-- KPI 3: Nilai Puncak -->
+                                <div class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-2xs space-y-1">
+                                    <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Nilai Puncak (Max)</span>
+                                        <div class="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                                            <i data-lucide="award" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-base font-bold font-mono text-slate-900 dark:text-white" id="kpi-chart-max">-</div>
+                                    <div class="text-[10px] text-slate-400 truncate" id="kpi-chart-max-sub">Transaksi terbesar</div>
+                                </div>
+                                <!-- KPI 4: Kategori Dominan -->
+                                <div class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3.5 shadow-2xs space-y-1">
+                                    <div class="flex items-center justify-between text-slate-500 dark:text-slate-400">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Kategori Dominan</span>
+                                        <div class="w-6 h-6 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                            <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-base font-bold text-slate-900 dark:text-white truncate" id="kpi-chart-dominance">-</div>
+                                    <div class="text-[10px] text-slate-400 truncate" id="kpi-chart-dominance-sub">Porsi frekuensi terbesar</div>
+                                </div>
+                            </div>
+
+                            <!-- Grid 2 Chart Cards -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <!-- Chart Card 1 -->
+                                <div class="border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/90 rounded-xl p-4 shadow-2xs space-y-2">
+                                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-2">
+                                        <div>
+                                            <h6 id="delivery-chart-1-title" class="text-xs font-bold text-slate-800 dark:text-slate-200">Distribusi Nominal Transaksi</h6>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">Agregat Satuan per Transaksi</span>
+                                        </div>
+                                        <button id="btn-export-chart-1" type="button" aria-label="Unduh grafik metrik sebagai gambar PNG" class="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-semibold flex items-center space-x-1 transition shadow-2xs">
+                                            <i data-lucide="download" class="w-3 h-3"></i>
+                                            <span>Unduh PNG</span>
+                                        </button>
+                                    </div>
+                                    <div class="h-64 relative">
+                                        <canvas id="canvas-delivery-chart-1"></canvas>
+                                    </div>
+                                </div>
+                                <!-- Chart Card 2 -->
+                                <div class="border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800/90 rounded-xl p-4 shadow-2xs space-y-2">
+                                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-2">
+                                        <div>
+                                            <h6 id="delivery-chart-2-title" class="text-xs font-bold text-slate-800 dark:text-slate-200">Komposisi Kategori / Entitas</h6>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">Frekuensi Sebaran Kategori</span>
+                                        </div>
+                                        <button id="btn-export-chart-2" type="button" aria-label="Unduh grafik kategori sebagai gambar PNG" class="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-semibold flex items-center space-x-1 transition shadow-2xs">
+                                            <i data-lucide="download" class="w-3 h-3"></i>
+                                            <span>Unduh PNG</span>
+                                        </button>
+                                    </div>
+                                    <div class="h-64 relative">
+                                        <canvas id="canvas-delivery-chart-2"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>

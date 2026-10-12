@@ -1163,6 +1163,8 @@ function renderResults(data) {
         renderDeliveryDataPreview("");
         renderDeliveryAuditSheet(data);
         renderDeliveryDictSheet(data);
+        const selChartType = document.getElementById("select-delivery-chart-type");
+        renderDeliveryCharts(selChartType ? selChartType.value : "bar");
     }
 
     lucide.createIcons();
@@ -1351,8 +1353,40 @@ function renderDeliveryDictSheet(data) {
     }
 }
 
+function exportChartToImage(chartInstance, defaultFilename = "visualisasi_tren.png") {
+    if (!chartInstance) {
+        showToast("Grafik belum siap diekspor.", "warning");
+        return;
+    }
+    try {
+        const url = chartInstance.toBase64Image("image/png", 1.0);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = defaultFilename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast(`Grafik berhasil diekspor (${defaultFilename})`, "success");
+    } catch (err) {
+        showToast("Gagal mengekspor grafik: " + err.message, "error");
+    }
+}
+
 function renderDeliveryCharts(chartType = "bar") {
-    if (!currentDeliveryRows || currentDeliveryRows.length === 0) return;
+    const emptyState = document.getElementById("delivery-chart-empty-state");
+    const chartContent = document.getElementById("delivery-chart-content");
+
+    if (!currentDeliveryRows || currentDeliveryRows.length === 0) {
+        if (emptyState) emptyState.classList.remove("hidden");
+        if (chartContent) chartContent.classList.add("hidden");
+        if (deliveryChart1) { deliveryChart1.destroy(); deliveryChart1 = null; }
+        if (deliveryChart2) { deliveryChart2.destroy(); deliveryChart2 = null; }
+        return;
+    }
+
+    if (emptyState) emptyState.classList.add("hidden");
+    if (chartContent) chartContent.classList.remove("hidden");
+
     if (!window.Chart) return;
 
     const canvas1 = document.getElementById("canvas-delivery-chart-1");
@@ -1370,44 +1404,151 @@ function renderDeliveryCharts(chartType = "bar") {
     }
 
     const rows = currentDeliveryRows;
-    const cols = currentDeliveryColumns;
+    const cols = (currentDeliveryColumns && currentDeliveryColumns.length > 0) 
+        ? currentDeliveryColumns 
+        : Object.keys(rows[0] || {});
 
-    // Cari kolom numerik potensial
-    const numCol = cols.find(c => {
+    // 1. Identifikasi Kolom Numerik
+    const numCols = cols.filter(c => rows.some(r => typeof r[c] === 'number' || (!isNaN(Number(r[c])) && r[c] !== "" && r[c] !== null && typeof r[c] !== 'boolean')));
+
+    // 2. Identifikasi Kolom Kategori / Dimensi
+    const catCols = cols.filter(c => {
         const cl = c.toLowerCase();
-        return (cl.includes("usd") || cl.includes("amount") || cl.includes("nilai") || cl.includes("devisa") || cl.includes("total") || cl.includes("bea")) && typeof rows[0][c] === 'number';
-    }) || cols.find(c => typeof rows[0][c] === 'number');
+        return !cl.includes("masked") && !cl.includes("signature") && !cl.includes("hash") && !cl.endsWith("_id");
+    });
 
-    // Cari kolom kategori potensial
-    const catCol = cols.find(c => {
-        const cl = c.toLowerCase();
-        return (cl.includes("jalur") || cl.includes("status") || cl.includes("kategori") || cl.includes("negara") || cl.includes("port") || cl.includes("pelabuhan")) && typeof rows[0][c] === 'string';
-    }) || cols.find(c => typeof rows[0][c] === 'string' && !c.toLowerCase().includes("id") && !c.toLowerCase().includes("masked"));
+    // Populasi & Sinkronisasi Selector Kolom Metrik
+    const metricSelect = document.getElementById("select-delivery-metric-col");
+    let selectedMetric = metricSelect ? metricSelect.value : "";
+    if (metricSelect) {
+        const currentOptions = Array.from(metricSelect.options).map(o => o.value);
+        const needsRebuild = currentOptions.length === 0 || !numCols.every(c => currentOptions.includes(c));
+        if (needsRebuild) {
+            metricSelect.innerHTML = "";
+            if (numCols.length === 0) {
+                metricSelect.innerHTML = `<option value="">(Tidak ada kolom numerik)</option>`;
+                selectedMetric = "";
+            } else {
+                numCols.forEach(col => {
+                    const opt = document.createElement("option");
+                    opt.value = col;
+                    opt.textContent = col.replace(/_/g, " ").toUpperCase();
+                    metricSelect.appendChild(opt);
+                });
+                const pref = numCols.find(c => {
+                    const cl = c.toLowerCase();
+                    return cl.includes("usd") || cl.includes("nilai") || cl.includes("amount") || cl.includes("total") || cl.includes("cif") || cl.includes("fob") || cl.includes("bea");
+                }) || numCols[0];
+                metricSelect.value = pref;
+                selectedMetric = pref;
+            }
+        } else {
+            selectedMetric = metricSelect.value;
+        }
+    }
 
-    // Label sumbu X: ID transaksi atau index
+    // Populasi & Sinkronisasi Selector Kolom Dimensi
+    const catSelect = document.getElementById("select-delivery-cat-col");
+    let selectedCat = catSelect ? catSelect.value : "";
+    if (catSelect) {
+        const currentOptions = Array.from(catSelect.options).map(o => o.value);
+        const needsRebuild = currentOptions.length === 0 || !catCols.every(c => currentOptions.includes(c));
+        if (needsRebuild) {
+            catSelect.innerHTML = "";
+            if (catCols.length === 0) {
+                catSelect.innerHTML = `<option value="">(Tidak ada kolom kategori)</option>`;
+                selectedCat = "";
+            } else {
+                catCols.forEach(col => {
+                    const opt = document.createElement("option");
+                    opt.value = col;
+                    opt.textContent = col.replace(/_/g, " ").toUpperCase();
+                    catSelect.appendChild(opt);
+                });
+                const pref = catCols.find(c => {
+                    const cl = c.toLowerCase();
+                    return cl.includes("jalur") || cl.includes("status") || cl.includes("kategori") || cl.includes("negara") || cl.includes("pelabuhan") || cl.includes("kantor") || cl.includes("tipe");
+                }) || catCols[0];
+                catSelect.value = pref;
+                selectedCat = pref;
+            }
+        } else {
+            selectedCat = catSelect.value;
+        }
+    }
+
+    // Ekstraksi Nilai Metrik untuk Chart 1 & KPI
+    const values1 = selectedMetric ? rows.map(r => Number(r[selectedMetric]) || 0) : rows.map((_, i) => (i + 1) * 10);
+    const sumTotal = values1.reduce((a, b) => a + b, 0);
+    const avgVal = values1.length > 0 ? (sumTotal / values1.length) : 0;
+    const maxVal = values1.length > 0 ? Math.max(...values1) : 0;
+
+    // Hitung Frekuensi Kategori untuk Chart 2 & KPI Dominansi
+    const countsMap = {};
+    if (selectedCat) {
+        rows.forEach(r => {
+            const val = r[selectedCat];
+            const k = (val !== undefined && val !== null && String(val).trim() !== "") ? String(val) : "Lainnya";
+            countsMap[k] = (countsMap[k] || 0) + 1;
+        });
+    } else {
+        countsMap["Terkonfirmasi"] = Math.ceil(rows.length * 0.7);
+        countsMap["Dalam Proses"] = rows.length - Math.ceil(rows.length * 0.7);
+    }
+
+    let topCategory = "-";
+    let topCatCount = 0;
+    for (const [k, count] of Object.entries(countsMap)) {
+        if (count > topCatCount) {
+            topCatCount = count;
+            topCategory = k;
+        }
+    }
+    const dominancePct = rows.length > 0 ? ((topCatCount / rows.length) * 100).toFixed(1) : "0";
+
+    // Update 4 KPI Summary Cards
+    const kpiTotal = document.getElementById("kpi-chart-total");
+    const kpiTotalSub = document.getElementById("kpi-chart-total-sub");
+    const kpiAvg = document.getElementById("kpi-chart-avg");
+    const kpiAvgSub = document.getElementById("kpi-chart-avg-sub");
+    const kpiMax = document.getElementById("kpi-chart-max");
+    const kpiMaxSub = document.getElementById("kpi-chart-max-sub");
+    const kpiDominance = document.getElementById("kpi-chart-dominance");
+    const kpiDominanceSub = document.getElementById("kpi-chart-dominance-sub");
+
+    if (kpiTotal) kpiTotal.innerText = sumTotal.toLocaleString("id-ID");
+    if (kpiTotalSub) kpiTotalSub.innerText = selectedMetric ? `Akumulasi kolom ${selectedMetric}` : "Akumulasi seluruh transaksi";
+    if (kpiAvg) kpiAvg.innerText = Math.round(avgVal).toLocaleString("id-ID");
+    if (kpiAvgSub) kpiAvgSub.innerText = `Rata-rata per transaksi (${rows.length} baris)`;
+    if (kpiMax) kpiMax.innerText = maxVal.toLocaleString("id-ID");
+    if (kpiMaxSub) kpiMaxSub.innerText = `Transaksi terbesar pada ${selectedMetric || 'data'}`;
+    if (kpiDominance) kpiDominance.innerText = topCategory;
+    if (kpiDominanceSub) kpiDominanceSub.innerText = `${topCatCount} baris (${dominancePct}%) porsi terbesar`;
+
+    // Sumbu X: ID Transaksi atau nomor urut
     const idCol = cols.find(c => c.toLowerCase().includes("id") || c.toLowerCase().includes("no")) || cols[0];
     const labels = rows.map((r, i) => String(r[idCol] || `Item ${i+1}`).slice(-8));
 
-    // Data 1: Nilai Metrik
-    const values1 = numCol ? rows.map(r => Number(r[numCol]) || 0) : rows.map((_, i) => (i + 1) * 15);
-    const title1 = numCol ? `Tren ${numCol.replace(/_/g, ' ').toUpperCase()}` : "Distribusi Nilai Transaksi";
-    const title1Elem = document.getElementById("delivery-chart-1-title");
-    if (title1Elem) title1Elem.innerText = title1;
-
     const isDark = document.documentElement.classList.contains("dark");
-    const gridColor = isDark ? "rgba(51, 65, 85, 0.5)" : "#f1f5f9";
+    const gridColor = isDark ? "rgba(51, 65, 85, 0.45)" : "#f1f5f9";
     const tickColor = isDark ? "#94a3b8" : "#64748b";
     const legendColor = isDark ? "#e2e8f0" : "#334155";
 
+    // Title Chart 1
+    const title1 = selectedMetric ? `Tren ${selectedMetric.replace(/_/g, ' ').toUpperCase()}` : "Distribusi Nilai Transaksi";
+    const title1Elem = document.getElementById("delivery-chart-1-title");
+    if (title1Elem) title1Elem.innerText = title1;
+
+    // Render Chart 1
     const ctx1 = canvas1.getContext("2d");
     deliveryChart1 = new Chart(ctx1, {
         type: chartType === "doughnut" ? "bar" : chartType,
         data: {
             labels: labels,
             datasets: [{
-                label: numCol || "Nilai Data",
+                label: selectedMetric || "Nilai Data",
                 data: values1,
-                backgroundColor: chartType === "line" ? "rgba(59, 130, 246, 0.2)" : (isDark ? "rgba(96, 165, 250, 0.85)" : "rgba(37, 99, 235, 0.75)"),
+                backgroundColor: chartType === "line" ? "rgba(59, 130, 246, 0.15)" : (isDark ? "rgba(96, 165, 250, 0.85)" : "rgba(37, 99, 235, 0.8)"),
                 borderColor: isDark ? "#60a5fa" : "#2563eb",
                 borderWidth: 2,
                 fill: chartType === "line",
@@ -1421,10 +1562,15 @@ function renderDeliveryCharts(chartType = "bar") {
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    backgroundColor: isDark ? "#1e293b" : "#0f172a",
+                    titleColor: "#f8fafc",
+                    bodyColor: "#f8fafc",
+                    padding: 10,
+                    cornerRadius: 8,
                     callbacks: {
                         label: function(context) {
                             const val = context.raw;
-                            return ` ${numCol || 'Nilai'}: ${typeof val === 'number' ? val.toLocaleString('id-ID') : val}`;
+                            return ` ${selectedMetric || 'Nilai'}: ${typeof val === 'number' ? val.toLocaleString('id-ID') : val}`;
                         }
                     }
                 }
@@ -1433,33 +1579,33 @@ function renderDeliveryCharts(chartType = "bar") {
                 y: { 
                     beginAtZero: true, 
                     grid: { color: gridColor },
-                    ticks: { color: tickColor }
+                    ticks: { color: tickColor, font: { size: 10 } }
                 },
                 x: { 
                     grid: { display: false },
-                    ticks: { color: tickColor }
+                    ticks: { color: tickColor, font: { size: 10 } }
                 }
             }
         }
     });
 
-    // Data 2: Frekuensi Kategori
-    const countsMap = {};
-    if (catCol) {
-        rows.forEach(r => {
-            const k = String(r[catCol] || "Lainnya");
-            countsMap[k] = (countsMap[k] || 0) + 1;
-        });
-    } else {
-        countsMap["Terkonfirmasi"] = Math.ceil(rows.length * 0.7);
-        countsMap["Dalam Proses"] = rows.length - Math.ceil(rows.length * 0.7);
-    }
+    // Title Chart 2
+    const title2 = selectedCat ? `Komposisi ${selectedCat.replace(/_/g, ' ').toUpperCase()}` : "Distribusi Kategori";
+    const title2Elem = document.getElementById("delivery-chart-2-title");
+    if (title2Elem) title2Elem.innerText = title2;
 
     const catLabels = Object.keys(countsMap);
     const catData = Object.values(countsMap);
-    const title2 = catCol ? `Komposisi ${catCol.replace(/_/g, ' ').toUpperCase()}` : "Distribusi Kategori";
-    const title2Elem = document.getElementById("delivery-chart-2-title");
-    if (title2Elem) title2Elem.innerText = title2;
+
+    const palette = [
+        "rgba(16, 185, 129, 0.85)", // Emerald
+        "rgba(59, 130, 246, 0.85)",  // Blue
+        "rgba(245, 158, 11, 0.85)",  // Amber
+        "rgba(139, 92, 246, 0.85)",  // Violet
+        "rgba(239, 68, 68, 0.85)",   // Rose
+        "rgba(6, 182, 212, 0.85)",   // Cyan
+        "rgba(100, 116, 139, 0.85)"  // Slate
+    ];
 
     const ctx2 = canvas2.getContext("2d");
     deliveryChart2 = new Chart(ctx2, {
@@ -1467,17 +1613,12 @@ function renderDeliveryCharts(chartType = "bar") {
         data: {
             labels: catLabels,
             datasets: [{
-                label: "Jumlah Frekuensi",
+                label: "Jumlah Transaksi",
                 data: catData,
-                backgroundColor: [
-                    "rgba(16, 185, 129, 0.85)",
-                    "rgba(59, 130, 246, 0.85)",
-                    "rgba(245, 158, 11, 0.85)",
-                    "rgba(139, 92, 246, 0.85)",
-                    "rgba(239, 68, 68, 0.85)"
-                ],
-                borderWidth: 1,
-                borderRadius: 6
+                backgroundColor: catLabels.map((_, idx) => palette[idx % palette.length]),
+                borderColor: isDark ? "#1e293b" : "#ffffff",
+                borderWidth: chartType === "doughnut" || chartType === "line" ? 2 : 1,
+                borderRadius: chartType === "bar" ? 6 : 0
             }]
         },
         options: {
@@ -1491,10 +1632,42 @@ function renderDeliveryCharts(chartType = "bar") {
                         font: { size: 10 },
                         color: legendColor
                     } 
+                },
+                tooltip: {
+                    backgroundColor: isDark ? "#1e293b" : "#0f172a",
+                    titleColor: "#f8fafc",
+                    bodyColor: "#f8fafc",
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.raw;
+                            const total = catData.reduce((a, b) => a + b, 0);
+                            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                            return ` ${context.label}: ${val.toLocaleString('id-ID')} (${pct}%)`;
+                        }
+                    }
                 }
-            }
+            },
+            ...(chartType === "bar" ? {
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: gridColor },
+                        ticks: { color: tickColor, font: { size: 10 } }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: tickColor, font: { size: 10 } }
+                    }
+                }
+            } : {})
         }
     });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 }
 
 function setupDeliveryInteractions() {
@@ -1533,6 +1706,42 @@ function setupDeliveryInteractions() {
     if (chartTypeSelect) {
         chartTypeSelect.addEventListener("change", (e) => {
             renderDeliveryCharts(e.target.value);
+        });
+    }
+
+    // Dynamic Metric Column Selector
+    const metricColSelect = document.getElementById("select-delivery-metric-col");
+    if (metricColSelect) {
+        metricColSelect.addEventListener("change", () => {
+            const selType = document.getElementById("select-delivery-chart-type");
+            renderDeliveryCharts(selType ? selType.value : "bar");
+        });
+    }
+
+    // Dynamic Category Column Selector
+    const catColSelect = document.getElementById("select-delivery-cat-col");
+    if (catColSelect) {
+        catColSelect.addEventListener("change", () => {
+            const selType = document.getElementById("select-delivery-chart-type");
+            renderDeliveryCharts(selType ? selType.value : "bar");
+        });
+    }
+
+    // Export Chart 1 as PNG
+    const btnExportChart1 = document.getElementById("btn-export-chart-1");
+    if (btnExportChart1) {
+        btnExportChart1.addEventListener("click", () => {
+            const metricName = (document.getElementById("select-delivery-metric-col")?.value || "tren_metrik").toLowerCase();
+            exportChartToImage(deliveryChart1, `grafik_tren_${metricName}.png`);
+        });
+    }
+
+    // Export Chart 2 as PNG
+    const btnExportChart2 = document.getElementById("btn-export-chart-2");
+    if (btnExportChart2) {
+        btnExportChart2.addEventListener("click", () => {
+            const catName = (document.getElementById("select-delivery-cat-col")?.value || "komposisi_kategori").toLowerCase();
+            exportChartToImage(deliveryChart2, `grafik_komposisi_${catName}.png`);
         });
     }
 
