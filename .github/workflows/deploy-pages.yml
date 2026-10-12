@@ -1,4 +1,4 @@
-name: Deploy DataRequest2Agent to GitHub Pages
+name: Deploy DataRequestStudio to GitHub Pages
 
 on:
   push:

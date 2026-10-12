@@ -148,7 +148,7 @@ class CertificateGenerator:
         from reportlab.graphics.shapes import Drawing
         from reportlab.graphics.barcode.qr import QrCodeWidget
 
-        verify_url = f"https://datalabs89.github.io/DataRequest2Agent/?verify={spec.request_id}"
+        verify_url = f"https://datalabs89.github.io/DataRequestStudio/?verify={spec.request_id}"
         qr = QrCodeWidget(verify_url)
         b = qr.getBounds()
         w = b[2] - b[0]

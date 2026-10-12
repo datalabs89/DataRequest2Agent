@@ -379,7 +379,7 @@ class SQLGenerator:
         limit_clause = "FETCH FIRST 500 ROWS ONLY;" if is_oracle else "LIMIT 500;"
 
         sql_text = f"""-- ====================================================================
--- Query Otomatis Dibuat oleh DataRequest2Agent
+-- Query Otomatis Dibuat oleh DataRequestStudio
 -- Berdasarkan Dokumen: {spec.document_title} (ID: {spec.request_id})
 -- Pemohon: {spec.requester_name} ({spec.requester_department})
 -- Metadata Divalidasi via: OpenMetadata Service {primary_table.service_name}

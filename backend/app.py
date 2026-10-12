@@ -33,7 +33,7 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 os.makedirs(SAMPLES_DIR, exist_ok=True)
 
 app = FastAPI(
-    title="DataRequest2Agent Studio",
+    title="DataRequestStudio",
     description="Multi-Agent System for converting PDF Data Requests into verified OpenMetadata SQL and Excel/CSV output.",
     version="1.1.0"
 )

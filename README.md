@@ -50,7 +50,7 @@
 ## 🏗️ Struktur Proyek
 
 ```text
-DataRequest2Agent/
+DataRequestStudio/
 ├── backend/
 │   ├── app.py                     # FastAPI REST API, streaming SSE & static server
 │   ├── coordinator.py             # Koordinator orkestrator 5 tahap pipeline

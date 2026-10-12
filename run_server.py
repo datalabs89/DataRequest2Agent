@@ -13,7 +13,7 @@ if __name__ == "__main__":
     os.chdir(base_dir)
 
     print("=" * 65)
-    print("Menjalankan DataRequest2Agent Studio Server...")
+    print("Menjalankan DataRequestStudio Server...")
     print("Buka browser Anda di: http://127.0.0.1:8000")
     print("=" * 65)
 
