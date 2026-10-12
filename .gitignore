@@ -12,6 +12,7 @@ ENV/
 # OS / Editor
 .DS_Store
 Thumbs.db
+~$*
 .vscode/
 .idea/
 

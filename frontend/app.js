@@ -10,6 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
     initApp();
 });
 
+// UI/UX Pro Max: Global safe non-blocking alert override to eliminate jarring modal interruptions
+window.alert = function(msg) {
+    if (typeof showToast === "function") {
+        showToast(String(msg), "warning");
+    } else {
+        console.warn("Alert:", msg);
+    }
+};
+
 let selectedFile = null;
 let selectedSampleName = null;
 let currentPipelineData = null;
@@ -88,9 +97,26 @@ function downloadClientBlob(filename, text, mimeType) {
     URL.revokeObjectURL(url);
 }
 
-function triggerArtifactDownload(filename, defaultMime = 'application/octet-stream') {
+function triggerArtifactDownload(filename, defaultMime = 'application/octet-stream', triggerElem = null) {
     if (!filename) return;
     const cleanName = filename.split(/[\\/]/).pop();
+    
+    // UI/UX Pro Max: Konfirmasi feedback unduhan instan
+    if (typeof showToast === "function") {
+        showToast(`Menyiapkan unduhan ${cleanName}...`, "info", 2500);
+    }
+
+    // Micro-interaction pada elemen tombol jika disediakan
+    if (triggerElem) {
+        const origContent = triggerElem.innerHTML;
+        triggerElem.classList.add("opacity-70", "pointer-events-none");
+        triggerElem.innerHTML = `<span class="inline-block animate-spin mr-1">⏳</span><span>Mengunduh...</span>`;
+        setTimeout(() => {
+            triggerElem.classList.remove("opacity-70", "pointer-events-none");
+            triggerElem.innerHTML = origContent;
+            if (window.lucide) lucide.createIcons();
+        }, 800);
+    }
     
     // 1. Cek apakah ada di cache base64 mock_data
     if (window.MOCK_DATA && window.MOCK_DATA.artifacts_base64 && window.MOCK_DATA.artifacts_base64[cleanName]) {
@@ -531,7 +557,7 @@ function setupDropzone() {
 
 function handleFileSelection(file) {
     if (!file.name.endsWith(".pdf")) {
-        alert("Hanya berkas format .pdf yang didukung!");
+        showToast("Hanya berkas format .pdf yang didukung!", "error");
         return;
     }
     selectedFile = file;
@@ -634,7 +660,7 @@ async function runStreamingPipeline() {
             extractedSpecForConfirmation = spec;
             openSpecConfirmationModal(spec);
         } catch (err) {
-            alert("Gagal mengekstrak spesifikasi PDF: " + err.message);
+            showToast("Gagal mengekstrak spesifikasi PDF: " + err.message, "error");
             appendConsoleLog("Error", "Gagal mengekstrak PDF: " + err.message);
         } finally {
             btn.disabled = false;
@@ -674,7 +700,7 @@ async function runStreamingPipeline() {
             await simulateClientStreamingPipeline(selectedSampleName, null, dialect, maskingMode);
         }
     } catch (err) {
-        alert("Terjadi kesalahan saat memproses streaming: " + err.message);
+        showToast("Terjadi kesalahan saat memproses streaming: " + err.message, "error");
         appendConsoleLog("Error", "Kegagalan eksekusi: " + err.message);
     } finally {
         btn.disabled = false;
@@ -1657,7 +1683,7 @@ function setupSqlEditor() {
                 : (currentPipelineData && currentPipelineData.generated_sql ? currentPipelineData.generated_sql.query : (editorInput ? editorInput.value : ""));
 
             if (!queryToDownload) {
-                alert("Tidak ada query SQL untuk diunduh.");
+                showToast("Tidak ada query SQL untuk diunduh.", "warning");
                 return;
             }
 
@@ -1739,7 +1765,7 @@ function setupSqlEditor() {
                 toggleBtn.classList.replace("text-blue-800", "text-slate-700");
                 toggleBtn.classList.remove("border-blue-300");
             } catch (err) {
-                alert("Error audit query: " + err.message);
+                showToast("Error audit query: " + err.message, "error");
                 appendConsoleLog("Error", err.message);
             } finally {
                 reverifyBtn.disabled = false;
@@ -1818,7 +1844,7 @@ function setupAiCopilot() {
         btnSubmit.addEventListener("click", () => {
             const prompt = (inputPrompt ? inputPrompt.value : "").trim();
             if (!prompt) {
-                alert("Silakan masukkan instruksi perbaikan SQL, contoh: 'LIMIT 50' atau 'Urutkan devisa terbesar'.");
+                showToast("Silakan masukkan instruksi perbaikan SQL, contoh: 'LIMIT 50' atau 'Urutkan devisa terbesar'.", "warning");
                 if (inputPrompt) inputPrompt.focus();
                 return;
             }
@@ -1858,7 +1884,7 @@ async function executeAiRefinement(instruction) {
     }
 
     if (!currentSql) {
-        alert("Belum ada query SQL yang tersedia. Silakan jalankan simulasi permohonan atau pilih salah satu contoh permohonan terlebih dahulu.");
+        showToast("Belum ada query SQL yang tersedia. Silakan jalankan simulasi permohonan terlebih dahulu.", "warning");
         return;
     }
 
@@ -1930,7 +1956,7 @@ async function executeAiRefinement(instruction) {
     } catch (err) {
         console.error("AI Refine Error:", err);
         appendConsoleLog("AI Copilot Error", `Gagal memodifikasi query: ${err.message}`);
-        alert("Gagal menyempurnakan query: " + err.message);
+        showToast("Gagal menyempurnakan query: " + err.message, "error");
     } finally {
         if (btnSubmit) {
             btnSubmit.disabled = false;
@@ -2242,7 +2268,7 @@ function setupVerifierFeedback() {
 
     async function submitFeedback(action) {
         if (!currentPipelineData) {
-            alert("Silakan jalankan pipeline terlebih dahulu.");
+            showToast("Silakan jalankan pipeline terlebih dahulu.", "warning");
             return;
         }
 
@@ -2330,7 +2356,7 @@ let activeCmsBizFilter = "ALL";
 let currentCmsSortField = "date";
 let currentCmsSortAsc = false; // default newest first
 let currentCmsPage = 1;
-const CMS_PAGE_SIZE = 10;
+let currentCmsPageSize = 10;
 
 function openCmsDetailModal(item) {
     const modal = document.getElementById("cms-detail-modal");
@@ -2379,7 +2405,7 @@ function openCmsDetailModal(item) {
     if (item.excel_filename) {
         const linkHref = isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`;
         dlContainer.innerHTML += `
-            <a href="${linkHref}" download class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs" onclick="if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }">
+            <a href="${linkHref}" download class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs" onclick="if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', this); }">
                 <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
                 <span>Unduh Excel</span>
             </a>
@@ -2388,7 +2414,7 @@ function openCmsDetailModal(item) {
     if (item.zip_filename) {
         const linkHref = isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`;
         dlContainer.innerHTML += `
-            <a href="${linkHref}" download class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs" onclick="if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip'); }">
+            <a href="${linkHref}" download class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold text-xs flex items-center space-x-1 transition shadow-2xs" onclick="if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip', this); }">
                 <i data-lucide="archive" class="w-3.5 h-3.5"></i>
                 <span>Unduh ZIP</span>
             </a>
@@ -2484,12 +2510,12 @@ function setupCmsModal() {
     }
 
     function renderPagination(totalFiltered) {
-        const totalPages = Math.ceil(totalFiltered / CMS_PAGE_SIZE) || 1;
+        const totalPages = Math.ceil(totalFiltered / currentCmsPageSize) || 1;
         if (currentCmsPage > totalPages) currentCmsPage = totalPages;
         if (currentCmsPage < 1) currentCmsPage = 1;
 
-        const startIdx = totalFiltered === 0 ? 0 : (currentCmsPage - 1) * CMS_PAGE_SIZE + 1;
-        const endIdx = Math.min(currentCmsPage * CMS_PAGE_SIZE, totalFiltered);
+        const startIdx = totalFiltered === 0 ? 0 : (currentCmsPage - 1) * currentCmsPageSize + 1;
+        const endIdx = Math.min(currentCmsPage * currentCmsPageSize, totalFiltered);
 
         const pageInfo = document.getElementById("cms-page-info");
         const totalInfo = document.getElementById("cms-total-info");
@@ -2570,7 +2596,7 @@ function setupCmsModal() {
         const sorted = sortItems(items);
         renderPagination(sorted.length);
 
-        const paged = sorted.slice((currentCmsPage - 1) * CMS_PAGE_SIZE, currentCmsPage * CMS_PAGE_SIZE);
+        const paged = sorted.slice((currentCmsPage - 1) * currentCmsPageSize, currentCmsPage * currentCmsPageSize);
 
         paged.forEach(item => {
             const tr = document.createElement("tr");
@@ -2615,8 +2641,8 @@ function setupCmsModal() {
                         <i data-lucide="eye" class="w-3 h-3"></i>
                         <span>Detail</span>
                     </button>
-                    ${item.excel_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }">Excel</a>` : ''}
-                    ${item.zip_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip'); }">ZIP</a>` : ''}
+                    ${item.excel_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', this); }">Excel</a>` : ''}
+                    ${item.zip_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip', this); }">ZIP</a>` : ''}
                 </td>
             `;
 
@@ -2689,6 +2715,16 @@ function setupCmsModal() {
     if (nextBtn) {
         nextBtn.addEventListener("click", () => {
             currentCmsPage++;
+            applyFilterAndSearch();
+        });
+    }
+
+    // Page Size Selector (UI/UX Pro Max: Customizable density & virtual limits)
+    const pageSizeSelect = document.getElementById("select-cms-page-size");
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener("change", (e) => {
+            currentCmsPageSize = parseInt(e.target.value) || 10;
+            currentCmsPage = 1;
             applyFilterAndSearch();
         });
     }
@@ -4242,7 +4278,7 @@ function setupAnalyticsModal() {
             } else {
                 const items = (window.MOCK_DATA && window.MOCK_DATA.history) ? window.MOCK_DATA.history : [];
                 if (!items.length) {
-                    alert("Tidak ada data riwayat untuk diekspor.");
+                    showToast("Tidak ada data riwayat untuk diekspor.", "warning");
                     return;
                 }
                 const headers = ["ID Permohonan", "Nama Pemohon", "Unit Kerja", "Waktu", "Status", "Jumlah Baris", "Skor SLA"];
@@ -4289,6 +4325,79 @@ function setupAnalyticsModal() {
     closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
     modal.addEventListener("click", (e) => {
         if (e.target === modal) modal.classList.add("hidden");
+    });
+}
+
+// ==================== FORM DRAFT AUTO-SAVE (UI/UX Pro Max: form-autosave & redundant-entry) ====================
+const DRS_FORM_DRAFT_KEY = "drs_spec_form_draft";
+const DRS_USER_PROFILE_KEY = "drs_user_profile";
+
+function saveSpecFormDraft() {
+    const draft = {
+        requester: document.getElementById("conf-requester")?.value || "",
+        dept: document.getElementById("conf-dept")?.value || "Internal Bea dan Cukai",
+        subdept: document.getElementById("conf-subdept")?.value || "",
+        business_process: document.getElementById("conf-business-process")?.value || "Ekspor",
+        purpose: document.getElementById("conf-purpose")?.value || "",
+        date_start: document.getElementById("conf-date-start")?.value || "",
+        date_end: document.getElementById("conf-date-end")?.value || "",
+        masking: document.getElementById("conf-masking-policy")?.value || "PARTIAL",
+        saved_at: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+    };
+    try {
+        localStorage.setItem(DRS_FORM_DRAFT_KEY, JSON.stringify(draft));
+        const statusEl = document.getElementById("conf-draft-status");
+        if (statusEl) {
+            statusEl.innerText = `Draf tersimpan (${draft.saved_at})`;
+        }
+    } catch (e) {
+        console.warn("Gagal menyimpan draf form ke localStorage:", e);
+    }
+}
+
+function restoreSpecFormDraft(spec) {
+    try {
+        // Cek profil pengguna tersimpan terlebih dahulu (redundant-entry)
+        const savedProfileRaw = localStorage.getItem(DRS_USER_PROFILE_KEY);
+        if (savedProfileRaw) {
+            const prof = JSON.parse(savedProfileRaw);
+            if (!spec.requester_name && prof.requester) {
+                document.getElementById("conf-requester").value = prof.requester;
+            }
+            if (prof.dept && document.getElementById("conf-dept")) {
+                document.getElementById("conf-dept").value = prof.dept;
+            }
+            if (prof.subdept && document.getElementById("conf-subdept")) {
+                document.getElementById("conf-subdept").value = prof.subdept;
+            }
+        }
+
+        // Cek draf isi form
+        const savedDraftRaw = localStorage.getItem(DRS_FORM_DRAFT_KEY);
+        if (savedDraftRaw) {
+            const draft = JSON.parse(savedDraftRaw);
+            const purposeInput = document.getElementById("conf-purpose");
+            if (purposeInput && !purposeInput.value && draft.purpose) {
+                purposeInput.value = draft.purpose;
+            }
+            const statusEl = document.getElementById("conf-draft-status");
+            if (statusEl) {
+                statusEl.innerText = `Draf dipulihkan (${draft.saved_at || "sebelumnya"})`;
+            }
+        }
+    } catch (e) {
+        console.warn("Gagal memulihkan draf form:", e);
+    }
+}
+
+function initFormAutoSaveListeners() {
+    const fields = ["conf-requester", "conf-dept", "conf-subdept", "conf-business-process", "conf-purpose", "conf-date-start", "conf-date-end", "conf-masking-policy"];
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("input", saveSpecFormDraft);
+            el.addEventListener("change", saveSpecFormDraft);
+        }
     });
 }
 
@@ -4383,6 +4492,8 @@ function openSpecConfirmationModal(spec) {
         });
     }
 
+    restoreSpecFormDraft(spec);
+
     modal.classList.remove("hidden");
     lucide.createIcons();
 }
@@ -4394,6 +4505,9 @@ function setupSpecConfirmationModal() {
     const confirmBtn = document.getElementById("btn-confirm-and-run");
 
     if (!modal) return;
+
+    // Pasang listener autosave draft
+    initFormAutoSaveListeners();
 
     closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
     cancelBtn.addEventListener("click", () => modal.classList.add("hidden"));
@@ -4441,7 +4555,7 @@ function setupSpecConfirmationModal() {
         });
 
         if (filteredFields.length === 0) {
-            alert("Harap pilih minimal 1 kolom data untuk diekstraksi!");
+            showToast("Harap pilih minimal 1 kolom data untuk diekstraksi!", "warning");
             return;
         }
 
@@ -4470,6 +4584,16 @@ function setupSpecConfirmationModal() {
         if (granRadio) {
             extractedSpecForConfirmation.aggregation_level = granRadio.value;
         }
+
+        try {
+            const profileToSave = {
+                requester: document.getElementById("conf-requester").value.trim(),
+                dept: document.getElementById("conf-dept")?.value || "Internal Bea dan Cukai",
+                subdept: document.getElementById("conf-subdept")?.value.trim() || ""
+            };
+            localStorage.setItem(DRS_USER_PROFILE_KEY, JSON.stringify(profileToSave));
+            localStorage.removeItem(DRS_FORM_DRAFT_KEY);
+        } catch (e) {}
 
         modal.classList.add("hidden");
 
@@ -4518,7 +4642,7 @@ async function executeConfirmedStreamingPipeline(spec) {
             await simulateClientStreamingPipeline(selectedSampleName, spec, dialect, maskingMode);
         }
     } catch (err) {
-        alert("Gagal memproses eksekusi query: " + err.message);
+        showToast("Gagal memproses eksekusi query: " + err.message, "error");
         appendConsoleLog("Error", "Kegagalan eksekusi: " + err.message);
     } finally {
         btn.disabled = false;
