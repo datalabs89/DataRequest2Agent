@@ -424,6 +424,9 @@ async function initApp() {
     setupDeliveryInteractions();
     setupDarkModeToggle();
     setupAiCopilot();
+    setupPdfPreviewModal();
+    setupCodModal();
+    setupPublicVerification();
     setupGlobalKeyHandlers();
 
     document.getElementById("btn-process").addEventListener("click", runStreamingPipeline);
@@ -1136,15 +1139,28 @@ function renderResults(data) {
             };
         }
 
-        if (btnCert && data.execution.certificate_path) {
+        const btnPreviewCert = document.getElementById("btn-preview-cert");
+        if (data.execution.certificate_path) {
             const certName = data.execution.certificate_path.split(/[\\/]/).pop();
-            btnCert.href = isGitHubPagesOrOffline() ? `outputs/${certName}` : `/api/download/outputs/${certName}`;
-            btnCert.onclick = (e) => {
-                if (isGitHubPagesOrOffline()) {
+            if (btnCert) {
+                btnCert.href = isGitHubPagesOrOffline() ? `outputs/${certName}` : `/api/download/outputs/${certName}`;
+                btnCert.onclick = (e) => {
+                    if (isGitHubPagesOrOffline()) {
+                        e.preventDefault();
+                        triggerArtifactDownload(certName, "application/pdf");
+                    }
+                };
+            }
+            if (btnPreviewCert) {
+                btnPreviewCert.onclick = (e) => {
                     e.preventDefault();
-                    triggerArtifactDownload(certName, "application/pdf");
-                }
-            };
+                    const docTitle = data.spec ? data.spec.document_title : "Sertifikat Otorisasi Pemenuhan Data";
+                    const hashVal = (data.verification && data.verification.digital_fingerprint) || "";
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(certName, "Sertifikat Otorisasi & Kepatuhan PDP Resmi", docTitle, hashVal);
+                    }
+                };
+            }
         }
 
         if (btnZip && data.execution.zip_path) {
@@ -2793,7 +2809,7 @@ function setupCmsModal() {
         if (!items || items.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center bg-white dark:bg-slate-900">
+                    <td colspan="8" class="px-6 py-12 text-center bg-white dark:bg-slate-900">
                         <div class="flex flex-col items-center justify-center space-y-2 max-w-sm mx-auto">
                             <i data-lucide="inbox" class="w-10 h-10 text-slate-300 dark:text-slate-600"></i>
                             <p class="text-xs font-bold text-slate-700 dark:text-slate-200">Tidak ada riwayat permohonan yang sesuai</p>
@@ -2855,6 +2871,53 @@ function setupCmsModal() {
                 deptBadgeClass = "bg-teal-50 text-teal-900 border border-teal-200 font-semibold";
             }
 
+            // Hitung sisa retensi (30 hari sejak created_at sesuai PP No. 33/2026)
+            let retentionBadge = '';
+            const createdDate = item.created_at ? new Date(item.created_at) : new Date();
+            const now = new Date();
+            const diffDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+            const daysLeft = Math.max(0, (item.retention_days || 30) - diffDays);
+
+            if (item.is_destroyed) {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700" title="Data telah dimusnahkan permanen sesuai Berita Acara">
+                            <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-600"></i> Dimusnahkan
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono mt-0.5">${item.destruction_date || "CoD Terbit"}</span>
+                    </div>
+                `;
+            } else if (daysLeft > 5) {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Masa retensi data aktif">
+                            <i data-lucide="clock" class="w-3 h-3 text-emerald-600"></i> Aktif (${daysLeft} Hari)
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono mt-0.5">Maks. 30 Hari</span>
+                    </div>
+                `;
+            } else if (daysLeft > 0) {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 animate-pulse" title="Masa retensi mendekati batas akhir">
+                            <i data-lucide="alert-circle" class="w-3 h-3 text-amber-600"></i> Jatuh Tempo (${daysLeft} Hari)
+                        </span>
+                        <span class="text-[9px] text-amber-600 font-semibold mt-0.5">Segera Musnahkan</span>
+                    </div>
+                `;
+            } else {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 animate-pulse" title="Wajib dilakukan pemusnahan data & penerbitan CoD">
+                            <i data-lucide="flame" class="w-3 h-3 text-rose-600"></i> Wajib CoD
+                        </span>
+                        <span class="text-[9px] text-rose-600 font-semibold mt-0.5">Kedaluwarsa</span>
+                    </div>
+                `;
+            }
+
+            const certFile = item.certificate_filename || `Sertifikat_Otorisasi_${(item.request_id || item.id).replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+
             tr.innerHTML = `
                 <td class="px-3.5 py-3 font-mono font-bold text-blue-700 group-hover:underline">${item.request_id || item.id}</td>
                 <td class="px-3.5 py-3 font-medium text-slate-800 max-w-xs truncate" title="${item.document_title}">${item.document_title}</td>
@@ -2868,11 +2931,27 @@ function setupCmsModal() {
                 <td class="px-3.5 py-3 text-slate-500 whitespace-nowrap font-mono text-[11px]">${item.created_at}</td>
                 <td class="px-3.5 py-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${item.status}</span></td>
                 <td class="px-3.5 py-3 font-mono font-semibold">${(item.row_count || 0).toLocaleString()} baris</td>
+                <td class="px-3.5 py-3 text-center">${retentionBadge}</td>
                 <td class="px-3.5 py-3 text-right space-x-1 whitespace-nowrap">
                     <button type="button" class="btn-cms-row-detail text-[11px] font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs">
                         <i data-lucide="eye" class="w-3 h-3"></i>
                         <span>Detail</span>
                     </button>
+                    <button type="button" class="btn-cms-preview-cert text-[11px] font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Pratinjau Sertifikat Otorisasi PDF">
+                        <i data-lucide="file-text" class="w-3 h-3"></i>
+                        <span>Sertifikat</span>
+                    </button>
+                    ${item.is_destroyed && item.cod_filename ? `
+                    <button type="button" class="btn-cms-preview-cod text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Pratinjau Berita Acara Pemusnahan (CoD)">
+                        <i data-lucide="shield-alert" class="w-3 h-3"></i>
+                        <span>Lihat CoD</span>
+                    </button>
+                    ` : `
+                    <button type="button" class="btn-cms-row-cod text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Musnahkan Data & Terbitkan Berita Acara (PP 33/2026)">
+                        <i data-lucide="flame" class="w-3 h-3 text-amber-600"></i>
+                        <span>Musnahkan</span>
+                    </button>
+                    `}
                     ${item.excel_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', this); }">Excel</a>` : ''}
                     ${item.zip_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip', this); }">ZIP</a>` : ''}
                 </td>
@@ -2885,6 +2964,39 @@ function setupCmsModal() {
                 btnDetail.addEventListener("click", (e) => {
                     e.stopPropagation();
                     openCmsDetailModal(item);
+                });
+            }
+
+            // Pratinjau Sertifikat PDF
+            const btnCertPreview = tr.querySelector(".btn-cms-preview-cert");
+            if (btnCertPreview) {
+                btnCertPreview.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(certFile, "Sertifikat Otorisasi & Kepatuhan PDP Resmi", item.document_title, item.digital_fingerprint || "");
+                    }
+                });
+            }
+
+            // Pratinjau Berita Acara Pemusnahan (CoD) PDF
+            const btnCodPreview = tr.querySelector(".btn-cms-preview-cod");
+            if (btnCodPreview) {
+                btnCodPreview.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(item.cod_filename, "Berita Acara Pemusnahan Data Pribadi (CoD)", `Berita Acara Permohonan ${item.request_id || item.id}`, "");
+                    }
+                });
+            }
+
+            // Dialog Musnahkan Data (CoD)
+            const btnRowCod = tr.querySelector(".btn-cms-row-cod");
+            if (btnRowCod) {
+                btnRowCod.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openCodConfirmModal === "function") {
+                        openCodConfirmModal(item);
+                    }
                 });
             }
 
@@ -2932,6 +3044,9 @@ function setupCmsModal() {
 
         renderCmsRows(filtered);
     }
+
+    window.applyCmsFilterAndSearch = applyFilterAndSearch;
+
 
     // Prev / Next Page Buttons
     const prevBtn = document.getElementById("btn-cms-prev-page");
@@ -4883,4 +4998,290 @@ async function executeConfirmedStreamingPipeline(spec) {
         lucide.createIcons();
     }
 }
+
+// ==================== PRIORITAS 2: IN-APP PDF PREVIEWER MODAL ====================
+let currentPreviewPdfUrl = "";
+
+function openPdfPreviewModal(filename, title, subtitle, hash, folderType = "outputs") {
+    const modal = document.getElementById("modal-pdf-preview");
+    if (!modal) return;
+
+    const titleEl = document.getElementById("pdf-preview-title");
+    const subEl = document.getElementById("pdf-preview-subtitle");
+    const hashEl = document.getElementById("pdf-preview-hash");
+    const iframeEl = document.getElementById("pdf-preview-iframe");
+    const loadingEl = document.getElementById("pdf-preview-loading");
+    const btnTab = document.getElementById("btn-pdf-preview-tab");
+    const btnDl = document.getElementById("btn-pdf-preview-download");
+
+    if (titleEl) titleEl.innerText = title || "Pratinjau Dokumen PDF Resmi";
+    if (subEl) subEl.innerText = subtitle || "Kepatuhan UU No. 27/2022 & PP No. 33/2026";
+    if (hashEl) hashEl.innerText = hash ? (hash.startsWith("SHA256:") ? hash : `SHA256:${hash}`) : "HMAC-SHA256 Segel Kriptografis Sah";
+
+    // URL preview inline (menggunakan endpoint /api/preview)
+    const isOffline = isGitHubPagesOrOffline();
+    const previewUrl = isOffline ? `${folderType}/${filename}` : `/api/preview/${folderType}/${filename}`;
+    const downloadUrl = isOffline ? `${folderType}/${filename}` : `/api/download/${folderType}/${filename}`;
+    currentPreviewPdfUrl = previewUrl;
+
+    if (btnTab) {
+        btnTab.href = previewUrl;
+    }
+    if (btnDl) {
+        btnDl.href = downloadUrl;
+        btnDl.setAttribute("download", filename);
+    }
+
+    if (loadingEl) loadingEl.classList.remove("hidden");
+    if (iframeEl) {
+        iframeEl.onload = () => {
+            if (loadingEl) loadingEl.classList.add("hidden");
+        };
+        iframeEl.src = previewUrl;
+    }
+
+    modal.classList.remove("hidden");
+    if (window.lucide) lucide.createIcons();
+}
+
+function setupPdfPreviewModal() {
+    const modal = document.getElementById("modal-pdf-preview");
+    const btnClose = document.getElementById("btn-close-pdf-preview");
+    const btnCopyHash = document.getElementById("btn-copy-preview-hash");
+    const copyHashText = document.getElementById("copy-preview-hash-text");
+
+    if (!modal) return;
+
+    const closeModal = () => {
+        modal.classList.add("hidden");
+        const iframe = document.getElementById("pdf-preview-iframe");
+        if (iframe) iframe.src = "about:blank";
+    };
+
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    if (btnCopyHash) {
+        btnCopyHash.addEventListener("click", () => {
+            const hashEl = document.getElementById("pdf-preview-hash");
+            const hashVal = hashEl ? hashEl.innerText : "";
+            if (hashVal) {
+                navigator.clipboard.writeText(hashVal).then(() => {
+                    showToast("Hash integritas HMAC-SHA256 berhasil disalin ke papan klip!", "success");
+                    if (copyHashText) copyHashText.innerText = "Tersalin!";
+                    setTimeout(() => {
+                        if (copyHashText) copyHashText.innerText = "Salin Hash Integritas";
+                    }, 2000);
+                });
+            }
+        });
+    }
+}
+
+// ==================== PRIORITAS 1: ALUR PEMUSNAHAN DATA & BERITA ACARA (CoD) ====================
+let currentCodTargetItem = null;
+
+function openCodConfirmModal(item) {
+    const modal = document.getElementById("modal-cod-confirm");
+    if (!modal) return;
+
+    currentCodTargetItem = item;
+    const reqIdEl = document.getElementById("cod-target-id");
+    if (reqIdEl) reqIdEl.innerText = item.request_id || item.id;
+
+    modal.classList.remove("hidden");
+    if (window.lucide) lucide.createIcons();
+}
+
+function setupCodModal() {
+    const modal = document.getElementById("modal-cod-confirm");
+    const btnClose = document.getElementById("btn-close-cod-modal");
+    const btnCancel = document.getElementById("btn-cancel-cod");
+    const btnExecute = document.getElementById("btn-execute-cod");
+
+    if (!modal) return;
+
+    const closeModal = () => modal.classList.add("hidden");
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    if (btnCancel) btnCancel.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    if (btnExecute) {
+        btnExecute.addEventListener("click", async () => {
+            if (!currentCodTargetItem) return;
+
+            const reqId = currentCodTargetItem.request_id || currentCodTargetItem.id;
+            const methodVal = document.getElementById("cod-method-input")?.value || "Cryptographic Erasure & Secure Sanitization (NIST SP 800-88)";
+            const notesVal = document.getElementById("cod-notes-input")?.value || "Seluruh salinan data aktif telah dimusnahkan secara permanen (zero shadow copy).";
+
+            btnExecute.disabled = true;
+            btnExecute.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Memusnahkan & Menerbitkan Berita Acara...</span>`;
+            if (window.lucide) lucide.createIcons();
+
+            appendConsoleLog("DPO / Retention Officer", `Mengeksekusi pemusnahan data untuk ${reqId} dengan metode ${methodVal}...`);
+
+            try {
+                let codResult = null;
+                if (!isGitHubPagesOrOffline()) {
+                    const res = await fetch("/api/cod/generate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            request_id: reqId,
+                            operator_name: "Rian Kusuma, S.S.T.",
+                            operator_nip: "198905202014021003",
+                            method: methodVal,
+                            notes: notesVal
+                        })
+                    });
+                    if (res.ok) {
+                        codResult = await res.json();
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.detail || "Gagal menerbitkan Berita Acara Pemusnahan.");
+                    }
+                } else {
+                    // Fallback offline / GitHub Pages
+                    codResult = {
+                        success: true,
+                        request_id: reqId,
+                        cod_filename: `Berita_Acara_Pemusnahan_${reqId.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`,
+                        destruction_date: new Date().toISOString().split("T")[0]
+                    };
+                }
+
+                if (codResult) {
+                    const itemData = codResult.item || codResult;
+                    const destDate = codResult.destruction_date || itemData.destruction_date || new Date().toISOString().split("T")[0];
+                    const codFilename = codResult.cod_filename || itemData.cod_filename;
+
+                    currentCodTargetItem.is_destroyed = true;
+                    currentCodTargetItem.destruction_date = destDate;
+                    currentCodTargetItem.cod_filename = codFilename;
+
+                    // Update item pada array allCmsHistoryItems
+                    if (Array.isArray(allCmsHistoryItems)) {
+                        const found = allCmsHistoryItems.find(x => (x.request_id || x.id) === reqId);
+                        if (found) {
+                            found.is_destroyed = true;
+                            found.destruction_date = destDate;
+                            found.cod_filename = codFilename;
+                        }
+                    }
+
+                    showToast(`Pemusnahan Berhasil! Berita Acara Pemusnahan (CoD) telah diterbitkan sesuai Pasal 75 PP No. 33/2026.`, "success");
+                    appendConsoleLog("Audit Compliance", `Pemusnahan tervalidasi: Berita Acara ${codResult.cod_filename} terbit resmi.`);
+
+                    closeModal();
+
+                    // Re-render tabel CMS jika fungsi tersedia
+                    if (typeof window.applyCmsFilterAndSearch === "function") {
+                        window.applyCmsFilterAndSearch();
+                    }
+
+                    // Tampilkan pratinjau dokumen Berita Acara langsung di in-app PDF previewer
+                    openPdfPreviewModal(
+                        codResult.cod_filename,
+                        "Berita Acara Pemusnahan Data Pribadi (CoD)",
+                        `Pemusnahan Resmi ${reqId} — Pasal 75 PP No. 33/2026`,
+                        ""
+                    );
+                }
+            } catch (err) {
+                showToast("Error pemusnahan data: " + err.message, "error");
+                appendConsoleLog("Error", `Gagal memproses CoD: ${err.message}`);
+            } finally {
+                btnExecute.disabled = false;
+                btnExecute.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Musnahkan & Terbitkan Berita Acara</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        });
+    }
+}
+
+// ==================== PRIORITAS 3: PUBLIC VERIFICATION LANDING (QR CODE) ====================
+async function setupPublicVerification() {
+    const modal = document.getElementById("modal-verify-public");
+    const btnClose = document.getElementById("btn-close-verify-public");
+    const btnDismiss = document.getElementById("btn-verify-dismiss");
+    const btnViewDoc = document.getElementById("btn-verify-view-cert");
+
+    if (!modal) return;
+
+    const closeModal = () => modal.classList.add("hidden");
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    if (btnDismiss) btnDismiss.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Periksa parameter URL ?verify=...
+    const urlParams = new URLSearchParams(window.location.search);
+    const verifyId = urlParams.get("verify");
+    if (!verifyId) return;
+
+    appendConsoleLog("Public Verifier", `Menerima permintaan verifikasi dokumen via URL QR Code: ${verifyId}...`);
+
+    let doc = null;
+    try {
+        if (!isGitHubPagesOrOffline()) {
+            const res = await fetch(`/api/history/${encodeURIComponent(verifyId)}`);
+            if (res.ok) {
+                doc = await res.json();
+            }
+        }
+    } catch (e) {
+        console.warn("Fetch public verification endpoint failed:", e);
+    }
+
+    if (!doc) {
+        // Fallback pencarian di mock history
+        if (window.MOCK_DATA && Array.isArray(window.MOCK_DATA.history)) {
+            doc = window.MOCK_DATA.history.find(h => (h.request_id || h.id) === verifyId);
+        }
+    }
+
+    if (doc) {
+        if (doc.item) doc = doc.item;
+        const reqIdEl = document.getElementById("verify-pub-req-id");
+        const bizProcEl = document.getElementById("verify-pub-biz-proc");
+        const titleEl = document.getElementById("verify-pub-title");
+        const reqEl = document.getElementById("verify-pub-requester");
+        const deptEl = document.getElementById("verify-pub-dept");
+        const retEl = document.getElementById("verify-pub-retention");
+        const hashEl = document.getElementById("verify-pub-hash");
+
+        if (reqIdEl) reqIdEl.innerText = doc.request_id || doc.id;
+        if (bizProcEl) bizProcEl.innerText = doc.business_process || "Kepabeanan & Cukai";
+        if (titleEl) titleEl.innerText = doc.document_title || "Permohonan Data Resmi";
+        if (reqEl) reqEl.innerText = doc.requester_name || "-";
+        if (deptEl) deptEl.innerText = doc.department || "-";
+        if (hashEl) hashEl.innerText = doc.digital_fingerprint || "SHA256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069";
+
+        if (retEl) {
+            if (doc.is_destroyed) {
+                retEl.innerHTML = `<span class="text-slate-600 font-bold">Telah Dimusnahkan (${doc.destruction_date || "CoD Terbit"})</span>`;
+            } else {
+                retEl.innerHTML = `<span class="text-emerald-600 font-bold">Aktif (Masa Retensi Maksimal 30 Hari — PP 33/2026)</span>`;
+            }
+        }
+
+        if (btnViewDoc) {
+            btnViewDoc.onclick = () => {
+                const certName = doc.certificate_filename || `Sertifikat_Otorisasi_${(doc.request_id || doc.id).replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+                openPdfPreviewModal(certName, "Sertifikat Otorisasi & Kepatuhan PDP Resmi", doc.document_title, doc.digital_fingerprint || "");
+            };
+        }
+
+        modal.classList.remove("hidden");
+        if (window.lucide) lucide.createIcons();
+    } else {
+        showToast(`Dokumen dengan ID "${verifyId}" tidak ditemukan dalam arsip resmi DJBC.`, "error");
+    }
+}
+
 

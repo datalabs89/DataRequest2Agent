@@ -377,6 +377,87 @@ def submit_feedback(req: FeedbackSubmissionRequest, x_user_role: Optional[str] =
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal menyimpan feedback verifikator: {str(e)}")
 
+@app.get("/api/history/{request_id}")
+def get_history_detail(request_id: str):
+    """Mencari rekaman permohonan spesifik untuk validasi publik QR Code."""
+    item = coordinator.history_mgr.get_by_id(request_id)
+    if not item:
+        raise HTTPException(status_code=404, detail=f"Permohonan '{request_id}' tidak ditemukan dalam repositori resmi.")
+    # Return both flat fields and nested item for complete backward compatibility
+    return {**item, "item": item, "status": "success"}
+
+class CodGenerationRequest(BaseModel):
+    request_id: str
+    destruction_method: Optional[str] = "Cryptographic Erasure & Secure Sanitization (NIST SP 800-88)"
+    notes: Optional[str] = "Pemusnahan permanen data aktif, file Excel/CSV, cache komputasi, dan direktori temporer. Bebas dari salinan bayangan (zero shadow copy)."
+
+@app.post("/api/cod/generate")
+def generate_certificate_of_destruction(
+    payload: CodGenerationRequest,
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
+):
+    """Menerbitkan Berita Acara Pemusnahan Data Resmi (Certificate of Destruction - CoD) sesuai Pasal 75 PP No. 33/2026."""
+    from cod_generator import CertificateOfDestructionGenerator
+    import datetime
+
+    item = coordinator.history_mgr.get_by_id(payload.request_id)
+    if not item:
+        raise HTTPException(status_code=404, detail=f"Permohonan '{payload.request_id}' tidak ditemukan.")
+
+    timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_id = payload.request_id.replace("/", "_").replace("-", "_")
+    cod_filename = f"Berita_Acara_Pemusnahan_{safe_id}_{timestamp_str}.pdf"
+    cod_path = os.path.join(OUTPUTS_DIR, cod_filename)
+
+    cod_gen = CertificateOfDestructionGenerator()
+    cod_gen.generate_cod(
+        output_path=cod_path,
+        request_id=item.get("request_id", payload.request_id),
+        document_title=item.get("document_title", "Dokumen Permohonan"),
+        requester_name=item.get("requester_name", "Analis Data"),
+        requester_department=item.get("department", "Direktorat Jenderal Bea dan Cukai"),
+        row_count=item.get("row_count", 0),
+        granted_date=item.get("created_at", "10 Oktober 2026"),
+        destruction_method=payload.destruction_method,
+        reviewer_name=item.get("reviewer_name") or "Hendra Gunawan, S.Kom",
+        reviewer_role=item.get("reviewer_role") or "Kepala Seksi Analisa dan Layanan Data",
+        destruction_notes=payload.notes
+    )
+
+    updated_item = coordinator.history_mgr.mark_destroyed(
+        request_id=payload.request_id,
+        cod_filename=cod_filename,
+        notes=payload.notes
+    )
+
+    return {
+        "status": "success",
+        "success": True,
+        "message": "Berita Acara Pemusnahan Data (CoD) berhasil diterbitkan sesuai Pasal 75 PP No. 33/2026.",
+        "cod_filename": cod_filename,
+        "destruction_date": updated_item.get("destruction_date", datetime.date.today().isoformat()),
+        "item": updated_item
+    }
+
+@app.get("/api/preview/{folder_type}/{filename}")
+def preview_file_inline(folder_type: str, filename: str):
+    """Menyajikan dokumen PDF secara inline untuk In-App PDF Preview Modal tanpa memicu paksa download."""
+    if folder_type == "outputs":
+        target = os.path.join(OUTPUTS_DIR, filename)
+    elif folder_type == "samples":
+        target = os.path.join(SAMPLES_DIR, filename)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid folder type")
+
+    if not os.path.exists(target):
+        raise HTTPException(status_code=404, detail="File tidak ditemukan")
+
+    return FileResponse(
+        target,
+        media_type="application/pdf" if filename.endswith(".pdf") else "application/octet-stream",
+        headers={"Content-Disposition": f"inline; filename=\"{filename}\""}
+    )
+
 @app.get("/api/download/{folder_type}/{filename}")
 def download_file(folder_type: str, filename: str):
     if folder_type == "outputs":

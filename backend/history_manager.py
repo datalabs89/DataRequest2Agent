@@ -212,6 +212,7 @@ class HistoryManager:
 
         excel_fn = os.path.basename(execution.excel_path) if execution.excel_path else None
         zip_fn = os.path.basename(execution.zip_path) if execution.zip_path else None
+        cert_fn = os.path.basename(execution.certificate_path) if execution.certificate_path else None
 
         item = {
             "id": f"REQ-{int(datetime.datetime.now().timestamp())}",
@@ -229,6 +230,11 @@ class HistoryManager:
             "digital_fingerprint": getattr(verification, "digital_fingerprint", None),
             "excel_filename": excel_fn,
             "zip_filename": zip_fn,
+            "certificate_filename": cert_fn,
+            "retention_days": 30,
+            "is_destroyed": False,
+            "destruction_date": None,
+            "cod_filename": None,
             "reviewer_name": verification.verifier_feedback.reviewer_name if verification.verifier_feedback else None,
             "reviewer_role": verification.verifier_feedback.reviewer_role if verification.verifier_feedback else None,
             "comments": verification.verifier_feedback.comments if verification.verifier_feedback else "Menunggu review verifikator"
@@ -241,6 +247,38 @@ class HistoryManager:
 
         return item
 
+    def get_by_id(self, request_id: str) -> Optional[dict]:
+        """Mencari rekaman riwayat berdasarkan request_id atau id."""
+        history = self.get_all()
+        clean_id = request_id.strip().upper()
+        for item in history:
+            if item.get("request_id", "").strip().upper() == clean_id or item.get("id", "").strip().upper() == clean_id:
+                return item
+        return None
+
+    def mark_destroyed(self, request_id: str, cod_filename: str, notes: Optional[str] = None) -> Optional[dict]:
+        """Mencatat pelaksanaan Berita Acara Pemusnahan Data (CoD) pada CMS."""
+        history = self.get_all()
+        found = None
+        now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        clean_id = request_id.strip().upper()
+        for item in history:
+            if item.get("request_id", "").strip().upper() == clean_id or item.get("id", "").strip().upper() == clean_id:
+                item["is_destroyed"] = True
+                item["destruction_date"] = now_str
+                item["cod_filename"] = cod_filename
+                item["status"] = "DATA_DESTROYED"
+                if notes:
+                    item["destruction_notes"] = notes
+                found = item
+                break
+
+        if found:
+            with open(self.history_file, "w", encoding="utf-8") as f:
+                json.dump(history, f, indent=2, ensure_ascii=False)
+
+        return found
+
     def update_feedback(self, request_id: str, feedback: VerifierFeedback) -> Optional[dict]:
         history = self.get_all()
         found = None
@@ -251,6 +289,8 @@ class HistoryManager:
                 item["comments"] = feedback.comments
                 item["status"] = "DISANGKAL" if feedback.action == "REJECT" else ("MEMBUTUHKAN_REVISI" if feedback.action == "REVISION_REQUESTED" else "DISETUJUI_RESMI")
                 item["signed_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                if feedback.digital_signature_hash:
+                    item["digital_fingerprint"] = feedback.digital_signature_hash
                 found = item
                 break
 
