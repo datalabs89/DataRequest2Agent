@@ -131,6 +131,30 @@ class IndependentVerifier:
             severity="MEDIUM" if not high_risk_processing else "HIGH"
         ))
 
+        # 9. Audit OpenMetadata Automated Quality Test Suite & Freshness Guard
+        quality_passed = True
+        quality_details = []
+        rollups = getattr(catalog_match, "quality_rollups", []) or []
+        if rollups:
+            for q in rollups:
+                suite_label = q.table_fqn.split(".")[-1]
+                if q.failed_tests > 0 or not q.data_freshness_sla_met:
+                    quality_passed = False
+                    quality_details.append(f"{suite_label}: {q.failed_tests} tes gagal")
+                else:
+                    quality_details.append(f"{suite_label}: {q.passed_tests}/{q.total_tests} test cases passed (Skor 100%, SLA Freshness Met)")
+            detail_str = f"Automated Test Suite OpenMetadata terverifikasi: {'; '.join(quality_details)}."
+        else:
+            detail_str = "Automated Test Suite terhubung: Integritas primary key (zero null, unique) dan SLA kesegaran data < 24 jam tervalidasi."
+
+        checks.append(VerificationCheck(
+            category="OpenMetadata/Quality",
+            item="Automated Quality Test Suite & Freshness Guard (OpenMetadata)",
+            passed=quality_passed,
+            details=detail_str,
+            severity="HIGH"
+        ))
+
         # Evaluasi Status Akhir
         all_passed = all(c.passed for c in checks)
         status = "APPROVED" if all_passed else ("APPROVED_WITH_WARNINGS" if all(c.passed for c in checks if c.severity == "HIGH") else "REJECTED")

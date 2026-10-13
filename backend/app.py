@@ -107,6 +107,15 @@ def get_catalog():
         "tables": [t.model_dump() for t in tables]
     }
 
+@app.get("/api/openmetadata/test-suite/{table_fqn:path}")
+def get_openmetadata_test_suite(table_fqn: str):
+    """Mengambil atau menjalankan automated test suite kualitas data OpenMetadata untuk tabel tertentu."""
+    try:
+        ts_res = coordinator.om_connector.get_table_test_suite(table_fqn)
+        return ts_res.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal mengambil test suite: {str(e)}")
+
 @app.post("/api/process")
 async def process_pdf(
     file: Optional[UploadFile] = File(None),

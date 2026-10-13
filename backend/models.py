@@ -78,6 +78,26 @@ class OpenMetadataColumn(BaseModel):
     is_pii: bool = False
     glossary_terms: List[str] = []
 
+class OpenMetadataTestCase(BaseModel):
+    name: str
+    test_definition: str  # e.g., "columnValuesToBeNotNull", "columnValuesToBeUnique", "tableDataFreshness"
+    target_column: Optional[str] = None
+    status: str = "Success"  # "Success", "Failed", "Aborted"
+    execution_timestamp: str = ""
+    message: str = ""
+    metrics: Dict[str, Any] = {}
+
+class OpenMetadataTestSuiteResult(BaseModel):
+    suite_name: str
+    table_fqn: str
+    total_tests: int
+    passed_tests: int
+    failed_tests: int
+    health_score_pct: float
+    data_freshness_sla_met: bool = True
+    test_cases: List[OpenMetadataTestCase] = []
+    last_run: str = ""
+
 class OpenMetadataTable(BaseModel):
     fqn: str  # e.g., "dwh_production.retail.fct_transactions"
     service_name: str
@@ -92,12 +112,14 @@ class OpenMetadataTable(BaseModel):
     lineage_downstream: List[str] = []
     match_score: float = 0.0
     match_rationale: str = ""
+    quality_test_suite: Optional[OpenMetadataTestSuiteResult] = None
 
 class CatalogMatchResult(BaseModel):
     selected_tables: List[OpenMetadataTable]
     join_strategy: List[Dict[str, str]] = []
     unmapped_fields: List[str] = []
     match_summary: str = ""
+    quality_rollups: List[OpenMetadataTestSuiteResult] = []
 
 class SQLGenerationResult(BaseModel):
     dialect: str = "PostgreSQL"

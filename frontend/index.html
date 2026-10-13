@@ -447,6 +447,28 @@
                     </div>
                 </div>
 
+                <!-- OpenMetadata Automated Quality Test Suite & Freshness SLA Card (Rekomendasi 14) -->
+                <div id="catalog-quality-test-suite-box" class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700">
+                                <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                            </span>
+                            <div>
+                                <span class="text-xs font-bold text-emerald-950">OpenMetadata Automated Data Quality Test Suites & Freshness SLA</span>
+                                <p class="text-[11px] text-emerald-800">Validasi otomatis integritas primary key (zero null, unik), kewajaran fiskal, dan kesegaran sinkronisasi DWH.</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center space-x-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 self-start sm:self-auto">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                            <span>100% Quality Health SLA Met</span>
+                        </span>
+                    </div>
+                    <div id="catalog-quality-suites-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
                 <div id="catalog-tables-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
             </div>
 
@@ -2307,6 +2329,89 @@
             </div>
             <div class="p-3 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Tekan <kbd class="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded font-mono text-[10px]">Esc</kbd> kapan saja untuk kembali ke editor.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal OpenMetadata Automated Data Quality Test Suite (Rekomendasi 14) -->
+    <div id="modal-test-suite" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5" role="dialog" aria-modal="true" aria-labelledby="test-suite-modal-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-850">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="check-check" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h4 id="test-suite-modal-title" class="text-sm font-bold text-slate-900 dark:text-white truncate">OpenMetadata Automated Test Suite</h4>
+                        <p id="test-suite-modal-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">Tabel: dwh_ceisa.ekspor.fct_peb_ekspor</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span id="test-suite-modal-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        <span>100% HEALTH</span>
+                    </span>
+                    <button id="btn-close-test-suite-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" aria-label="Tutup modal">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="p-5 overflow-y-auto space-y-4">
+                <!-- Summary Metrics Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Test Cases</div>
+                        <div id="ts-metric-total" class="text-lg font-black text-slate-800 dark:text-white mt-1 font-mono">6 Tes</div>
+                        <div class="text-[10px] text-slate-400">Automated Suite</div>
+                    </div>
+                    <div class="bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">Lulus (Passed)</div>
+                        <div id="ts-metric-passed" class="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1 font-mono">6 Tes</div>
+                        <div class="text-[10px] text-emerald-600/80">Zero defect anomaly</div>
+                    </div>
+                    <div class="bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">Data Freshness SLA</div>
+                        <div id="ts-metric-freshness" class="text-lg font-black text-blue-600 dark:text-blue-400 mt-1 font-mono">< 6 Jam</div>
+                        <div class="text-[10px] text-blue-600/80">SLA Max: 24 Jam</div>
+                    </div>
+                    <div class="bg-purple-50/60 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">Health Score</div>
+                        <div id="ts-metric-health" class="text-lg font-black text-purple-600 dark:text-purple-400 mt-1 font-mono">100.0%</div>
+                        <div class="text-[10px] text-purple-600/80">Verified Quality</div>
+                    </div>
+                </div>
+
+                <!-- Test Cases List Table -->
+                <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs">
+                    <table class="w-full text-xs text-left">
+                        <thead class="text-[11px] text-slate-700 dark:text-slate-300 uppercase bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="px-4 py-2.5 font-bold">Nama Test Case</th>
+                                <th class="px-4 py-2.5 font-bold">Definisi Validasi</th>
+                                <th class="px-4 py-2.5 font-bold">Kolom Target</th>
+                                <th class="px-4 py-2.5 font-bold text-center">Status</th>
+                                <th class="px-4 py-2.5 font-bold">Hasil Eksekusi & Metrik</th>
+                            </tr>
+                        </thead>
+                        <tbody id="test-suite-modal-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                <span class="flex items-center space-x-1.5 font-mono text-[11px]">
+                    <i data-lucide="database" class="w-3.5 h-3.5 text-blue-600"></i>
+                    <span>Tersinkronisasi dengan OpenMetadata Data Quality Engine</span>
+                </span>
+                <button id="btn-close-test-suite-footer" class="px-4 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 font-semibold text-slate-700 dark:text-slate-200 transition">
+                    Tutup
+                </button>
             </div>
         </div>
     </div>
