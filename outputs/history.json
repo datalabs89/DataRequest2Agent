@@ -1,5 +1,25 @@
 [
   {
+    "id": "REQ-1791852258",
+    "request_id": "REQ-2026-BC-089",
+    "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",
+    "requester_name": "Ahmad Fauzi, S.Kom",
+    "department": "Internal Bea dan Cukai",
+    "business_process": "Ekspor",
+    "created_at": "2026-10-13 07:44:18",
+    "status": "APPROVED",
+    "row_count": 35,
+    "execution_time_ms": 204.9,
+    "dialect": "PostgreSQL",
+    "compliance_score": 100,
+    "digital_fingerprint": "dfb7e5636566b96dafd430141599e4188776430ad3a02a2fa5f673f7d9b61d7d",
+    "excel_filename": "DataExport_REQ_2026_BC_089_20261013_074418.xlsx",
+    "zip_filename": "DataFulfillment_REQ_2026_BC_089_20261013_074418.zip",
+    "reviewer_name": null,
+    "reviewer_role": null,
+    "comments": "Menunggu review verifikator"
+  },
+  {
     "id": "REQ-1791737759",
     "request_id": "REQ-2026-BC-089",
     "document_title": "FORMULIR RESMI PERMOHONAN AKSES & EKSTRAKSI DATA KEPABEANAN",

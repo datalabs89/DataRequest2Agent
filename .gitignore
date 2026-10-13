@@ -25,6 +25,13 @@ outputs/*.db
 outputs/*.json
 !outputs/history.json
 
+frontend/outputs/*.zip
+frontend/outputs/*.xlsx
+frontend/outputs/*.csv
+frontend/outputs/*.pdf
+frontend/outputs/*.db
+frontend/outputs/*.json
+
 # Ignore transient uploaded PDFs
 uploads/*.pdf
 !samples/*.pdf
