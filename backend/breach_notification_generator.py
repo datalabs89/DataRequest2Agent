@@ -292,8 +292,8 @@ class BreachNotificationGenerator:
                 Paragraph("<br/><br/><i>[Ditandatangani secara Elektronik]</i><br/>", ParagraphStyle("SignMid", parent=style_tbl_val, alignment=1, textColor=self.slate_gray))
             ],
             [
-                Paragraph(f"<b><u>{reporter_name}</u></b><br/>NIP {reporter_nip}", ParagraphStyle("SignBottom1", parent=style_tbl_val, alignment=1)),
-                Paragraph(f"<b><u>{dpo_name}</u></b><br/>NIP {dpo_nip}", ParagraphStyle("SignBottom2", parent=style_tbl_val, alignment=1))
+                Paragraph(f"<b>{reporter_name}</b><br/>NIP {reporter_nip}", ParagraphStyle("SignBottom1", parent=style_tbl_val, alignment=1)),
+                Paragraph(f"<b>{dpo_name}</b><br/>NIP {dpo_nip}", ParagraphStyle("SignBottom2", parent=style_tbl_val, alignment=1))
             ]
         ]
 

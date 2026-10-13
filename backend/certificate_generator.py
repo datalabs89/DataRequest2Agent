@@ -388,10 +388,10 @@ class CertificateGenerator:
 
         sig_table_data = [
             [
-                Paragraph(f"<b>PEMOHON / ANALIS DATA:</b><br/><br/><br/><b><u>{spec.requester_name}</u></b><br/>{spec.requester_department}", val_style),
+                Paragraph(f"<b>PEMOHON / ANALIS DATA:</b><br/><br/><br/><b>{spec.requester_name}</b><br/>{spec.requester_department}", val_style),
                 Paragraph("<font size='6.5' color='#64748B'><b>PINDAI VALIDASI</b><br/>Verifikasi Keaslian</font>", ParagraphStyle('QRLbl', fontName='Helvetica', fontSize=6.5, leading=8, alignment=1)),
-                Paragraph(f"<b>DATA STEWARD OPERASIONAL:</b><br/><br/><br/><b><u>{reviewer_name}</u></b><br/>{reviewer_role}", val_style),
-                Paragraph(f"<b>PEJABAT PDP (PPDP / DPO):</b><br/><br/><br/><b><u>{dpo_name}</u></b><br/>{dpo_role}", val_style)
+                Paragraph(f"<b>DATA STEWARD OPERASIONAL:</b><br/><br/><br/><b>{reviewer_name}</b><br/>{reviewer_role}", val_style),
+                Paragraph(f"<b>PEJABAT PDP (PPDP / DPO):</b><br/><br/><br/><b>{dpo_name}</b><br/>{dpo_role}", val_style)
             ],
             [
                 Paragraph("<font size='6' color='#059669'>[Signed Digitally - SSO DJBC]</font>", val_style),
