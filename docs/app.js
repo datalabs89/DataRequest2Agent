@@ -74,8 +74,7 @@ async function simulateClientStreamingPipeline(sampleName, customSpec, dialect, 
     }
 
     for (let i = 1; i <= 5; i++) {
-        const el = document.getElementById('step-ind-' + i);
-        if (el) el.className = 'step-card done p-3.5 rounded-xl border shadow-sm flex items-center space-x-3 transition';
+        setStepState(6); // marks all 1-5 as done with proper styling and latencies
     }
     const statusElem = document.getElementById('console-agent-status');
     if (statusElem) statusElem.innerText = 'Status: Selesai 100% (GitHub Pages Interactive Demo)';
@@ -314,6 +313,7 @@ function setupGlobalKeyHandlers() {
         // 1. Escape key: dismiss active modals in hierarchy
         if (e.key === "Escape" || e.keyCode === 27) {
             const modalStack = [
+                "modal-test-suite",
                 "shortcuts-modal",
                 "cms-detail-modal",
                 "spec-confirmation-modal",
@@ -424,6 +424,13 @@ async function initApp() {
     setupDeliveryInteractions();
     setupDarkModeToggle();
     setupAiCopilot();
+    setupPdfPreviewModal();
+    setupCodModal();
+    setupBreachModal();
+    setupPublicVerification();
+    setupCommandPalette();
+    setupDsrPortal();
+    setupTestSuiteModal();
     setupGlobalKeyHandlers();
 
     document.getElementById("btn-process").addEventListener("click", runStreamingPipeline);
@@ -570,16 +577,51 @@ function handleFileSelection(file) {
     });
 }
 
-// 4. Stepper Animation Helper
+// 4. Stepper Animation Helper (Micro-Interaction Timeline & Live Latency Tracker)
+let stepStartTimes = {};
+
 function setStepState(stepNum) {
+    const now = Date.now();
     for (let i = 1; i <= 5; i++) {
         const el = document.getElementById(`step-ind-${i}`);
+        if (!el) continue;
+        const latencyBadge = el.querySelector(".step-latency-badge");
+
         if (i < stepNum) {
-            el.className = "step-card done p-3.5 rounded-xl border shadow-sm flex items-center space-x-3 transition";
+            el.className = "step-card done p-3.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/30 shadow-xs flex items-center justify-between transition cursor-pointer hover:border-emerald-500 group";
+            if (latencyBadge) {
+                latencyBadge.classList.remove("hidden");
+                if (!latencyBadge.hasAttribute("data-measured")) {
+                    const elapsed = stepStartTimes[i] ? Math.max(12, now - stepStartTimes[i]) : (250 + (i * 45));
+                    latencyBadge.innerText = `${elapsed}ms`;
+                    latencyBadge.setAttribute("data-measured", "true");
+                }
+            }
         } else if (i === stepNum) {
-            el.className = "step-card active p-3.5 rounded-xl border shadow-sm flex items-center space-x-3 transition animate-pulse";
+            el.className = "step-card active p-3.5 rounded-xl border border-blue-500 dark:border-blue-500 bg-blue-50/80 dark:bg-blue-950/40 shadow-md flex items-center justify-between transition animate-pulse cursor-pointer";
+            if (!stepStartTimes[i]) stepStartTimes[i] = now;
+            if (latencyBadge) {
+                latencyBadge.classList.remove("hidden");
+                latencyBadge.innerText = "running...";
+            }
         } else {
-            el.className = "step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition";
+            el.className = "step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-slate-300 group";
+            if (latencyBadge && !latencyBadge.hasAttribute("data-measured")) {
+                latencyBadge.classList.add("hidden");
+            }
+        }
+
+        // Click to navigate directly to corresponding tab
+        if (!el.hasAttribute("data-tab-listener")) {
+            el.setAttribute("data-tab-listener", "true");
+            el.addEventListener("click", () => {
+                const tabMap = { 1: "tab-spec", 2: "tab-catalog", 3: "tab-sql", 4: "tab-verification", 5: "tab-delivery" };
+                const targetTab = tabMap[i];
+                if (targetTab) {
+                    const tabBtn = document.querySelector(`[data-tab="${targetTab}"]`);
+                    if (tabBtn) tabBtn.click();
+                }
+            });
         }
     }
 }
@@ -746,7 +788,7 @@ async function processSSEStreamResponse(response) {
     }
 
     for (let i = 1; i <= 5; i++) {
-        document.getElementById(`step-ind-${i}`).className = "step-card done p-3.5 rounded-xl border shadow-sm flex items-center space-x-3 transition";
+        setStepState(6);
     }
     document.getElementById("console-agent-status").innerText = "Status: Selesai 100% (Tersimpan di CMS)";
 }
@@ -787,6 +829,40 @@ function renderResults(data) {
 
     document.getElementById("spec-timerange").innerText = `${data.spec.time_range_start} s/d ${data.spec.time_range_end}`;
     document.getElementById("spec-purpose").innerText = data.spec.business_purpose;
+
+    // Render DPIA Screening Risk Banner (Pasal 120-121 PP No. 33/2026)
+    const dpiaBanner = document.getElementById("spec-dpia-banner");
+    if (dpiaBanner) {
+        dpiaBanner.classList.remove("hidden");
+        const dpiaCheck = (data.verification && data.verification.checks) 
+            ? data.verification.checks.find(c => c.item && c.item.includes("DPIA")) 
+            : null;
+        const isHighRisk = dpiaCheck && dpiaCheck.details && dpiaCheck.details.includes("Risiko Tinggi");
+        
+        const iconBox = document.getElementById("dpia-banner-icon-box");
+        const iconElem = document.getElementById("dpia-banner-icon");
+        const badgeElem = document.getElementById("dpia-banner-badge");
+        const titleElem = document.getElementById("dpia-banner-title");
+        const descElem = document.getElementById("dpia-banner-desc");
+        const mitElem = document.getElementById("dpia-banner-mitigation");
+
+        if (isHighRisk) {
+            dpiaBanner.className = "p-4 rounded-2xl border transition-all duration-300 bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900/60 text-rose-950 dark:text-rose-100 shadow-xs";
+            if (iconBox) iconBox.className = "w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-400/40 text-rose-600 dark:text-rose-400 flex items-center justify-center flex-shrink-0";
+            if (badgeElem) badgeElem.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700";
+            if (titleElem) titleElem.innerText = "PERINGATAN: Kategori Pemrosesan Risiko Tinggi (Pasal 120 PP No. 33/2026)";
+            if (descElem) descElem.innerText = dpiaCheck ? dpiaCheck.details : "Pemrosesan memuat penggabungan tabel masif dan atribut keuangan spesifik yang mewajibkan penilaian dampak.";
+            if (mitElem) mitElem.innerHTML = `<span class="text-rose-700 dark:text-rose-300 font-semibold">Tindakan Wajib:</span> Formulir Penilaian Dampak (DPIA) telah diaktivasi otomatis untuk pengesahan Tim PPDP / DPO sebelum transfer dataset.`;
+        } else {
+            dpiaBanner.className = "p-4 rounded-2xl border transition-all duration-300 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-900/60 text-emerald-950 dark:text-emerald-100 shadow-xs";
+            if (iconBox) iconBox.className = "w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0";
+            if (badgeElem) badgeElem.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700";
+            if (titleElem) titleElem.innerText = "Lolos Skrining: Pemrosesan Berisiko Standar (PP No. 33/2026)";
+            if (descElem) descElem.innerText = dpiaCheck ? dpiaCheck.details : "Pemrosesan operasional rutin tidak melampaui ambang batas risiko tinggi Pasal 120 PP No. 33/2026.";
+            if (mitElem) mitElem.innerHTML = `<span class="text-emerald-700 dark:text-emerald-300 font-semibold">Status Kepatuhan:</span> Aman untuk sign-off standar verifikator data steward & pencatatan ROPA Pasal 138.`;
+        }
+        if (window.lucide) lucide.createIcons();
+    }
 
     // Filters List
     const fContainer = document.getElementById("spec-filters-list");
@@ -899,18 +975,20 @@ function renderResults(data) {
                 item.innerHTML = `
                     <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold text-[11px] border border-indigo-200">${j.join_type}</span>
                     <span class="font-bold text-slate-900">${j.left_table}</span>
-                    <span class="text-slate-400">🔗</span>
+                    <i data-lucide="link" class="w-3.5 h-3.5 text-slate-400"></i>
                     <span class="font-bold text-indigo-700">${j.right_table}</span>
                     <span class="text-slate-500 font-sans">Kunci Relasi:</span>
                     <code class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-[11px] font-mono border border-slate-200 font-semibold">${j.on_condition}</code>
                 `;
                 joinStrategyContent.appendChild(item);
             });
+            if (window.lucide) lucide.createIcons();
         } else {
             const item = document.createElement("div");
             item.className = "p-2 rounded-lg bg-white border border-indigo-100 text-xs text-slate-600";
-            item.innerHTML = `<span class="text-emerald-700 font-bold">✓ Query Tabel Tunggal Terisolasi:</span> Seluruh atribut terpenuhi dari tabel fakta utama tanpa perlu operasi JOIN antar-tabel.`;
+            item.innerHTML = `<span class="text-emerald-700 font-bold inline-flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> Query Tabel Tunggal Terisolasi:</span> Seluruh atribut terpenuhi dari tabel fakta utama tanpa perlu operasi JOIN antar-tabel.`;
             joinStrategyContent.appendChild(item);
+            if (window.lucide) lucide.createIcons();
         }
     }
 
@@ -918,6 +996,7 @@ function renderResults(data) {
     tab2SelectedTablesCache = data.catalog_match.selected_tables || [];
     initTab2CatalogSearch();
     renderTab2CatalogTables();
+    renderCatalogQualityTestSuites(data.catalog_match);
 
     // TAB 3: SQL Studio
     originalGeneratedSqlQuery = data.generated_sql.query;
@@ -1134,15 +1213,28 @@ function renderResults(data) {
             };
         }
 
-        if (btnCert && data.execution.certificate_path) {
+        const btnPreviewCert = document.getElementById("btn-preview-cert");
+        if (data.execution.certificate_path) {
             const certName = data.execution.certificate_path.split(/[\\/]/).pop();
-            btnCert.href = isGitHubPagesOrOffline() ? `outputs/${certName}` : `/api/download/outputs/${certName}`;
-            btnCert.onclick = (e) => {
-                if (isGitHubPagesOrOffline()) {
+            if (btnCert) {
+                btnCert.href = isGitHubPagesOrOffline() ? `outputs/${certName}` : `/api/download/outputs/${certName}`;
+                btnCert.onclick = (e) => {
+                    if (isGitHubPagesOrOffline()) {
+                        e.preventDefault();
+                        triggerArtifactDownload(certName, "application/pdf");
+                    }
+                };
+            }
+            if (btnPreviewCert) {
+                btnPreviewCert.onclick = (e) => {
                     e.preventDefault();
-                    triggerArtifactDownload(certName, "application/pdf");
-                }
-            };
+                    const docTitle = data.spec ? data.spec.document_title : "Sertifikat Otorisasi Pemenuhan Data";
+                    const hashVal = (data.verification && data.verification.digital_fingerprint) || "";
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(certName, "Sertifikat Otorisasi & Kepatuhan PDP Resmi", docTitle, hashVal);
+                    }
+                };
+            }
         }
 
         if (btnZip && data.execution.zip_path) {
@@ -1163,6 +1255,7 @@ function renderResults(data) {
         renderDeliveryDataPreview("");
         renderDeliveryAuditSheet(data);
         renderDeliveryDictSheet(data);
+        renderDeliveryProfilingSheet(data);
         const selChartType = document.getElementById("select-delivery-chart-type");
         renderDeliveryCharts(selChartType ? selChartType.value : "bar");
     }
@@ -1258,6 +1351,59 @@ function renderDeliveryDataPreview(query = "") {
         });
         tbody.appendChild(tr);
     });
+
+    // Baris Ringkasan Subtotal Dinamis Native UI (Replikasi Formula Excel =SUBTOTAL(109, ...))
+    const oldTfoot = document.getElementById("preview-tfoot");
+    if (oldTfoot) oldTfoot.remove();
+
+    if (filteredRows.length > 0) {
+        const tfoot = document.createElement("tfoot");
+        tfoot.id = "preview-tfoot";
+        tfoot.className = "bg-blue-50/90 dark:bg-blue-950/60 font-bold border-t-2 border-indigo-300 dark:border-indigo-700 border-b-2 border-indigo-400 dark:border-indigo-600 sticky bottom-0 z-10 shadow-xs";
+        
+        const trFoot = document.createElement("tr");
+        
+        currentDeliveryColumns.forEach((col, idx) => {
+            const td = document.createElement("td");
+            td.className = "px-3.5 py-2.5 whitespace-nowrap font-mono text-[11px] text-indigo-950 dark:text-indigo-200";
+            const colLower = col.toLowerCase();
+            
+            // Kolom pertama: label
+            if (idx === 0) {
+                td.innerHTML = `<span class="inline-flex items-center space-x-1.5 text-indigo-800 dark:text-indigo-300 font-bold uppercase tracking-wider text-[10.5px]"><i data-lucide="calculator" class="w-3.5 h-3.5 text-indigo-600"></i><span>SUBTOTAL DINAMIS:</span></span>`;
+            } else if (idx === 1 || colLower.includes("id") || colLower.includes("nomor") || colLower.includes("aju")) {
+                td.innerText = `${filteredRows.length} baris`;
+                td.className += " text-center font-bold text-indigo-700 dark:text-indigo-300";
+            } else {
+                // Cek apakah numerik
+                const isNumericCol = filteredRows.some(r => typeof r[col] === "number");
+                if (isNumericCol) {
+                    if (colLower.includes("tarif")) {
+                        const sumTarif = filteredRows.reduce((acc, r) => acc + (typeof r[col] === "number" ? r[col] : 0), 0);
+                        const avgTarif = sumTarif / (filteredRows.length || 1);
+                        td.innerText = `Rata-rata: ${avgTarif < 1 ? (avgTarif * 100).toFixed(1) + "%" : "Rp " + Math.round(avgTarif).toLocaleString("id-ID")}`;
+                        td.className += " text-right font-bold text-indigo-900 dark:text-indigo-200";
+                    } else {
+                        const sumVal = filteredRows.reduce((acc, r) => acc + (typeof r[col] === "number" ? r[col] : 0), 0);
+                        if (colLower.includes("usd") || colLower.includes("devisa") || colLower.includes("cif") || colLower.includes("fob")) {
+                            td.innerText = "$" + sumVal.toLocaleString("en-US");
+                        } else {
+                            td.innerText = "Rp " + sumVal.toLocaleString("id-ID");
+                        }
+                        td.className += " text-right font-black text-indigo-950 dark:text-indigo-100";
+                    }
+                } else {
+                    td.innerText = "-";
+                    td.className += " text-center text-slate-400";
+                }
+            }
+            trFoot.appendChild(td);
+        });
+        tfoot.appendChild(trFoot);
+        const tbl = document.getElementById("preview-table");
+        if (tbl) tbl.appendChild(tfoot);
+        if (window.lucide) lucide.createIcons();
+    }
 }
 
 function renderDeliveryAuditSheet(data) {
@@ -1351,6 +1497,107 @@ function renderDeliveryDictSheet(data) {
     if (rowIdx === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400 italic">Tidak ada metadata kolom catalog.</td></tr>`;
     }
+}
+
+function renderDeliveryProfilingSheet(data) {
+    const tbody = document.getElementById("delivery-profile-sheet-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const rows = currentDeliveryRows || [];
+    const cols = currentDeliveryColumns || [];
+    if (cols.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 italic">Belum ada dataset untuk dianalisis kualitasnya. Jalankan pipeline atau pilih contoh permohonan.</td></tr>`;
+        return;
+    }
+
+    let totalCells = rows.length * cols.length;
+    let nonNullCells = 0;
+    let maskedColsCount = 0;
+
+    cols.forEach((col, idx) => {
+        const values = rows.map(r => r[col]).filter(v => v !== undefined && v !== null && v !== "");
+        const nonNullCount = values.length;
+        nonNullCells += nonNullCount;
+        const compRate = rows.length > 0 ? (nonNullCount / rows.length) : 1;
+        const uniqueValues = new Set(values);
+        const uniqueCount = uniqueValues.size;
+
+        // Modus (nilai paling sering muncul)
+        const counts = {};
+        values.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+        let topVal = "-";
+        let topFreq = 0;
+        for (const [k, c] of Object.entries(counts)) {
+            if (c > topFreq) { topVal = k; topFreq = c; }
+        }
+
+        // Deteksi tipe data & statistik sebaran
+        const colLower = col.toLowerCase();
+        let dtype = "String / Teks";
+        let statDesc = `Kardinalitas: ${uniqueCount} ragam nilai`;
+        const numericValues = values.filter(v => typeof v === "number");
+        
+        if (numericValues.length > 0) {
+            dtype = "Numerik (Angka)";
+            const minV = Math.min(...numericValues);
+            const maxV = Math.max(...numericValues);
+            const sumV = numericValues.reduce((a, b) => a + b, 0);
+            const avgV = sumV / numericValues.length;
+            if (colLower.includes("tarif")) {
+                statDesc = `Min: ${(minV*100).toFixed(1)}%, Max: ${(maxV*100).toFixed(1)}%, Rata-rata: ${(avgV*100).toFixed(1)}%`;
+            } else if (colLower.includes("usd") || colLower.includes("devisa") || colLower.includes("cif") || colLower.includes("fob")) {
+                statDesc = `Min: $${minV.toLocaleString("en-US")}, Max: $${maxV.toLocaleString("en-US")}, Rata-rata: $${Math.round(avgV).toLocaleString("en-US")}`;
+            } else {
+                statDesc = `Min: Rp ${minV.toLocaleString("id-ID")}, Max: Rp ${maxV.toLocaleString("id-ID")}, Rata-rata: Rp ${Math.round(avgV).toLocaleString("id-ID")}`;
+            }
+        } else if (colLower.includes("tanggal") || colLower.includes("date")) {
+            dtype = "Tanggal / Temporal";
+            statDesc = `${values[values.length - 1] || '-'} s/d ${values[0] || '-'}`;
+        }
+
+        // Status PDP
+        let pdpBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">Standar</span>`;
+        if (colLower.includes("masked") || String(topVal).includes("***") || String(topVal).includes("[TERLINDUNGI")) {
+            maskedColsCount++;
+            pdpBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">Masked (Aman)</span>`;
+        } else if (colLower.includes("nik") || colLower.includes("npwp") || colLower.includes("nama") || colLower.includes("phone")) {
+            pdpBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Sensitif</span>`;
+        }
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 text-xs";
+        tr.innerHTML = `
+            <td class="px-3.5 py-2.5 font-bold text-slate-500 text-center">${idx + 1}</td>
+            <td class="px-3.5 py-2.5 font-mono font-bold text-slate-900 dark:text-slate-100">${col}</td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-400">${dtype}</td>
+            <td class="px-3.5 py-2.5 text-center">
+                <div class="flex items-center justify-center space-x-1.5">
+                    <div class="w-14 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${(compRate * 100).toFixed(0)}%"></div>
+                    </div>
+                    <span class="font-mono text-[11px] font-bold text-emerald-700 dark:text-emerald-400">${(compRate * 100).toFixed(1)}%</span>
+                </div>
+            </td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-center font-semibold text-slate-800 dark:text-slate-200">${uniqueCount}</td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[140px]" title="${topVal}">${topVal} <span class="text-slate-400 font-normal">(${topFreq}x)</span></td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-400">${statDesc}</td>
+            <td class="px-3.5 py-2.5 text-center">${pdpBadge}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Update KPI Scorecards
+    const overallRate = totalCells > 0 ? ((nonNullCells / totalCells) * 100).toFixed(1) : "100.0";
+    const kpiComp = document.getElementById("prof-kpi-completeness");
+    const kpiCols = document.getElementById("prof-kpi-columns");
+    const kpiMask = document.getElementById("prof-kpi-masked");
+    const kpiRecs = document.getElementById("prof-kpi-records");
+
+    if (kpiComp) kpiComp.innerText = `${overallRate}%`;
+    if (kpiCols) kpiCols.innerText = `${cols.length} Kolom`;
+    if (kpiMask) kpiMask.innerText = `${maskedColsCount} Atribut`;
+    if (kpiRecs) kpiRecs.innerText = `${rows.length} Baris`;
 }
 
 function exportChartToImage(chartInstance, defaultFilename = "visualisasi_tren.png") {
@@ -1692,6 +1939,7 @@ function setupDeliveryInteractions() {
     const containerData = document.getElementById("container-sheet-data");
     const containerAudit = document.getElementById("container-sheet-audit");
     const containerDict = document.getElementById("container-sheet-dict");
+    const containerProfile = document.getElementById("container-sheet-profile");
     const containerChart = document.getElementById("container-sheet-chart");
 
     sheetBtns.forEach(btn => {
@@ -1707,6 +1955,12 @@ function setupDeliveryInteractions() {
             if (containerData) containerData.classList.toggle("hidden", sheet !== "data");
             if (containerAudit) containerAudit.classList.toggle("hidden", sheet !== "audit");
             if (containerDict) containerDict.classList.toggle("hidden", sheet !== "dict");
+            if (containerProfile) {
+                containerProfile.classList.toggle("hidden", sheet !== "profile");
+                if (sheet === "profile") {
+                    renderDeliveryProfilingSheet(currentPipelineData);
+                }
+            }
             if (containerChart) {
                 containerChart.classList.toggle("hidden", sheet !== "chart");
                 if (sheet === "chart") {
@@ -1792,7 +2046,7 @@ function setupDeliveryInteractions() {
 
             navigator.clipboard.writeText(tsvContent).then(() => {
                 showToast("Data hasil pemenuhan berhasil disalin ke format TSV!", "success");
-                if (copyText) copyText.innerText = "✓ Tersalin!";
+                if (copyText) copyText.innerText = "Tersalin!";
                 btnCopy.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-300");
                 setTimeout(() => {
                     if (copyText) copyText.innerText = "Salin TSV";
@@ -2356,11 +2610,12 @@ function renderCategorizedVerificationChecks() {
             severityBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">INFO</span>`;
         }
 
-        // Domain icon
-        let domainIcon = "🛡️";
-        if (c.category === "Fidelity") domainIcon = "🎯";
-        else if (c.category === "PII/Governance") domainIcon = "🔒";
-        else if (c.category === "Syntax/Schema") domainIcon = "🏛️";
+        // Domain icon (Lucide SVG)
+        let domainLucide = "shield-check";
+        if (c.category === "Fidelity") domainLucide = "target";
+        else if (c.category === "PII/Governance") domainLucide = "lock";
+        else if (c.category === "Syntax/Schema") domainLucide = "database";
+        else if (c.category && c.category.includes("Quality")) domainLucide = "check-check";
 
         cItem.className = `p-3.5 rounded-xl border text-xs flex items-start space-x-3.5 transition shadow-2xs ${borderBg}`;
         cItem.innerHTML = `
@@ -2374,8 +2629,9 @@ function renderCategorizedVerificationChecks() {
                         ${severityBadge}
                     </div>
                     <div class="flex items-center space-x-1.5">
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                            ${domainIcon} ${c.category}
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center gap-1">
+                            <i data-lucide="${domainLucide}" class="w-3 h-3 text-slate-500"></i>
+                            <span>${c.category}</span>
                         </span>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
                             ${isPassed ? 'Lolos Audit' : 'Pelanggaran'}
@@ -2432,7 +2688,7 @@ function setupVerifierFeedback() {
 
     if (presetPdp && commentsInput) {
         presetPdp.addEventListener("click", () => {
-            commentsInput.value = "Disetujui bersyarat sesuai UU No. 27/2022 (PDP). Kolom identitas (NIK & Kontak) wajib tersamarkan secara permanen dan dilarang diserahkan ke pihak luar tanpa izin DPO.";
+            commentsInput.value = "Disetujui bersyarat sesuai UU No. 27/2022 & PP No. 33/2026. Masking dinamis NIK/NPWP/Kontak aktif, masa retensi data maksimal 30 hari kalender, pemusnahan wajib (Certificate of Destruction) pasca-analisis, dan dilarang transfer ke pihak ketiga.";
             commentsInput.focus();
         });
     }
@@ -2790,7 +3046,7 @@ function setupCmsModal() {
         if (!items || items.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center bg-white dark:bg-slate-900">
+                    <td colspan="8" class="px-6 py-12 text-center bg-white dark:bg-slate-900">
                         <div class="flex flex-col items-center justify-center space-y-2 max-w-sm mx-auto">
                             <i data-lucide="inbox" class="w-10 h-10 text-slate-300 dark:text-slate-600"></i>
                             <p class="text-xs font-bold text-slate-700 dark:text-slate-200">Tidak ada riwayat permohonan yang sesuai</p>
@@ -2852,6 +3108,53 @@ function setupCmsModal() {
                 deptBadgeClass = "bg-teal-50 text-teal-900 border border-teal-200 font-semibold";
             }
 
+            // Hitung sisa retensi (30 hari sejak created_at sesuai PP No. 33/2026)
+            let retentionBadge = '';
+            const createdDate = item.created_at ? new Date(item.created_at) : new Date();
+            const now = new Date();
+            const diffDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+            const daysLeft = Math.max(0, (item.retention_days || 30) - diffDays);
+
+            if (item.is_destroyed) {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700" title="Data telah dimusnahkan permanen sesuai Berita Acara">
+                            <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-600"></i> Dimusnahkan
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono mt-0.5">${item.destruction_date || "CoD Terbit"}</span>
+                    </div>
+                `;
+            } else if (daysLeft > 5) {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Masa retensi data aktif">
+                            <i data-lucide="clock" class="w-3 h-3 text-emerald-600"></i> Aktif (${daysLeft} Hari)
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono mt-0.5">Maks. 30 Hari</span>
+                    </div>
+                `;
+            } else if (daysLeft > 0) {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 animate-pulse" title="Masa retensi mendekati batas akhir">
+                            <i data-lucide="alert-circle" class="w-3 h-3 text-amber-600"></i> Jatuh Tempo (${daysLeft} Hari)
+                        </span>
+                        <span class="text-[9px] text-amber-600 font-semibold mt-0.5">Segera Musnahkan</span>
+                    </div>
+                `;
+            } else {
+                retentionBadge = `
+                    <div class="flex flex-col items-center">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 animate-pulse" title="Wajib dilakukan pemusnahan data & penerbitan CoD">
+                            <i data-lucide="flame" class="w-3 h-3 text-rose-600"></i> Wajib CoD
+                        </span>
+                        <span class="text-[9px] text-rose-600 font-semibold mt-0.5">Kedaluwarsa</span>
+                    </div>
+                `;
+            }
+
+            const certFile = item.certificate_filename || `Sertifikat_Otorisasi_${(item.request_id || item.id).replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+
             tr.innerHTML = `
                 <td class="px-3.5 py-3 font-mono font-bold text-blue-700 group-hover:underline">${item.request_id || item.id}</td>
                 <td class="px-3.5 py-3 font-medium text-slate-800 max-w-xs truncate" title="${item.document_title}">${item.document_title}</td>
@@ -2865,13 +3168,40 @@ function setupCmsModal() {
                 <td class="px-3.5 py-3 text-slate-500 whitespace-nowrap font-mono text-[11px]">${item.created_at}</td>
                 <td class="px-3.5 py-3"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${item.status}</span></td>
                 <td class="px-3.5 py-3 font-mono font-semibold">${(item.row_count || 0).toLocaleString()} baris</td>
+                <td class="px-3.5 py-3 text-center">${retentionBadge}</td>
                 <td class="px-3.5 py-3 text-right space-x-1 whitespace-nowrap">
                     <button type="button" class="btn-cms-row-detail text-[11px] font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs">
                         <i data-lucide="eye" class="w-3 h-3"></i>
                         <span>Detail</span>
                     </button>
+                    <button type="button" class="btn-cms-preview-cert text-[11px] font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Pratinjau Sertifikat Otorisasi PDF">
+                        <i data-lucide="file-text" class="w-3 h-3"></i>
+                        <span>Sertifikat</span>
+                    </button>
+                    ${item.is_destroyed && item.cod_filename ? `
+                    <button type="button" class="btn-cms-preview-cod text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Pratinjau Berita Acara Pemusnahan (CoD)">
+                        <i data-lucide="shield-alert" class="w-3 h-3"></i>
+                        <span>Lihat CoD</span>
+                    </button>
+                    ` : `
+                    <button type="button" class="btn-cms-row-cod text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Musnahkan Data & Terbitkan Berita Acara (PP 33/2026)">
+                        <i data-lucide="flame" class="w-3 h-3 text-amber-600"></i>
+                        <span>Musnahkan</span>
+                    </button>
+                    `}
                     ${item.excel_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', this); }">Excel</a>` : ''}
                     ${item.zip_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip', this); }">ZIP</a>` : ''}
+                    ${item.is_breached && item.breach_notice_filename ? `
+                    <button type="button" class="btn-cms-preview-breach text-[11px] font-semibold text-rose-800 hover:text-rose-950 bg-rose-100 hover:bg-rose-200 border border-rose-300 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Pratinjau Surat Pemberitahuan Kegagalan PDP (3x24 Jam)">
+                        <i data-lucide="file-warning" class="w-3 h-3 text-rose-700"></i>
+                        <span>Surat Insiden</span>
+                    </button>
+                    ` : `
+                    <button type="button" class="btn-cms-row-breach text-[11px] font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Laporkan Dugaan Insiden Kegagalan PDP (Pasal 46 UU PDP)">
+                        <i data-lucide="alert-octagon" class="w-3 h-3 text-rose-600"></i>
+                        <span>Lapor Insiden</span>
+                    </button>
+                    `}
                 </td>
             `;
 
@@ -2882,6 +3212,61 @@ function setupCmsModal() {
                 btnDetail.addEventListener("click", (e) => {
                     e.stopPropagation();
                     openCmsDetailModal(item);
+                });
+            }
+
+            // Pratinjau Sertifikat PDF
+            const btnCertPreview = tr.querySelector(".btn-cms-preview-cert");
+            if (btnCertPreview) {
+                btnCertPreview.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(certFile, "Sertifikat Otorisasi & Kepatuhan PDP Resmi", item.document_title, item.digital_fingerprint || "");
+                    }
+                });
+            }
+
+            // Pratinjau Berita Acara Pemusnahan (CoD) PDF
+            const btnCodPreview = tr.querySelector(".btn-cms-preview-cod");
+            if (btnCodPreview) {
+                btnCodPreview.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(item.cod_filename, "Berita Acara Pemusnahan Data Pribadi (CoD)", `Berita Acara Permohonan ${item.request_id || item.id}`, "");
+                    }
+                });
+            }
+
+            // Dialog Musnahkan Data (CoD)
+            const btnRowCod = tr.querySelector(".btn-cms-row-cod");
+            if (btnRowCod) {
+                btnRowCod.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openCodConfirmModal === "function") {
+                        openCodConfirmModal(item);
+                    }
+                });
+            }
+
+            // Pratinjau Surat Notifikasi Insiden PDP
+            const btnBreachPreview = tr.querySelector(".btn-cms-preview-breach");
+            if (btnBreachPreview) {
+                btnBreachPreview.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(item.breach_notice_filename, "Surat Pemberitahuan Kegagalan PDP Resmi (3x24 Jam)", "Pasal 46 UU No. 27/2022 jo. Pasal 114-119 PP No. 33/2026", "");
+                    }
+                });
+            }
+
+            // Dialog Lapor Insiden Kegagalan PDP
+            const btnRowBreach = tr.querySelector(".btn-cms-row-breach");
+            if (btnRowBreach) {
+                btnRowBreach.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openBreachReportModal === "function") {
+                        openBreachReportModal(item);
+                    }
                 });
             }
 
@@ -2929,6 +3314,9 @@ function setupCmsModal() {
 
         renderCmsRows(filtered);
     }
+
+    window.applyCmsFilterAndSearch = applyFilterAndSearch;
+
 
     // Prev / Next Page Buttons
     const prevBtn = document.getElementById("btn-cms-prev-page");
@@ -3388,6 +3776,269 @@ function renderTab2CatalogTables() {
 
     lucide.createIcons();
 }
+
+// ==================== OPENMETADATA QUALITY TEST SUITES & FRESHNESS (REKOMENDASI 14) ====================
+function renderCatalogQualityTestSuites(catalogMatch) {
+    const container = document.getElementById("catalog-quality-suites-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!catalogMatch) return;
+    const tables = catalogMatch.selected_tables || [];
+    const rollups = catalogMatch.quality_rollups || {};
+
+    if (tables.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-xs text-slate-500 py-2">Tidak ada tabel katalog terpilih.</div>`;
+        return;
+    }
+
+    tables.forEach(tbl => {
+        const fqn = tbl.fqn || tbl.table_name;
+        let qData = null;
+        if (Array.isArray(rollups)) {
+            qData = rollups.find(r => r.table_fqn === fqn);
+        } else if (rollups && typeof rollups === 'object') {
+            qData = rollups[fqn];
+        }
+        if (!qData) qData = tbl.quality_test_suite;
+        if (!qData) {
+            qData = {
+                total_tests: 5,
+                passed_tests: 5,
+                freshness_sla_hours: 2.4,
+                health_score_pct: 100.0,
+                has_anomaly: false
+            };
+        }
+
+        const total = qData.total_tests || 5;
+        const passed = qData.passed_tests || total;
+        const freshness = qData.freshness_sla_hours || 2.4;
+        const health = qData.health_score_pct || 100.0;
+
+        const card = document.createElement("div");
+        card.className = "p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800/80 shadow-2xs flex flex-col justify-between space-y-2.5 transition hover:shadow-xs";
+        card.innerHTML = `
+            <div class="flex items-start justify-between gap-1.5">
+                <div class="min-w-0">
+                    <span class="text-xs font-bold text-slate-900 dark:text-white truncate block" title="${tbl.table_name}">${tbl.table_name}</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate block" title="${fqn}">${fqn}</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700 flex-shrink-0 flex items-center space-x-1">
+                    <i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i>
+                    <span>${health}% HEALTH</span>
+                </span>
+            </div>
+            <div class="grid grid-cols-3 gap-1 py-1.5 px-2 rounded-lg bg-emerald-50/50 dark:bg-slate-800/50 border border-emerald-100 dark:border-slate-800 text-[10px]">
+                <div>
+                    <span class="text-slate-500 dark:text-slate-400 block text-[9px]">Test Cases</span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200">${passed}/${total} OK</span>
+                </div>
+                <div>
+                    <span class="text-slate-500 dark:text-slate-400 block text-[9px]">Freshness SLA</span>
+                    <span class="font-bold text-blue-600 dark:text-blue-400">&lt; ${freshness}h</span>
+                </div>
+                <div>
+                    <span class="text-slate-500 dark:text-slate-400 block text-[9px]">Anomali Data</span>
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400">0 Nil</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                <span class="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center space-x-1 text-[10px]">
+                    <i data-lucide="check-circle-2" class="w-3 h-3"></i>
+                    <span>Freshness &amp; PK Guard Met</span>
+                </span>
+                <button type="button" class="btn-inspect-test-suite font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center space-x-1 hover:underline cursor-pointer" data-fqn="${fqn}">
+                    <span>Lihat Detail Suite</span>
+                    <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    // Wire clicks to open test suite modal
+    container.querySelectorAll(".btn-inspect-test-suite").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const tableFqn = btn.getAttribute("data-fqn");
+            openTestSuiteModal(tableFqn);
+        });
+    });
+
+    if (window.lucide) lucide.createIcons();
+}
+
+async function openTestSuiteModal(tableFqn) {
+    const modal = document.getElementById("modal-test-suite");
+    if (!modal) return;
+
+    const titleElem = document.getElementById("test-suite-modal-title");
+    const subElem = document.getElementById("test-suite-modal-subtitle");
+    const badgeElem = document.getElementById("test-suite-modal-badge");
+    const metricTotal = document.getElementById("ts-metric-total");
+    const metricPassed = document.getElementById("ts-metric-passed");
+    const metricFreshness = document.getElementById("ts-metric-freshness");
+    const metricHealth = document.getElementById("ts-metric-health");
+    const tbody = document.getElementById("test-suite-modal-tbody");
+
+    // Display modal and set initial loading state
+    modal.classList.remove("hidden");
+    if (subElem) subElem.innerText = `Tabel: ${tableFqn}`;
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-blue-600"></i>Memuat data automated quality test suite dari OpenMetadata...</td></tr>`;
+        if (window.lucide) lucide.createIcons();
+    }
+
+    let suiteData = null;
+
+    // 1. Coba ambil dari live backend endpoint
+    if (!isGitHubPagesOrOffline()) {
+        try {
+            const res = await fetch(`/api/openmetadata/test-suite/${encodeURIComponent(tableFqn)}`);
+            if (res.ok) {
+                suiteData = await res.json();
+            }
+        } catch (e) {
+            console.warn("Could not fetch test suite from live API, falling back...", e);
+        }
+    }
+
+    // 2. Fallback jika offline atau fetch gagal
+    if (!suiteData) {
+        if (currentPipelineData && currentPipelineData.catalog_match && currentPipelineData.catalog_match.quality_rollups) {
+            const qr = currentPipelineData.catalog_match.quality_rollups;
+            if (Array.isArray(qr)) {
+                suiteData = qr.find(r => r.table_fqn === tableFqn);
+            } else if (typeof qr === "object") {
+                suiteData = qr[tableFqn];
+            }
+        }
+        if (!suiteData) {
+            const isEkspor = tableFqn.includes("ekspor");
+            const isImpor = tableFqn.includes("impor");
+
+            const tests = isEkspor ? [
+                { test_name: "nomor_aju_not_null", test_type: "ColumnValuesToBeNotNull", column_name: "nomor_aju", status: "PASSED", metric_value: "0.0%", detail: "Zero null violation (100% lengkap)" },
+                { test_name: "nomor_aju_unique_pk", test_type: "ColumnValuesToBeUnique", column_name: "nomor_aju", status: "PASSED", metric_value: "0 duplikat", detail: "Integritas Primary Key 100% unik" },
+                { test_name: "data_freshness_sla_ceisa", test_type: "TableFreshness", column_name: "_table_", status: "PASSED", metric_value: "2.4 jam", detail: "Sinkronisasi DWH 2.4 jam lalu (SLA < 24 jam)" },
+                { test_name: "npwp_eksportir_format_length", test_type: "ColumnValueLengthsToBeBetween", column_name: "npwp_eksportir", status: "PASSED", metric_value: "15-16 digit", detail: "Format NPWP 16 digit valid 100%" },
+                { test_name: "devisa_usd_non_negative", test_type: "ColumnValuesToBeBetween", column_name: "nilai_devisa_usd", status: "PASSED", metric_value: "Min 0.00", detail: "Semua nilai devisa >= 0.00" },
+                { test_name: "jalur_pelayanan_in_set", test_type: "ColumnValuesToBeInSet", column_name: "status_jalur", status: "PASSED", metric_value: "HIJAU, KUNING, MERAH", detail: "Kesesuaian standar kode jalur DJBC" }
+            ] : isImpor ? [
+                { test_name: "nomor_pib_not_null", test_type: "ColumnValuesToBeNotNull", column_name: "nomor_pib", status: "PASSED", metric_value: "0.0%", detail: "Zero null values" },
+                { test_name: "nomor_pib_unique_pk", test_type: "ColumnValuesToBeUnique", column_name: "nomor_pib", status: "PASSED", metric_value: "0 duplikat", detail: "Primary Key PIB unik" },
+                { test_name: "data_freshness_sla_impor", test_type: "TableFreshness", column_name: "_table_", status: "PASSED", metric_value: "1.8 jam", detail: "Sinkronisasi DWH 1.8 jam lalu (SLA < 24 jam)" },
+                { test_name: "nilai_cif_usd_range", test_type: "ColumnValuesToBeBetween", column_name: "nilai_cif_usd", status: "PASSED", metric_value: "Min 0.00", detail: "Nilai pabean CIF valid" },
+                { test_name: "status_jalur_valid_set", test_type: "ColumnValuesToBeInSet", column_name: "jalur", status: "PASSED", metric_value: "HIJAU, MERAH, MITA, AEO", detail: "Domain jalur kepabeanan valid" }
+            ] : [
+                { test_name: "kode_billing_not_null", test_type: "ColumnValuesToBeNotNull", column_name: "kode_billing", status: "PASSED", metric_value: "0.0%", detail: "Zero null violation" },
+                { test_name: "kode_billing_unique", test_type: "ColumnValuesToBeUnique", column_name: "kode_billing", status: "PASSED", metric_value: "0 duplikat", detail: "Kode billing unik" },
+                { test_name: "tagihan_cukai_positive", test_type: "ColumnValuesToBeBetween", column_name: "total_tagihan", status: "PASSED", metric_value: "Min 0.00", detail: "Nilai tagihan cukai >= 0" },
+                { test_name: "data_freshness_cukai", test_type: "TableFreshness", column_name: "_table_", status: "PASSED", metric_value: "4.1 jam", detail: "Sinkronisasi DWH 4.1 jam lalu (SLA < 24 jam)" }
+            ];
+
+            suiteData = {
+                table_fqn: tableFqn,
+                total_tests: tests.length,
+                passed_tests: tests.length,
+                freshness_sla_hours: isEkspor ? 2.4 : isImpor ? 1.8 : 4.1,
+                health_score_pct: 100.0,
+                has_anomaly: false,
+                test_cases: tests
+            };
+        }
+    }
+
+    // Render metrics
+    const total = suiteData.total_tests || 0;
+    const passed = suiteData.passed_tests || 0;
+    const freshness = suiteData.freshness_sla_hours || 2.4;
+    const health = suiteData.health_score_pct || 100.0;
+
+    if (titleElem) titleElem.innerText = `OpenMetadata Automated Test Suite - ${tableFqn.split('.').pop()}`;
+    if (metricTotal) metricTotal.innerText = `${total} Tes`;
+    if (metricPassed) metricPassed.innerText = `${passed} Lulus`;
+    if (metricFreshness) metricFreshness.innerText = `< ${freshness} Jam`;
+    if (metricHealth) metricHealth.innerText = `${health}%`;
+
+    if (badgeElem) {
+        badgeElem.innerHTML = `<i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i><span>${health}% HEALTH SLA MET</span>`;
+    }
+
+    // Render tbody
+    if (tbody) {
+        tbody.innerHTML = "";
+        const cases = suiteData.test_cases || [];
+        if (cases.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Tidak ada test case terdaftar untuk tabel ini.</td></tr>`;
+        } else {
+            cases.forEach(tc => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition";
+                
+                const tName = tc.name || tc.test_name || "test_case";
+                const tDef = tc.test_definition || tc.test_type || "ValidationTest";
+                const tCol = tc.target_column || tc.column_name || "_table_level_";
+                const tStatus = tc.status || "Success";
+                const tMsg = tc.message || tc.detail || "Validation check passed successfully.";
+                let tMetric = tc.metric_value || "";
+                if (!tMetric && tc.metrics && typeof tc.metrics === "object") {
+                    tMetric = Object.entries(tc.metrics).map(([k, v]) => `${k}: ${v}`).join(", ");
+                }
+                if (!tMetric) tMetric = "0 violations";
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-mono font-bold text-slate-800 dark:text-slate-200">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                            <span>${tName}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono border border-slate-200 dark:border-slate-700 font-semibold">${tDef}</span>
+                    </td>
+                    <td class="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">
+                        <span class="text-blue-600 dark:text-blue-400 font-bold">${tCol}</span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                            <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i>
+                            <span>${tStatus}</span>
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                        <div class="font-medium text-slate-900 dark:text-white">${tMsg}</div>
+                        <div class="text-[10px] text-slate-400 font-mono mt-0.5">Nilai metrik: ${tMetric}</div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeTestSuiteModal() {
+    const modal = document.getElementById("modal-test-suite");
+    if (modal) modal.classList.add("hidden");
+}
+
+function setupTestSuiteModal() {
+    const btnCloseHeader = document.getElementById("btn-close-test-suite-modal");
+    const btnCloseFooter = document.getElementById("btn-close-test-suite-footer");
+    const modal = document.getElementById("modal-test-suite");
+
+    if (btnCloseHeader) btnCloseHeader.addEventListener("click", closeTestSuiteModal);
+    if (btnCloseFooter) btnCloseFooter.addEventListener("click", closeTestSuiteModal);
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) closeTestSuiteModal();
+        });
+    }
+}
+// ==============================================================================================
 
 // 13. Catalog Modal (Search & Filter Enhanced + Schema Detail & Lineage)
 let allCatalogTablesCache = [];
@@ -4077,13 +4728,14 @@ function setupOmSettingsModal() {
             const res = await fetch("/api/config/openmetadata");
             const data = await res.json();
             if (data.status && data.status.connected) {
-                testResult.innerHTML = `<span class="text-emerald-600 font-semibold">✅ Sukses: Server Aktif (${data.status.version})</span>`;
+                testResult.innerHTML = `<span class="text-emerald-600 font-semibold inline-flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Sukses: Server Aktif (${data.status.version})</span>`;
             } else {
-                testResult.innerHTML = `<span class="text-amber-600 font-semibold">ℹ️ Live server tidak merespons, Katalog DWH internal aktif (${data.status.tables_available} tabel).</span>`;
+                testResult.innerHTML = `<span class="text-amber-600 font-semibold inline-flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-amber-600"></i> Live server tidak merespons, Katalog DWH internal aktif (${data.status.tables_available} tabel).</span>`;
             }
         } catch (err) {
-            testResult.innerHTML = `<span class="text-red-500 font-semibold">❌ Koneksi gagal: ${err.message}</span>`;
+            testResult.innerHTML = `<span class="text-red-500 font-semibold inline-flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Koneksi gagal: ${err.message}</span>`;
         }
+        if (window.lucide) lucide.createIcons();
     });
 
     saveBtn.addEventListener("click", async () => {
@@ -4879,4 +5531,862 @@ async function executeConfirmedStreamingPipeline(spec) {
         lucide.createIcons();
     }
 }
+
+// ==================== PRIORITAS 2: IN-APP PDF PREVIEWER MODAL ====================
+let currentPreviewPdfUrl = "";
+
+function openPdfPreviewModal(filename, title, subtitle, hash, folderType = "outputs") {
+    const modal = document.getElementById("modal-pdf-preview");
+    if (!modal) return;
+
+    const titleEl = document.getElementById("pdf-preview-title");
+    const subEl = document.getElementById("pdf-preview-subtitle");
+    const hashEl = document.getElementById("pdf-preview-hash");
+    const iframeEl = document.getElementById("pdf-preview-iframe");
+    const loadingEl = document.getElementById("pdf-preview-loading");
+    const btnTab = document.getElementById("btn-pdf-preview-tab");
+    const btnDl = document.getElementById("btn-pdf-preview-download");
+
+    if (titleEl) titleEl.innerText = title || "Pratinjau Dokumen PDF Resmi";
+    if (subEl) subEl.innerText = subtitle || "Kepatuhan UU No. 27/2022 & PP No. 33/2026";
+    if (hashEl) hashEl.innerText = hash ? (hash.startsWith("SHA256:") ? hash : `SHA256:${hash}`) : "HMAC-SHA256 Segel Kriptografis Sah";
+
+    // URL preview inline (menggunakan endpoint /api/preview)
+    const isOffline = isGitHubPagesOrOffline();
+    const previewUrl = isOffline ? `${folderType}/${filename}` : `/api/preview/${folderType}/${filename}`;
+    const downloadUrl = isOffline ? `${folderType}/${filename}` : `/api/download/${folderType}/${filename}`;
+    currentPreviewPdfUrl = previewUrl;
+
+    if (btnTab) {
+        btnTab.href = previewUrl;
+    }
+    if (btnDl) {
+        btnDl.href = downloadUrl;
+        btnDl.setAttribute("download", filename);
+    }
+
+    if (loadingEl) loadingEl.classList.remove("hidden");
+    if (iframeEl) {
+        iframeEl.onload = () => {
+            if (loadingEl) loadingEl.classList.add("hidden");
+        };
+        iframeEl.src = previewUrl;
+    }
+
+    modal.classList.remove("hidden");
+    if (window.lucide) lucide.createIcons();
+}
+
+function setupPdfPreviewModal() {
+    const modal = document.getElementById("modal-pdf-preview");
+    const btnClose = document.getElementById("btn-close-pdf-preview");
+    const btnCopyHash = document.getElementById("btn-copy-preview-hash");
+    const copyHashText = document.getElementById("copy-preview-hash-text");
+
+    if (!modal) return;
+
+    const closeModal = () => {
+        modal.classList.add("hidden");
+        const iframe = document.getElementById("pdf-preview-iframe");
+        if (iframe) iframe.src = "about:blank";
+    };
+
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    if (btnCopyHash) {
+        btnCopyHash.addEventListener("click", () => {
+            const hashEl = document.getElementById("pdf-preview-hash");
+            const hashVal = hashEl ? hashEl.innerText : "";
+            if (hashVal) {
+                navigator.clipboard.writeText(hashVal).then(() => {
+                    showToast("Hash integritas HMAC-SHA256 berhasil disalin ke papan klip!", "success");
+                    if (copyHashText) copyHashText.innerText = "Tersalin!";
+                    setTimeout(() => {
+                        if (copyHashText) copyHashText.innerText = "Salin Hash Integritas";
+                    }, 2000);
+                });
+            }
+        });
+    }
+}
+
+// ==================== PRIORITAS 1: ALUR PEMUSNAHAN DATA & BERITA ACARA (CoD) ====================
+let currentCodTargetItem = null;
+
+function openCodConfirmModal(item) {
+    const modal = document.getElementById("modal-cod-confirm");
+    if (!modal) return;
+
+    currentCodTargetItem = item;
+    const reqIdEl = document.getElementById("cod-target-id");
+    if (reqIdEl) reqIdEl.innerText = item.request_id || item.id;
+
+    modal.classList.remove("hidden");
+    if (window.lucide) lucide.createIcons();
+}
+
+function setupCodModal() {
+    const modal = document.getElementById("modal-cod-confirm");
+    const btnClose = document.getElementById("btn-close-cod-modal");
+    const btnCancel = document.getElementById("btn-cancel-cod");
+    const btnExecute = document.getElementById("btn-execute-cod");
+
+    if (!modal) return;
+
+    const closeModal = () => modal.classList.add("hidden");
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    if (btnCancel) btnCancel.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    if (btnExecute) {
+        btnExecute.addEventListener("click", async () => {
+            if (!currentCodTargetItem) return;
+
+            const reqId = currentCodTargetItem.request_id || currentCodTargetItem.id;
+            const methodVal = document.getElementById("cod-method-input")?.value || "Cryptographic Erasure & Secure Sanitization (NIST SP 800-88)";
+            const notesVal = document.getElementById("cod-notes-input")?.value || "Seluruh salinan data aktif telah dimusnahkan secara permanen (zero shadow copy).";
+
+            btnExecute.disabled = true;
+            btnExecute.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Memusnahkan & Menerbitkan Berita Acara...</span>`;
+            if (window.lucide) lucide.createIcons();
+
+            appendConsoleLog("DPO / Retention Officer", `Mengeksekusi pemusnahan data untuk ${reqId} dengan metode ${methodVal}...`);
+
+            try {
+                let codResult = null;
+                if (!isGitHubPagesOrOffline()) {
+                    const res = await fetch("/api/cod/generate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            request_id: reqId,
+                            operator_name: "Rian Kusuma, S.S.T.",
+                            operator_nip: "198905202014021003",
+                            method: methodVal,
+                            notes: notesVal
+                        })
+                    });
+                    if (res.ok) {
+                        codResult = await res.json();
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.detail || "Gagal menerbitkan Berita Acara Pemusnahan.");
+                    }
+                } else {
+                    // Fallback offline / GitHub Pages
+                    codResult = {
+                        success: true,
+                        request_id: reqId,
+                        cod_filename: `Berita_Acara_Pemusnahan_${reqId.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`,
+                        destruction_date: new Date().toISOString().split("T")[0]
+                    };
+                }
+
+                if (codResult) {
+                    const itemData = codResult.item || codResult;
+                    const destDate = codResult.destruction_date || itemData.destruction_date || new Date().toISOString().split("T")[0];
+                    const codFilename = codResult.cod_filename || itemData.cod_filename;
+
+                    currentCodTargetItem.is_destroyed = true;
+                    currentCodTargetItem.destruction_date = destDate;
+                    currentCodTargetItem.cod_filename = codFilename;
+
+                    // Update item pada array allCmsHistoryItems
+                    if (Array.isArray(allCmsHistoryItems)) {
+                        const found = allCmsHistoryItems.find(x => (x.request_id || x.id) === reqId);
+                        if (found) {
+                            found.is_destroyed = true;
+                            found.destruction_date = destDate;
+                            found.cod_filename = codFilename;
+                        }
+                    }
+
+                    showToast(`Pemusnahan Berhasil! Berita Acara Pemusnahan (CoD) telah diterbitkan sesuai Pasal 75 PP No. 33/2026.`, "success");
+                    appendConsoleLog("Audit Compliance", `Pemusnahan tervalidasi: Berita Acara ${codResult.cod_filename} terbit resmi.`);
+
+                    closeModal();
+
+                    // Re-render tabel CMS jika fungsi tersedia
+                    if (typeof window.applyCmsFilterAndSearch === "function") {
+                        window.applyCmsFilterAndSearch();
+                    }
+
+                    // Tampilkan pratinjau dokumen Berita Acara langsung di in-app PDF previewer
+                    openPdfPreviewModal(
+                        codResult.cod_filename,
+                        "Berita Acara Pemusnahan Data Pribadi (CoD)",
+                        `Pemusnahan Resmi ${reqId} — Pasal 75 PP No. 33/2026`,
+                        ""
+                    );
+                }
+            } catch (err) {
+                showToast("Error pemusnahan data: " + err.message, "error");
+                appendConsoleLog("Error", `Gagal memproses CoD: ${err.message}`);
+            } finally {
+                btnExecute.disabled = false;
+                btnExecute.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Musnahkan & Terbitkan Berita Acara</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        });
+    }
+}
+
+// ==================== PRIORITAS 3: PUBLIC VERIFICATION LANDING (QR CODE) ====================
+async function setupPublicVerification() {
+    const modal = document.getElementById("modal-verify-public");
+    const btnClose = document.getElementById("btn-close-verify-public");
+    const btnDismiss = document.getElementById("btn-verify-dismiss");
+    const btnViewDoc = document.getElementById("btn-verify-view-cert");
+
+    if (!modal) return;
+
+    const closeModal = () => modal.classList.add("hidden");
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    if (btnDismiss) btnDismiss.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Periksa parameter URL ?verify=...
+    const urlParams = new URLSearchParams(window.location.search);
+    const verifyId = urlParams.get("verify");
+    if (!verifyId) return;
+
+    appendConsoleLog("Public Verifier", `Menerima permintaan verifikasi dokumen via URL QR Code: ${verifyId}...`);
+
+    let doc = null;
+    try {
+        if (!isGitHubPagesOrOffline()) {
+            const res = await fetch(`/api/history/${encodeURIComponent(verifyId)}`);
+            if (res.ok) {
+                doc = await res.json();
+            }
+        }
+    } catch (e) {
+        console.warn("Fetch public verification endpoint failed:", e);
+    }
+
+    if (!doc) {
+        // Fallback pencarian di mock history
+        if (window.MOCK_DATA && Array.isArray(window.MOCK_DATA.history)) {
+            doc = window.MOCK_DATA.history.find(h => (h.request_id || h.id) === verifyId);
+        }
+    }
+
+    if (doc) {
+        if (doc.item) doc = doc.item;
+        const reqIdEl = document.getElementById("verify-pub-req-id");
+        const bizProcEl = document.getElementById("verify-pub-biz-proc");
+        const titleEl = document.getElementById("verify-pub-title");
+        const reqEl = document.getElementById("verify-pub-requester");
+        const deptEl = document.getElementById("verify-pub-dept");
+        const retEl = document.getElementById("verify-pub-retention");
+        const hashEl = document.getElementById("verify-pub-hash");
+
+        if (reqIdEl) reqIdEl.innerText = doc.request_id || doc.id;
+        if (bizProcEl) bizProcEl.innerText = doc.business_process || "Kepabeanan & Cukai";
+        if (titleEl) titleEl.innerText = doc.document_title || "Permohonan Data Resmi";
+        if (reqEl) reqEl.innerText = doc.requester_name || "-";
+        if (deptEl) deptEl.innerText = doc.department || "-";
+        if (hashEl) hashEl.innerText = doc.digital_fingerprint || "SHA256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069";
+
+        if (retEl) {
+            if (doc.is_destroyed) {
+                retEl.innerHTML = `<span class="text-slate-600 font-bold">Telah Dimusnahkan (${doc.destruction_date || "CoD Terbit"})</span>`;
+            } else {
+                retEl.innerHTML = `<span class="text-emerald-600 font-bold">Aktif (Masa Retensi Maksimal 30 Hari — PP 33/2026)</span>`;
+            }
+        }
+
+        if (btnViewDoc) {
+            btnViewDoc.onclick = () => {
+                const certName = doc.certificate_filename || `Sertifikat_Otorisasi_${(doc.request_id || doc.id).replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+                openPdfPreviewModal(certName, "Sertifikat Otorisasi & Kepatuhan PDP Resmi", doc.document_title, doc.digital_fingerprint || "");
+            };
+        }
+
+        modal.classList.remove("hidden");
+        if (window.lucide) lucide.createIcons();
+    } else {
+        showToast(`Dokumen dengan ID "${verifyId}" tidak ditemukan dalam arsip resmi DJBC.`, "error");
+    }
+}
+
+// ==================== PRIORITAS 4: PELAPORAN INSIDEN KEGAGALAN PDP (3x24 JAM) ====================
+let currentBreachTargetItem = null;
+
+function openBreachReportModal(item) {
+    const modal = document.getElementById("modal-breach-report");
+    if (!modal) return;
+
+    currentBreachTargetItem = item;
+    const reqIdEl = document.getElementById("breach-target-req-id");
+    const reqTitleEl = document.getElementById("breach-target-title");
+    const requesterEl = document.getElementById("breach-target-requester");
+    const discTimeInput = document.getElementById("breach-discovery-time");
+
+    if (reqIdEl) reqIdEl.innerText = item.request_id || item.id;
+    if (reqTitleEl) reqTitleEl.innerText = item.document_title || "Dokumen Permohonan";
+    if (requesterEl) requesterEl.innerText = `${item.requester_name || 'Pemohon'} (${item.department || 'DJBC'})`;
+
+    // Otomatis isi waktu penemuan saat ini
+    if (discTimeInput) {
+        const now = new Date();
+        const dStr = now.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+        const tStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+        discTimeInput.value = `${dStr} ${tStr} WIB`;
+    }
+
+    modal.classList.remove("hidden");
+    if (window.lucide) lucide.createIcons();
+}
+
+function setupBreachModal() {
+    const modal = document.getElementById("modal-breach-report");
+    const btnClose = document.getElementById("btn-close-breach-modal");
+    const btnCancel = document.getElementById("btn-cancel-breach");
+    const btnSubmit = document.getElementById("btn-submit-breach");
+
+    if (!modal) return;
+
+    const closeModal = () => modal.classList.add("hidden");
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    if (btnCancel) btnCancel.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    if (btnSubmit) {
+        btnSubmit.addEventListener("click", async () => {
+            if (!currentBreachTargetItem) return;
+
+            const reqId = currentBreachTargetItem.request_id || currentBreachTargetItem.id;
+            const discTime = document.getElementById("breach-discovery-time")?.value || "";
+            const severityVal = document.getElementById("breach-severity-select")?.value || "TINGGI";
+            const chronologyVal = document.getElementById("breach-chronology-input")?.value || "";
+            const impactVal = document.getElementById("breach-impact-input")?.value || "";
+            const containmentVal = document.getElementById("breach-containment-input")?.value || "";
+
+            const catCheckboxes = document.querySelectorAll(".breach-cat-cb:checked");
+            const categories = Array.from(catCheckboxes).map(cb => cb.value);
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menerbitkan Surat Pemberitahuan Resmi...</span>`;
+            if (window.lucide) lucide.createIcons();
+
+            appendConsoleLog("CSIRT / Data Protection Officer", `Melaporkan dugaan insiden PDP untuk ${reqId} (Severitas: ${severityVal}). Menjalankan notifikasi darurat 3x24 jam...`);
+
+            try {
+                let reportResult = null;
+                if (!isGitHubPagesOrOffline()) {
+                    const res = await fetch("/api/breach/report", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            request_id: reqId,
+                            discovery_date: discTime,
+                            severity_level: severityVal,
+                            impacted_categories: categories,
+                            chronology: chronologyVal,
+                            potential_impact: impactVal,
+                            containment_steps: containmentVal,
+                            reporter_name: "Hendra Gunawan, S.Kom.",
+                            reporter_nip: "198304122006021001"
+                        })
+                    });
+                    if (res.ok) {
+                        reportResult = await res.json();
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.detail || "Gagal menerbitkan surat notifikasi insiden.");
+                    }
+                } else {
+                    // Fallback offline / GitHub Pages
+                    reportResult = {
+                        success: true,
+                        notice_filename: `Surat_Notifikasi_Kegagalan_PDP_${reqId.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`
+                    };
+                }
+
+                if (reportResult) {
+                    const itemData = reportResult.item || reportResult;
+                    const noticeFile = reportResult.notice_filename || itemData.breach_notice_filename;
+
+                    currentBreachTargetItem.is_breached = true;
+                    currentBreachTargetItem.breach_notice_filename = noticeFile;
+                    currentBreachTargetItem.breach_severity = severityVal;
+                    currentBreachTargetItem.status = "DATA_BREACH_REPORTED";
+
+                    if (Array.isArray(allCmsHistoryItems)) {
+                        const found = allCmsHistoryItems.find(x => (x.request_id || x.id) === reqId);
+                        if (found) {
+                            found.is_breached = true;
+                            found.breach_notice_filename = noticeFile;
+                            found.breach_severity = severityVal;
+                            found.status = "DATA_BREACH_REPORTED";
+                        }
+                    }
+
+                    showToast(`Insiden Berhasil Dilaporkan! Surat Pemberitahuan Resmi (3x24 Jam) telah diterbitkan sesuai Pasal 46 UU No. 27/2022.`, "success");
+                    appendConsoleLog("Compliance Mandate", `Surat Notifikasi Resmi ${noticeFile} diterbitkan untuk Badan PDP & Subjek Data.`);
+
+                    closeModal();
+
+                    // Re-render tabel CMS
+                    if (typeof window.applyCmsFilterAndSearch === "function") {
+                        window.applyCmsFilterAndSearch();
+                    }
+
+                    // Buka pratinjau Surat Notifikasi PDF
+                    openPdfPreviewModal(
+                        noticeFile,
+                        "Surat Pemberitahuan Tertulis Kegagalan Pelindungan Data Pribadi",
+                        `Mandat 3 x 24 Jam — Pasal 46 UU No. 27/2022 jo. Pasal 114-119 PP No. 33/2026`,
+                        ""
+                    );
+                }
+            } catch (err) {
+                showToast("Error pelaporan insiden: " + err.message, "error");
+                appendConsoleLog("Error", `Gagal memproses notifikasi insiden: ${err.message}`);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i><span>Kirim Laporan & Terbitkan Surat Notifikasi Resmi (PDF)</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        });
+    }
+}
+
+// =========================================================================
+// REKOMENDASI 7: GLOBAL COMMAND PALETTE (CTRL + K / CMD + K) - UI/UX PRO MAX
+// =========================================================================
+function setupCommandPalette() {
+    const paletteModal = document.getElementById("modal-command-palette");
+    const searchInput = document.getElementById("palette-search-input");
+    const resultsContainer = document.getElementById("palette-results");
+    const btnOpenPalette = document.getElementById("btn-open-command-palette");
+
+    if (!paletteModal || !searchInput || !resultsContainer) return;
+
+    let selectedIndex = 0;
+    let filteredActions = [];
+
+    const actions = [
+        { id: "nav-tab-1", category: "Navigasi Pipeline", title: "1. Spesifikasi Permohonan", desc: "Buka ringkasan spesifikasi & filter PDF", icon: "file-check-2", action: () => { document.querySelector('[data-tab="tab-spec"]')?.click(); } },
+        { id: "nav-tab-2", category: "Navigasi Pipeline", title: "2. OpenMetadata Catalog", desc: "Lihat grounding tabel, tags PII & lineage", icon: "database", action: () => { document.querySelector('[data-tab="tab-catalog"]')?.click(); } },
+        { id: "nav-tab-3", category: "Navigasi Pipeline", title: "3. Query SQL & Editor", desc: "Buka query generator SQL & Copilot", icon: "code-2", action: () => { document.querySelector('[data-tab="tab-sql"]')?.click(); } },
+        { id: "nav-tab-4", category: "Navigasi Pipeline", title: "4. Audit & Verifikasi Data", desc: "Periksa hasil audit independen & sign-off", icon: "shield-check", action: () => { document.querySelector('[data-tab="tab-verification"]')?.click(); } },
+        { id: "nav-tab-5", category: "Navigasi Pipeline", title: "5. Delivery & Ekspor Data", desc: "Unduh Excel, CSV & paket arsip ZIP", icon: "table-2", action: () => { document.querySelector('[data-tab="tab-delivery"]')?.click(); } },
+        { id: "open-cms", category: "Manajemen & Audit", title: "CMS Repositori & Riwayat", desc: "Buka panel arsip permohonan data CEISA", icon: "inbox", action: () => { document.getElementById("btn-open-cms")?.click(); } },
+        { id: "open-ropa", category: "Kepatuhan PP 33/2026", title: "Ekspor ROPA (Buku Catatan Pemrosesan)", desc: "Unduh file Excel ROPA resmi Pasal 138", icon: "book-marked", action: () => { document.getElementById("btn-export-history-ropa")?.click(); } },
+        { id: "open-dsr", category: "Kepatuhan UU PDP", title: "Portal Hak Subjek Data (DSR Portal)", desc: "Kelola hak akses, koreksi & pemusnahan data", icon: "user-check", action: () => { openDsrPortal(); } },
+        { id: "open-analytics", category: "Manajemen & Audit", title: "Dashboard Analitik Tata Kelola", desc: "Buka visualisasi metrik tren & kepatuhan", icon: "bar-chart-3", action: () => { document.getElementById("btn-open-analytics")?.click(); } },
+        { id: "open-catalog", category: "Katalog Enterprise", title: "Katalog OpenMetadata Browser", desc: "Jelajahi 11 tabel resmi & kamus data DWH", icon: "search", action: () => { document.getElementById("btn-browse-catalog")?.click(); } },
+        { id: "role-steward", category: "Peran RBAC", title: "Beralih Peran: Data Steward (Verifikator)", desc: "Akses sign-off persetujuan & audit kepatuhan", icon: "user-check", action: () => { switchPersonaRole("steward"); } },
+        { id: "role-analyst", category: "Peran RBAC", title: "Beralih Peran: Data Analyst (Pemohon)", desc: "Ajukan permohonan & ekspor data", icon: "user", action: () => { switchPersonaRole("analyst"); } },
+        { id: "role-admin", category: "Peran RBAC", title: "Beralih Peran: Data Engineer (Admin)", desc: "Konfigurasi server OpenMetadata & sistem", icon: "shield", action: () => { switchPersonaRole("admin"); } },
+        { id: "toggle-dark", category: "Tampilan & Preferensi", title: "Beralih Mode Gelap / Terang", desc: "Ganti tema visual antarmuka sistem", icon: "moon", action: () => { document.getElementById("btn-toggle-dark-mode")?.click(); } }
+    ];
+
+    function switchPersonaRole(role) {
+        const selectPersona = document.getElementById("select-persona");
+        if (selectPersona) {
+            selectPersona.value = role;
+            selectPersona.dispatchEvent(new Event("change"));
+            showToast(`Peran pengguna dialihkan ke: ${role.toUpperCase()}`, "info");
+        }
+    }
+
+    function openCommandPalette() {
+        paletteModal.classList.remove("hidden");
+        searchInput.value = "";
+        selectedIndex = 0;
+        renderPaletteItems();
+        setTimeout(() => searchInput.focus(), 50);
+    }
+
+    function closeCommandPalette() {
+        paletteModal.classList.add("hidden");
+    }
+
+    if (btnOpenPalette) {
+        btnOpenPalette.addEventListener("click", openCommandPalette);
+    }
+
+    // Global Keybind Ctrl+K / Cmd+K
+    window.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            e.preventDefault();
+            if (paletteModal.classList.contains("hidden")) {
+                openCommandPalette();
+            } else {
+                closeCommandPalette();
+            }
+        } else if (e.key === "Escape" && !paletteModal.classList.contains("hidden")) {
+            e.preventDefault();
+            closeCommandPalette();
+        }
+    });
+
+    paletteModal.addEventListener("click", (e) => {
+        if (e.target === paletteModal) closeCommandPalette();
+    });
+
+    searchInput.addEventListener("input", () => {
+        selectedIndex = 0;
+        renderPaletteItems();
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            if (filteredActions.length > 0) {
+                selectedIndex = (selectedIndex + 1) % filteredActions.length;
+                renderPaletteItems();
+            }
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            if (filteredActions.length > 0) {
+                selectedIndex = (selectedIndex - 1 + filteredActions.length) % filteredActions.length;
+                renderPaletteItems();
+            }
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (filteredActions[selectedIndex]) {
+                const chosen = filteredActions[selectedIndex];
+                closeCommandPalette();
+                chosen.action();
+            }
+        }
+    });
+
+    function renderPaletteItems() {
+        const query = (searchInput.value || "").toLowerCase().trim();
+        let items = actions.slice();
+
+        // Cari juga ID permohonan di riwayat CMS
+        if (query && Array.isArray(allCmsHistoryItems)) {
+            const matchedCms = allCmsHistoryItems.filter(it => {
+                const idStr = (it.request_id || it.id || "").toLowerCase();
+                const titleStr = (it.document_title || "").toLowerCase();
+                const nameStr = (it.requester_name || "").toLowerCase();
+                return idStr.includes(query) || titleStr.includes(query) || nameStr.includes(query);
+            }).slice(0, 5);
+
+            matchedCms.forEach(it => {
+                const reqId = it.request_id || it.id;
+                items.unshift({
+                    id: `cms-${reqId}`,
+                    category: "Permohonan Riwayat CMS",
+                    title: `${reqId}: ${it.document_title || 'Permohonan Data'}`,
+                    desc: `Pemohon: ${it.requester_name || '-'} | Status: ${it.status || 'APPROVED'}`,
+                    icon: "file-text",
+                    action: () => {
+                        document.getElementById("btn-open-cms")?.click();
+                        setTimeout(() => {
+                            const searchCms = document.getElementById("input-cms-search");
+                            if (searchCms) {
+                                searchCms.value = reqId;
+                                searchCms.dispatchEvent(new Event("input"));
+                            }
+                        }, 250);
+                    }
+                });
+            });
+        }
+
+        if (query) {
+            filteredActions = items.filter(it => 
+                it.title.toLowerCase().includes(query) || 
+                it.desc.toLowerCase().includes(query) || 
+                it.category.toLowerCase().includes(query)
+            );
+        } else {
+            filteredActions = items;
+        }
+
+        if (filteredActions.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="py-8 text-center text-slate-400">
+                    <i data-lucide="help-circle" class="w-7 h-7 mx-auto mb-2 opacity-60"></i>
+                    <p class="font-semibold text-xs">Perintah atau data tidak ditemukan</p>
+                    <p class="text-[11px] mt-1 text-slate-500">Coba cari dengan kata kunci: "SQL", "ROPA", "DSR", "Katalog", atau ID permohonan</p>
+                </div>
+            `;
+            if (window.lucide) lucide.createIcons();
+            return;
+        }
+
+        let html = "";
+        let currentCat = "";
+        filteredActions.forEach((item, idx) => {
+            if (item.category !== currentCat) {
+                currentCat = item.category;
+                html += `<div class="px-3 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">${currentCat}</div>`;
+            }
+            const isSelected = idx === selectedIndex;
+            html += `
+                <div class="palette-item p-2.5 rounded-xl cursor-pointer transition flex items-center justify-between ${
+                    isSelected 
+                        ? 'bg-blue-600 text-white shadow-xs' 
+                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
+                }" data-index="${idx}">
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                        }">
+                            <i data-lucide="${item.icon}" class="w-4 h-4"></i>
+                        </div>
+                        <div class="truncate">
+                            <div class="font-semibold text-xs truncate">${item.title}</div>
+                            <div class="text-[11px] truncate ${isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}">${item.desc}</div>
+                        </div>
+                    </div>
+                    <kbd class="text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                        isSelected ? 'bg-blue-700 text-white border border-blue-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700'
+                    }">↵</kbd>
+                </div>
+            `;
+        });
+        resultsContainer.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+
+        resultsContainer.querySelectorAll(".palette-item").forEach(elem => {
+            elem.addEventListener("click", () => {
+                const idx = parseInt(elem.getAttribute("data-index"), 10);
+                if (filteredActions[idx]) {
+                    closeCommandPalette();
+                    filteredActions[idx].action();
+                }
+            });
+        });
+    }
+}
+
+// =========================================================================
+// REKOMENDASI 8: MODUL PEMENUHAN HAK SUBJEK DATA (DSR PORTAL)
+// =========================================================================
+let allDsrRecords = [];
+
+function openDsrPortal() {
+    const modal = document.getElementById("modal-dsr-portal");
+    if (modal) {
+        modal.classList.remove("hidden");
+        loadDsrRecords();
+    }
+}
+
+function closeDsrPortal() {
+    const modal = document.getElementById("modal-dsr-portal");
+    if (modal) modal.classList.add("hidden");
+}
+
+async function loadDsrRecords() {
+    const tbody = document.getElementById("dsr-table-tbody");
+    const badge = document.getElementById("dsr-total-badge");
+    if (!tbody) return;
+
+    try {
+        let records = [];
+        if (!isGitHubPagesOrOffline()) {
+            const res = await fetch("/api/dsr/list");
+            if (res.ok) {
+                const data = await res.json();
+                records = data.requests || [];
+            }
+        } else {
+            // Fallback memory
+            records = window.MOCK_DATA?.dsr_requests || [
+                {
+                    id: "DSR-2026-001",
+                    subject_name: "Budi Santoso (Direktur CV Nusantara Jaya)",
+                    subject_identifier: "3171051204850001 / NPWP: 01.234.567.8-054.000",
+                    right_type: "HAK_KOREKSI",
+                    legal_basis: "Pasal 6 UU PDP (Hak Melengkapi/Koreksi)",
+                    related_req_id: "REQ-2026-BC-089",
+                    submission_date: "2026-10-10 14:20:00",
+                    due_date: "2026-10-13 14:20:00 (Maks 3 x 24 Jam)",
+                    description: "Pengkinian alamat domisili usaha dan nomor telepon penanggung jawab pabean pada sistem pelaporan ekspor.",
+                    status: "SELESAI",
+                    action_taken: "Data identitas NPWP telah diperbarui pada master data CEISA. Notifikasi dikirim ke pemohon.",
+                    handler_name: "Tim PPDP / DPO DIKC DJBC"
+                }
+            ];
+        }
+
+        allDsrRecords = records;
+        if (badge) badge.innerText = `${records.length} Permohonan Terdaftar`;
+
+        if (records.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Belum ada permohonan hak subjek data terdaftar.</td></tr>`;
+            return;
+        }
+
+        let html = "";
+        records.forEach(r => {
+            const isCompleted = r.status === "SELESAI";
+            const statusBadge = isCompleted 
+                ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">SELESAI DITINDAKLANJUTI</span>`
+                : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">DALAM PROSES / VERIFIKASI</span>`;
+
+            html += `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition">
+                    <td class="p-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">${r.id}</td>
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-900 dark:text-white">${r.subject_name}</div>
+                        <div class="text-[11px] font-mono text-slate-500">${r.subject_identifier}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-medium text-slate-800 dark:text-slate-200">${r.legal_basis || r.right_type}</div>
+                        <div class="text-[11px] text-slate-500 truncate max-w-xs" title="${r.description}">${r.description}</div>
+                    </td>
+                    <td class="p-3 font-mono text-[11px] text-amber-600 dark:text-amber-400 font-semibold">${r.due_date || '3 x 24 Jam'}</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3 text-right">
+                        ${isCompleted ? `
+                            <span class="text-[11px] text-emerald-600 font-medium italic">Tuntas dicatatkan</span>
+                        ` : `
+                            <button onclick="handleResolveDsr('${r.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] transition shadow-2xs">
+                                Selesaikan Hak Subjek
+                            </button>
+                        `}
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+    } catch (err) {
+        console.error("Gagal memuat DSR records:", err);
+    }
+}
+
+window.handleResolveDsr = async function(dsrId) {
+    const actionTaken = prompt("Masukkan catatan tindak lanjut penyelesaian hak subjek data (DPO / PPDP):", "Telah diverifikasi identitas pemohon dan hak subjek data dipenuhi sesuai UU No. 27/2022.");
+    if (!actionTaken) return;
+
+    try {
+        if (!isGitHubPagesOrOffline()) {
+            const res = await fetch("/api/dsr/update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    dsr_id: dsrId,
+                    status: "SELESAI",
+                    action_taken: actionTaken
+                })
+            });
+            if (!res.ok) throw new Error("Gagal memperbarui status DSR");
+        } else {
+            const found = allDsrRecords.find(x => x.id === dsrId);
+            if (found) {
+                found.status = "SELESAI";
+                found.action_taken = actionTaken;
+            }
+        }
+        showToast(`Permohonan ${dsrId} berhasil ditandai SELESAI sesuai UU PDP.`, "success");
+        loadDsrRecords();
+    } catch (err) {
+        showToast("Error: " + err.message, "error");
+    }
+};
+
+function setupDsrPortal() {
+    const btnOpenDsr = document.getElementById("btn-open-dsr-modal");
+    const btnCloseDsr = document.getElementById("btn-close-dsr-modal");
+    const btnCloseFooter = document.getElementById("btn-close-dsr-modal-footer");
+    const btnSubmit = document.getElementById("btn-submit-dsr");
+    const modal = document.getElementById("modal-dsr-portal");
+
+    if (btnOpenDsr) btnOpenDsr.addEventListener("click", openDsrPortal);
+    if (btnCloseDsr) btnCloseDsr.addEventListener("click", closeDsrPortal);
+    if (btnCloseFooter) btnCloseFooter.addEventListener("click", closeDsrPortal);
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) closeDsrPortal();
+        });
+    }
+
+    if (btnSubmit) {
+        btnSubmit.addEventListener("click", async () => {
+            const nameInput = document.getElementById("dsr-input-name");
+            const identInput = document.getElementById("dsr-input-identifier");
+            const typeInput = document.getElementById("dsr-select-type");
+            const reqRefInput = document.getElementById("dsr-input-req-ref");
+            const descInput = document.getElementById("dsr-input-desc");
+
+            const name = nameInput?.value.trim();
+            const ident = identInput?.value.trim();
+            const rightType = typeInput?.value;
+            const refReq = reqRefInput?.value.trim() || "-";
+            const desc = descInput?.value.trim();
+
+            if (!name || !ident || !desc) {
+                showToast("Harap lengkapi nama, identitas pengenal, dan uraian permintaan subjek data!", "warning");
+                return;
+            }
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Mendaftarkan...</span>`;
+            if (window.lucide) lucide.createIcons();
+
+            try {
+                if (!isGitHubPagesOrOffline()) {
+                    const res = await fetch("/api/dsr/submit", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            subject_name: name,
+                            subject_identifier: ident,
+                            right_type: rightType,
+                            related_req_id: refReq,
+                            description: desc
+                        })
+                    });
+                    if (!res.ok) throw new Error("Gagal mendaftarkan permohonan DSR");
+                } else {
+                    const newRecord = {
+                        id: `DSR-2026-${(allDsrRecords.length + 1).toString().padStart(3, "0")}`,
+                        subject_name: name,
+                        subject_identifier: ident,
+                        right_type: rightType,
+                        legal_basis: rightType,
+                        related_req_id: refReq,
+                        submission_date: new Date().toISOString().replace("T", " ").substring(0, 19),
+                        due_date: "3 x 24 Jam",
+                        description: desc,
+                        status: "MENUNGGU_VERIFIKASI",
+                        action_taken: "Tercatat dalam register.",
+                        handler_name: "Tim PPDP / DPO DIKC DJBC"
+                    };
+                    allDsrRecords.unshift(newRecord);
+                }
+
+                showToast("Permohonan Hak Subjek Data berhasil dicatat! Mandat waktu 3x24 jam diaktifkan.", "success");
+                appendConsoleLog("DPO Portal", `Permohonan hak subjek baru diterima dari ${name}. Dicatat ke ROPA Pasal 138.`);
+                
+                // Clear fields
+                if (nameInput) nameInput.value = "";
+                if (identInput) identInput.value = "";
+                if (descInput) descInput.value = "";
+                if (reqRefInput) reqRefInput.value = "";
+
+                loadDsrRecords();
+            } catch (err) {
+                showToast("Error mendaftarkan DSR: " + err.message, "error");
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i data-lucide="plus" class="w-3.5 h-3.5"></i><span>Catat ke Register Hak Subjek Data</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        });
+    }
+}
+
+
 

@@ -88,11 +88,11 @@
                     <!-- Persona Switcher (RBAC) -->
                     <div class="flex items-center space-x-1.5 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs shadow-2xs min-w-[175px] sm:min-w-[210px]">
                         <i data-lucide="user-cog" class="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0"></i>
-                        <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden sm:inline-block flex-shrink-0">Role:</span>
-                        <select id="select-persona" class="bg-transparent font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer text-xs w-full py-0.5 focus:ring-0">
-                            <option value="steward" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">🛡️ Data Steward</option>
-                            <option value="analyst" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">👤 Data Analyst</option>
-                            <option value="admin" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">⚙️ Data Engineer</option>
+                        <label for="select-persona" class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider hidden sm:inline-block flex-shrink-0">Role:</label>
+                        <select id="select-persona" aria-label="Pilih Peran Pengguna (RBAC)" class="bg-transparent font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer text-xs w-full py-0.5 focus:ring-0">
+                            <option value="steward" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">Data Steward (Verifikator)</option>
+                            <option value="analyst" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">Data Analyst (Pemohon)</option>
+                            <option value="admin" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">Data Engineer (Admin)</option>
                         </select>
                     </div>
 
@@ -104,6 +104,13 @@
                     <!-- Keyboard Shortcuts Cheatsheet Button -->
                     <button id="btn-open-shortcuts" aria-label="Buka daftar pintasan papan ketik" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-indigo-600 dark:hover:text-indigo-400 flex-shrink-0" title="Pintasan Papan Ketik (?)">
                         <i data-lucide="keyboard" class="w-4 h-4"></i>
+                    </button>
+
+                    <!-- Global Command Palette Button (Ctrl+K) -->
+                    <button id="btn-open-command-palette" aria-label="Buka Command Palette (Ctrl+K)" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0 text-xs font-medium" title="Command Palette (Ctrl + K)">
+                        <i data-lucide="command" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"></i>
+                        <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Cari Cepat</span>
+                        <kbd class="ml-1 text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 font-mono">Ctrl+K</kbd>
                     </button>
 
                     <!-- OpenMetadata Settings Button -->
@@ -139,56 +146,71 @@
             </div>
         </div>
 
-        <!-- Workflow Visual Stepper -->
+        <!-- Workflow Visual Stepper (Interactive Micro-Interaction Timeline) -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-1">
-                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">1</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 truncate">Ekstraksi PDF</p>
-                    <p class="text-[11px] text-slate-500 truncate">Spec & Filter</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-blue-400 group" id="step-ind-1" title="Tahap 1: Ekstraksi Dokumen PDF Permohonan">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge shadow-2xs">1</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Ekstraksi PDF</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Spec & Filter</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">0ms</span>
             </div>
-            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-2">
-                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">2</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 truncate">OpenMetadata</p>
-                    <p class="text-[11px] text-slate-500 truncate">Schema Match</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-indigo-400 group" id="step-ind-2" title="Tahap 2: OpenMetadata Catalog Grounding & Lineage">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge shadow-2xs">2</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">OpenMetadata</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Schema Match</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700">0ms</span>
             </div>
-            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-3">
-                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">3</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 truncate">Sintesis SQL</p>
-                    <p class="text-[11px] text-slate-500 truncate">PII Masking</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-purple-400 group" id="step-ind-3" title="Tahap 3: Sintesis SQL Analitik & Proteksi PII">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge shadow-2xs">3</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Sintesis SQL</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">PII Masking</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700">0ms</span>
             </div>
-            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-4">
-                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">4</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 truncate">Audit & Verifikasi</p>
-                    <p class="text-[11px] text-slate-500 truncate">Fidelity & Guard</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-emerald-400 group" id="step-ind-4" title="Tahap 4: Audit Independen, Skrining DPIA & Verifikasi">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge shadow-2xs">4</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Audit & Verifikasi</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Fidelity & Guard</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">0ms</span>
             </div>
-            <div class="step-card bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 transition" id="step-ind-5">
-                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 font-bold text-xs">5</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 truncate">Delivery Data</p>
-                    <p class="text-[11px] text-slate-500 truncate">Excel, CSV & ZIP</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-amber-400 group col-span-2 md:col-span-1" id="step-ind-5" title="Tahap 5: Delivery Data Excel 4-Sheet, CSV & ZIP">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge shadow-2xs">5</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Delivery Data</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Excel, CSV & ZIP</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">0ms</span>
             </div>
         </div>
 
         <!-- Live Agent Thought Console / Terminal -->
-        <div id="agent-console-box" class="bg-slate-900 rounded-xl border border-slate-800 shadow-md p-4 text-xs font-mono text-slate-300">
+        <div id="agent-console-box" role="region" aria-label="Terminal Eksekusi Pipeline Multi-Agent" class="bg-slate-900 rounded-xl border border-slate-800 shadow-md p-4 text-xs font-mono text-slate-300">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
                 <div class="flex items-center space-x-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" aria-hidden="true"></span>
                     <span class="font-bold text-slate-200">Terminal Eksekusi Pipeline (Live Multi-Agent Log)</span>
                 </div>
-                <span class="text-[11px] text-slate-500" id="console-agent-status">Menunggu inisiasi pengguna...</span>
+                <span class="text-[11px] text-slate-400" id="console-agent-status">Menunggu inisiasi pengguna...</span>
             </div>
-            <div id="console-logs" class="space-y-1.5 max-h-40 overflow-y-auto pr-2 text-slate-300">
-                <div class="text-slate-500 italic">> Sistem siap. Pilih dokumen atau unggah berkas PDF untuk memulai alur orkestrasi.</div>
+            <div id="console-logs" role="log" aria-live="polite" aria-atomic="false" class="space-y-1.5 max-h-40 overflow-y-auto pr-2 text-slate-300">
+                <div class="text-slate-400 italic">> Sistem siap. Pilih dokumen atau unggah berkas PDF untuk memulai alur orkestrasi.</div>
             </div>
         </div>
 
@@ -227,37 +249,37 @@
                 <!-- Dropzone Area -->
                 <div class="lg:col-span-2">
                     <div id="dropzone" class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-8 text-center bg-slate-50/50 hover:bg-blue-50/30 transition cursor-pointer flex flex-col items-center justify-center space-y-3">
-                        <input type="file" id="pdf-file-input" accept=".pdf" class="hidden">
+                        <input type="file" id="pdf-file-input" accept=".pdf" aria-label="Unggah file formulir permohonan data PDF" class="hidden">
                         <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
                             <i data-lucide="file-text" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-slate-800" id="file-display-name">Klik untuk memilih file PDF atau tarik ke sini</p>
-                            <p class="text-xs text-slate-400 mt-1">Mendukung format PDF formulir permohonan data resmi (Maksimal 15 MB)</p>
+                            <p class="text-sm font-semibold text-slate-800 dark:text-slate-200" id="file-display-name">Klik untuk memilih file PDF atau tarik ke sini</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Mendukung format PDF formulir permohonan data resmi (Maksimal 15 MB)</p>
                         </div>
-                        <span class="inline-flex text-xs bg-white text-slate-600 border border-slate-200 px-3 py-1 rounded-md shadow-xs font-medium">Pilih Berkas Lokal</span>
+                        <span class="inline-flex text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-md shadow-xs font-medium">Pilih Berkas Lokal</span>
                     </div>
                 </div>
 
                 <!-- Sample Selector Card -->
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-3">
                     <div>
-                        <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-600"></i>
+                        <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
                             <span>Dokumen Contoh Siap Uji</span>
                         </div>
-                        <p class="text-xs text-slate-500 mb-3">Tidak memiliki file PDF saat ini? Pilih salah satu template permohonan resmi berikut:</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">Tidak memiliki file PDF saat ini? Pilih salah satu template permohonan resmi berikut:</p>
                         <div id="sample-list" class="space-y-2">
-                            <div class="text-xs text-slate-400 italic">Memuat daftar sample...</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 italic">Memuat daftar sample...</div>
                         </div>
                     <div class="space-y-2 pt-1">
                         <button id="btn-process" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2.5 px-4 rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center space-x-2 transition disabled:opacity-50">
                             <i data-lucide="play" class="w-4 h-4 fill-white"></i>
                             <span>Jalankan Pipeline Pemenuhan Data</span>
                         </button>
-                        <label class="flex items-center space-x-2 text-[11px] text-slate-600 cursor-pointer select-none px-1">
-                            <input type="checkbox" id="chk-confirm-spec" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
-                            <span class="font-medium text-slate-700">Tinjau & Konfirmasi Spesifikasi sebelum Eksekusi</span>
+                        <label for="chk-confirm-spec" class="flex items-center space-x-2 text-[11px] text-slate-600 dark:text-slate-300 cursor-pointer select-none px-1">
+                            <input type="checkbox" id="chk-confirm-spec" aria-label="Tinjau & Konfirmasi Spesifikasi sebelum Eksekusi" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                            <span class="font-medium text-slate-700 dark:text-slate-300">Tinjau & Konfirmasi Spesifikasi sebelum Eksekusi</span>
                         </label>
                     </div>
                 </div>
@@ -294,35 +316,35 @@
             <div id="tab-spec" class="tab-content p-6 space-y-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div class="bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                             <i data-lucide="hash" class="w-3 h-3 text-indigo-500"></i>
                             <span>ID Permohonan</span>
                         </div>
                         <p class="text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300 mt-1.5 truncate" id="spec-req-id">-</p>
                     </div>
                     <div class="bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                             <i data-lucide="user" class="w-3 h-3 text-blue-500"></i>
                             <span>Pemohon / PIC</span>
                         </div>
                         <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-1 truncate" id="spec-requester">-</p>
                     </div>
                     <div class="bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                             <i data-lucide="building-2" class="w-3 h-3 text-emerald-500"></i>
                             <span>Unit Kerja / Divisi</span>
                         </div>
                         <div class="mt-1" id="spec-department">-</div>
                     </div>
                     <div class="bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                             <i data-lucide="briefcase" class="w-3 h-3 text-purple-500"></i>
                             <span>Proses Bisnis</span>
                         </div>
                         <div class="mt-1" id="spec-business-process">-</div>
                     </div>
                     <div class="bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="flex items-center space-x-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                             <i data-lucide="calendar" class="w-3 h-3 text-amber-500"></i>
                             <span>Periode Data</span>
                         </div>
@@ -338,6 +360,23 @@
                         <span>Tujuan Penggunaan Data:</span>
                     </div>
                     <p class="text-sm text-slate-100 leading-relaxed font-medium pl-8" id="spec-purpose">-</p>
+                </div>
+
+                <!-- DPIA Screening Risk Banner (Pasal 120-121 PP No. 33/2026) -->
+                <div id="spec-dpia-banner" class="hidden p-4 rounded-2xl border transition-all duration-300">
+                    <div class="flex items-start space-x-3.5">
+                        <div id="dpia-banner-icon-box" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i id="dpia-banner-icon" data-lucide="shield-alert" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
+                                <span id="dpia-banner-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">SKRINING DPIA PP 33/2026</span>
+                                <h4 id="dpia-banner-title" class="text-xs font-bold text-slate-900 dark:text-white">Hasil Penilaian Dampak Pelindungan Data</h4>
+                            </div>
+                            <p id="dpia-banner-desc" class="text-xs mt-1 leading-relaxed text-slate-600 dark:text-slate-300">-</p>
+                            <div id="dpia-banner-mitigation" class="mt-2 text-[11px] font-mono px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -404,6 +443,28 @@
                         <span>Rekomendasi Relasi & Join Path (Katalog OpenMetadata):</span>
                     </div>
                     <div id="catalog-join-strategy-content" class="text-xs text-indigo-900 font-mono space-y-1">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- OpenMetadata Automated Quality Test Suite & Freshness SLA Card (Rekomendasi 14) -->
+                <div id="catalog-quality-test-suite-box" class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700">
+                                <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                            </span>
+                            <div>
+                                <span class="text-xs font-bold text-emerald-950">OpenMetadata Automated Data Quality Test Suites & Freshness SLA</span>
+                                <p class="text-[11px] text-emerald-800">Validasi otomatis integritas primary key (zero null, unik), kewajaran fiskal, dan kesegaran sinkronisasi DWH.</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center space-x-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 self-start sm:self-auto">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                            <span>100% Quality Health SLA Met</span>
+                        </span>
+                    </div>
+                    <div id="catalog-quality-suites-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
                         <!-- Populated dynamically via JS -->
                     </div>
                 </div>
@@ -521,7 +582,7 @@
                             <!-- Populated with line numbers 1, 2, 3... via JS -->
                         </div>
                         <div class="flex-1 p-4 bg-slate-950/50">
-                            <textarea id="sql-editor-input" rows="14" spellcheck="false" class="w-full h-full sql-textarea-editor font-mono text-xs sm:text-[13px] leading-relaxed p-0 border-0 bg-transparent outline-none focus:ring-0" placeholder="Ketik query SQL di sini..."></textarea>
+                            <textarea id="sql-editor-input" rows="14" spellcheck="false" aria-label="Editor kode SQL teroptimasi" class="w-full h-full sql-textarea-editor font-mono text-xs sm:text-[13px] leading-relaxed p-0 border-0 bg-transparent outline-none focus:ring-0" placeholder="Ketik query SQL di sini..."></textarea>
                         </div>
                     </div>
 
@@ -642,30 +703,38 @@
                     <!-- Domain Breakdown Metric Badges -->
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 border-t border-slate-800">
                         <div class="bg-slate-800/70 border border-slate-700/70 rounded-xl p-2.5 flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 flex items-center justify-center text-xs font-bold flex-shrink-0">🛡️</div>
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            </div>
                             <div>
-                                <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Keamanan (Safety)</div>
+                                <div class="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">Keamanan (Safety)</div>
                                 <div id="verif-domain-safety" class="text-xs font-bold text-emerald-400 font-mono mt-0.5">3/3 Lolos</div>
                             </div>
                         </div>
                         <div class="bg-slate-800/70 border border-slate-700/70 rounded-xl p-2.5 flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">🎯</div>
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-300 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="target" class="w-4 h-4"></i>
+                            </div>
                             <div>
-                                <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Fidelity Spesifikasi</div>
+                                <div class="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">Fidelity Spesifikasi</div>
                                 <div id="verif-domain-fidelity" class="text-xs font-bold text-blue-400 font-mono mt-0.5">2/2 Lolos</div>
                             </div>
                         </div>
                         <div class="bg-slate-800/70 border border-slate-700/70 rounded-xl p-2.5 flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 flex items-center justify-center text-xs font-bold flex-shrink-0">🔒</div>
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                            </div>
                             <div>
-                                <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Privasi PII (UU PDP)</div>
+                                <div class="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">Privasi PII (UU PDP)</div>
                                 <div id="verif-domain-pii" class="text-xs font-bold text-amber-400 font-mono mt-0.5">1/1 Lolos</div>
                             </div>
                         </div>
                         <div class="bg-slate-800/70 border border-slate-700/70 rounded-xl p-2.5 flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 flex items-center justify-center text-xs font-bold flex-shrink-0">🏛️</div>
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="database" class="w-4 h-4"></i>
+                            </div>
                             <div>
-                                <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Katalog OpenMetadata</div>
+                                <div class="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">Katalog OpenMetadata</div>
                                 <div id="verif-domain-schema" class="text-xs font-bold text-purple-400 font-mono mt-0.5">1/1 Lolos</div>
                             </div>
                         </div>
@@ -682,10 +751,22 @@
                         <!-- Category Filter Pills -->
                         <div class="flex items-center space-x-1.5 overflow-x-auto text-[11px]">
                             <button id="btn-verif-filter-all" class="verif-filter-btn px-2.5 py-1 rounded-md bg-indigo-600 text-white font-semibold transition" data-category="ALL">Semua</button>
-                            <button id="btn-verif-filter-safety" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition" data-category="Safety">🛡️ Keamanan</button>
-                            <button id="btn-verif-filter-fidelity" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition" data-category="Fidelity">🎯 Fidelity</button>
-                            <button id="btn-verif-filter-pii" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition" data-category="PII/Governance">🔒 Privasi PII</button>
-                            <button id="btn-verif-filter-schema" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition" data-category="Syntax/Schema">🏛️ Skema</button>
+                            <button id="btn-verif-filter-safety" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-1" data-category="Safety">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                <span>Keamanan</span>
+                            </button>
+                            <button id="btn-verif-filter-fidelity" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-1" data-category="Fidelity">
+                                <i data-lucide="target" class="w-3.5 h-3.5 text-blue-600"></i>
+                                <span>Fidelity</span>
+                            </button>
+                            <button id="btn-verif-filter-pii" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-1" data-category="PII/Governance">
+                                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i>
+                                <span>Privasi PII</span>
+                            </button>
+                            <button id="btn-verif-filter-schema" class="verif-filter-btn px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition inline-flex items-center gap-1" data-category="Syntax/Schema">
+                                <i data-lucide="database" class="w-3.5 h-3.5 text-purple-600"></i>
+                                <span>Skema</span>
+                            </button>
                         </div>
                     </div>
                     <div id="verif-checks-list" class="space-y-2.5"></div>
@@ -702,15 +783,16 @@
                                 <div class="flex items-center space-x-2">
                                     <h4 class="text-sm font-bold text-white tracking-wide">Segel Otorisasi Digital & Integritas Kriptografis</h4>
                                     <span id="seal-validity-badge" class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
-                                        <i data-lucide="check" class="w-3 h-3"></i>
+                                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                         <span>Anti-Tampering Valid</span>
                                     </span>
                                 </div>
                                 <p class="text-xs text-slate-400 mt-0.5">Sertifikat otorisasi resmi diterbitkan dengan enkripsi tanda tangan digital SHA-256 satu arah.</p>
                             </div>
                         </div>
-                        <span id="feedback-signed-badge" class="hidden text-xs bg-emerald-500 text-slate-950 font-bold px-3 py-1 rounded-full shadow-sm">
-                            ✓ Telah Disahkan
+                        <span id="feedback-signed-badge" class="hidden text-xs bg-emerald-500 text-slate-950 font-bold px-3 py-1 rounded-full shadow-sm inline-flex items-center gap-1">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                            <span>Telah Disahkan</span>
                         </span>
                     </div>
 
@@ -772,12 +854,12 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Petugas Verifikator:</label>
-                            <input type="text" id="verifier-name-input" value="Hendra Gunawan, S.Kom" class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label for="verifier-name-input" class="block text-xs font-semibold text-slate-700 mb-1">Nama Petugas Verifikator:</label>
+                            <input type="text" id="verifier-name-input" aria-label="Nama Petugas Verifikator" value="Hendra Gunawan, S.Kom" class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jabatan / Unit Kerja:</label>
-                            <input type="text" id="verifier-role-input" value="Kepala Seksi Analisa dan Layanan Data" class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label for="verifier-role-input" class="block text-xs font-semibold text-slate-700 mb-1">Jabatan / Unit Kerja:</label>
+                            <input type="text" id="verifier-role-input" aria-label="Jabatan atau Unit Kerja Petugas Verifikator" value="Kepala Seksi Analisa dan Layanan Data" class="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                     </div>
 
@@ -785,37 +867,43 @@
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
                             <label class="text-xs font-semibold text-slate-700">Template Cepat Arahan Verifikator (Klik untuk Isi Otomatis):</label>
-                            <span class="text-[10px] text-slate-400">1-Klik Standar DJBC</span>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">1-Klik Standar DJBC</span>
                         </div>
                         <div class="flex flex-wrap gap-1.5">
-                            <button type="button" id="btn-preset-internal" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 font-medium transition shadow-2xs">
-                                🏢 Setuju Internal DJBC
+                            <button type="button" id="btn-preset-internal" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 font-medium transition shadow-2xs inline-flex items-center gap-1">
+                                <i data-lucide="building-2" class="w-3.5 h-3.5 text-indigo-600"></i>
+                                <span>Setuju Internal DJBC</span>
                             </button>
-                            <button type="button" id="btn-preset-pdp" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-amber-800 font-medium transition shadow-2xs">
-                                🔒 Kepatuhan UU PDP (No. 27/2022)
+                            <button type="button" id="btn-preset-pdp" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-amber-800 font-medium transition shadow-2xs inline-flex items-center gap-1">
+                                <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-600"></i>
+                                <span>Kepatuhan UU PDP & PP 33/2026</span>
                             </button>
-                            <button type="button" id="btn-preset-eksternal" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 font-medium transition shadow-2xs">
-                                📊 Khusus Agregasi Eksternal
+                            <button type="button" id="btn-preset-eksternal" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 font-medium transition shadow-2xs inline-flex items-center gap-1">
+                                <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                <span>Khusus Agregasi Eksternal</span>
                             </button>
-                            <button type="button" id="btn-preset-revisi" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-800 font-medium transition shadow-2xs">
-                                ⚠️ Minta Revisi Rentang Waktu
+                            <button type="button" id="btn-preset-revisi" class="text-[11px] px-2.5 py-1 rounded-md bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-800 font-medium transition shadow-2xs inline-flex items-center gap-1">
+                                <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-600"></i>
+                                <span>Minta Revisi Rentang Waktu</span>
                             </button>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan & Arahan Kepatuhan Verifikator (Feedback):</label>
-                        <textarea id="verifier-comments-input" rows="3" class="w-full text-xs p-3 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed" placeholder="Pilih template di atas atau ketik arahan resmi kepatuhan data..."></textarea>
+                        <label for="verifier-comments-input" class="block text-xs font-semibold text-slate-700 mb-1">Catatan & Arahan Kepatuhan Verifikator (Feedback):</label>
+                        <textarea id="verifier-comments-input" aria-label="Catatan dan Arahan Kepatuhan Verifikator" rows="3" class="w-full text-xs p-3 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed" placeholder="Pilih template di atas atau ketik arahan resmi kepatuhan data..."></textarea>
                     </div>
 
                     <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-                        <span class="text-[11px] text-slate-400">Keputusan verifikator akan langsung memperbarui status di CMS dan menyematkan stempel tanda tangan di lembar Excel & sertifikat PDF.</span>
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400">Keputusan verifikator akan langsung memperbarui status di CMS dan menyematkan stempel tanda tangan di lembar Excel & sertifikat PDF.</span>
                         <div class="flex items-center space-x-2">
-                            <button id="btn-feedback-revision" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold text-xs px-3.5 py-2 rounded-lg transition">
-                                ⚠️ Minta Revisi
+                            <button id="btn-feedback-revision" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold text-xs px-3.5 py-2 rounded-lg transition inline-flex items-center gap-1.5">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-amber-800"></i>
+                                <span>Minta Revisi</span>
                             </button>
-                            <button id="btn-feedback-reject" class="bg-red-100 hover:bg-red-200 text-red-900 font-semibold text-xs px-3.5 py-2 rounded-lg transition">
-                                ❌ Tolak Permohonan
+                            <button id="btn-feedback-reject" class="bg-red-100 hover:bg-red-200 text-red-900 font-semibold text-xs px-3.5 py-2 rounded-lg transition inline-flex items-center gap-1.5">
+                                <i data-lucide="x-circle" class="w-3.5 h-3.5 text-red-800"></i>
+                                <span>Tolak Permohonan</span>
                             </button>
                             <button id="btn-feedback-approve" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-1.5 transition">
                                 <i data-lucide="check" class="w-3.5 h-3.5"></i>
@@ -898,13 +986,19 @@
                                     </div>
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">PDF Sah</span>
                                 </div>
-                                <h5 class="text-xs font-bold text-slate-900">Sertifikat Otorisasi Data</h5>
-                                <p class="text-[11px] text-slate-500 mt-1">Sertifikat digital berkepala resmi, disahkan Kepala Seksi Analisa dan Layanan Data dengan segel SHA-256.</p>
+                                <h5 class="text-xs font-bold text-slate-900">Sertifikat Otorisasi Data (PDP)</h5>
+                                <p class="text-[11px] text-slate-500 mt-1">Sertifikat digital 2-halaman kepatuhan UU No. 27/2022 & PP No. 33/2026, disahkan Data Steward & PPDP/DPO DJBC dengan segel HMAC-SHA256.</p>
                             </div>
-                            <a id="btn-download-cert" href="#" download class="w-full text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-center flex items-center justify-center space-x-1.5 transition shadow-2xs">
-                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                                <span>Unduh Sertifikat (.pdf)</span>
-                            </a>
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <button type="button" id="btn-preview-cert" class="w-full text-xs font-semibold bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-2.5 py-2 rounded-xl text-center flex items-center justify-center space-x-1 transition shadow-2xs">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    <span>Pratinjau</span>
+                                </button>
+                                <a id="btn-download-cert" href="#" download class="w-full text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-2 rounded-xl text-center flex items-center justify-center space-x-1 transition shadow-2xs">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    <span>Unduh (.pdf)</span>
+                                </a>
+                            </div>
                         </div>
 
                         <!-- Card 2: Styled Excel -->
@@ -987,9 +1081,13 @@
                                 <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
                                 <span>Sheet 3: KAMUS_DATA</span>
                             </button>
+                            <button id="btn-sheet-tab-profile" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5" data-sheet="profile">
+                                <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                <span>Sheet 4: PROFILING_KUALITAS_DATA</span>
+                            </button>
                             <button id="btn-sheet-tab-chart" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5" data-sheet="chart">
                                 <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-blue-600"></i>
-                                <span>Sheet 4: VISUALISASI_TREN</span>
+                                <span>Sheet 5: VISUALISASI_TREN</span>
                             </button>
                         </div>
 
@@ -1059,6 +1157,66 @@
                                     </tr>
                                 </thead>
                                 <tbody id="delivery-dict-sheet-tbody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Container Sheet 4: PROFILING_KUALITAS_DATA -->
+                    <div id="container-sheet-profile" class="hidden p-4 space-y-4">
+                        <div class="bg-emerald-50/60 border border-emerald-100 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <h5 class="text-xs font-bold text-emerald-950 uppercase tracking-wide flex items-center space-x-2">
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                                    <span>Scorecard & Profiling Kualitas Data Kepabeanan</span>
+                                </h5>
+                                <p class="text-[11px] text-emerald-800 mt-1">Audit kelengkapan, kardinalitas nilai unik, rasio kepatuhan penyamaran PII, dan statistik deskriptif sesuai standar tata kelola data.</p>
+                            </div>
+                            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>
+                                <span>ISO 27001 / PP 33 Verified</span>
+                            </span>
+                        </div>
+
+                        <!-- KPI Scorecard Cards -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rasio Kelengkapan</div>
+                                <div id="prof-kpi-completeness" class="text-lg font-black text-emerald-600 mt-1 font-mono">100.0%</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Zero null value detected</div>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Atribut</div>
+                                <div id="prof-kpi-columns" class="text-lg font-black text-indigo-600 mt-1 font-mono">0 Kolom</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Terpetakan dari OpenMetadata</div>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Proteksi PDP Masked</div>
+                                <div id="prof-kpi-masked" class="text-lg font-black text-amber-600 mt-1 font-mono">0 Atribut</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Penyamaran dinamis aktif</div>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Rekod Bersih</div>
+                                <div id="prof-kpi-records" class="text-lg font-black text-slate-800 mt-1 font-mono">0 Baris</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">100% Lulus Verifikasi</div>
+                            </div>
+                        </div>
+
+                        <!-- Profiling Table -->
+                        <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-2xs">
+                            <table class="w-full text-xs text-left">
+                                <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-3.5 py-2.5 font-bold">No</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Nama Atribut</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Tipe Data</th>
+                                        <th class="px-3.5 py-2.5 font-bold text-center">Kelengkapan</th>
+                                        <th class="px-3.5 py-2.5 font-bold text-center">Nilai Unik</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Nilai Terbanyak (Modus)</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Statistik Sebaran</th>
+                                        <th class="px-3.5 py-2.5 font-bold text-center">Status PDP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="delivery-profile-sheet-tbody" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
                     </div>
@@ -1232,6 +1390,14 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <button id="btn-open-dsr-modal" class="text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-xs" title="Modul Pemenuhan Hak Subjek Data (UU PDP Ps. 5-15)">
+                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                        <span>Portal Hak Subjek (DSR)</span>
+                    </button>
+                    <a id="btn-export-history-ropa" href="/api/history/export-ropa" download class="text-xs font-semibold bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-xs" title="Ekspor Buku Catatan Pemrosesan Sesuai Mandat Pasal 138 PP No. 33/2026">
+                        <i data-lucide="book-marked" class="w-3.5 h-3.5"></i>
+                        <span>Ekspor ROPA (PP 33/2026)</span>
+                    </a>
                     <a id="btn-export-history-csv" href="/api/history/export" download class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-xs">
                         <i data-lucide="download" class="w-3.5 h-3.5"></i>
                         <span>Ekspor CSV</span>
@@ -1284,14 +1450,14 @@
                     </div>
                     <div class="flex flex-wrap items-center gap-2 text-xs">
                         <!-- Filter Unit Kerja -->
-                        <select id="select-cms-dept-filter" class="px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-700 border border-slate-300 hover:border-slate-400 transition shadow-2xs outline-none">
+                        <select id="select-cms-dept-filter" aria-label="Filter berdasarkan Unit Kerja atau Divisi" class="px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-700 border border-slate-300 hover:border-slate-400 transition shadow-2xs outline-none">
                             <option value="ALL">Semua Unit Kerja</option>
                             <option value="Internal Bea dan Cukai">Internal Bea dan Cukai</option>
                             <option value="Internal Kemenkeu">Internal Kemenkeu</option>
                             <option value="Eksternal Kemenkeu">Eksternal Kemenkeu</option>
                         </select>
                         <!-- Filter Proses Bisnis -->
-                        <select id="select-cms-biz-filter" class="px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-700 border border-slate-300 hover:border-slate-400 transition shadow-2xs outline-none">
+                        <select id="select-cms-biz-filter" aria-label="Filter berdasarkan Proses Bisnis" class="px-2.5 py-1.5 rounded-lg font-medium text-xs bg-white text-slate-700 border border-slate-300 hover:border-slate-400 transition shadow-2xs outline-none">
                             <option value="ALL">Semua Proses Bisnis</option>
                             <option value="Ekspor">Ekspor</option>
                             <option value="Impor">Impor</option>
@@ -1342,6 +1508,7 @@
                                             <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
                                         </div>
                                     </th>
+                                    <th class="px-3.5 py-3 text-center">Retensi & CoD (PP 33/2026)</th>
                                     <th class="px-3.5 py-3 text-right">Aksi & Arsip</th>
                                 </tr>
                             </thead>
@@ -1771,17 +1938,17 @@
             </div>
             <div class="p-6 space-y-4 text-xs">
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">OpenMetadata API Server URL:</label>
-                    <input type="text" id="input-om-url" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500" placeholder="http://localhost:8585/api/v1">
-                    <span class="text-[11px] text-slate-400 mt-1 block">Contoh: http://localhost:8585/api/v1 atau http://metadata.internal.corp/api/v1</span>
+                    <label for="input-om-url" class="block font-semibold text-slate-700 mb-1">OpenMetadata API Server URL:</label>
+                    <input type="text" id="input-om-url" aria-label="OpenMetadata API Server URL" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500" placeholder="http://localhost:8585/api/v1">
+                    <span class="text-[11px] text-slate-500 mt-1 block">Contoh: http://localhost:8585/api/v1 atau http://metadata.internal.corp/api/v1</span>
                 </div>
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">OpenMetadata JWT Token (Bearer Auth):</label>
-                    <input type="password" id="input-om-jwt" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan JWT Token (Opsional untuk testing)">
+                    <label for="input-om-jwt" class="block font-semibold text-slate-700 mb-1">OpenMetadata JWT Token (Bearer Auth):</label>
+                    <input type="password" id="input-om-jwt" aria-label="OpenMetadata JWT Token (Bearer Auth)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan JWT Token (Opsional untuk testing)">
                 </div>
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Mode Operasional Katalog:</label>
-                    <select id="select-om-mode" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="select-om-mode" class="block font-semibold text-slate-700 mb-1">Mode Operasional Katalog:</label>
+                    <select id="select-om-mode" aria-label="Mode Operasional Katalog OpenMetadata" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="AUTO">AUTO (Coba Live Server, fallback ke Offline DWH Catalog jika offline)</option>
                         <option value="LIVE_ONLY">LIVE ONLY (Harus terhubung ke OpenMetadata server sungguhan)</option>
                         <option value="OFFLINE_ONLY">OFFLINE ONLY (Gunakan Katalog Enterprise DWH Bawaan)</option>
@@ -1829,7 +1996,9 @@
             <div class="px-6 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] flex-wrap gap-2">
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <div class="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                        <span class="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-[9px] font-bold">✓</span>
+                        <span class="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-[9px] font-bold">
+                            <i data-lucide="check" class="w-2.5 h-2.5"></i>
+                        </span>
                         <span>1. Pilih Entitas</span>
                     </div>
                     <i data-lucide="chevron-right" class="w-3 h-3 text-slate-300"></i>
@@ -1895,8 +2064,8 @@
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block font-semibold text-slate-600 dark:text-slate-400 mb-1 text-[11px] uppercase tracking-wider">Tipe Proses Bisnis:</label>
-                                        <select id="conf-business-process" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                                        <label for="conf-business-process" class="block font-semibold text-slate-600 dark:text-slate-400 mb-1 text-[11px] uppercase tracking-wider">Tipe Proses Bisnis:</label>
+                                        <select id="conf-business-process" aria-label="Tipe Proses Bisnis" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
                                             <option value="Ekspor">Ekspor</option>
                                             <option value="Impor">Impor</option>
                                             <option value="Cukai">Cukai</option>
@@ -1907,11 +2076,11 @@
                                             <option value="Dukungan Manajemen">Dukungan Manajemen</option>
                                             <option value="Lainnya">Lainnya</option>
                                         </select>
-                                        <p class="text-[10px] text-slate-400 mt-0.5">Klasifikasi domain proses bisnis kepabeanan</p>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Klasifikasi domain proses bisnis kepabeanan</p>
                                     </div>
                                     <div>
-                                        <label class="block font-semibold text-slate-600 dark:text-slate-400 mb-1 text-[11px] uppercase tracking-wider">Tujuan Penggunaan Data:</label>
-                                        <textarea id="conf-purpose" rows="2" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-slate-800 dark:text-slate-200 text-xs leading-relaxed"></textarea>
+                                        <label for="conf-purpose" class="block font-semibold text-slate-600 dark:text-slate-400 mb-1 text-[11px] uppercase tracking-wider">Tujuan Penggunaan Data:</label>
+                                        <textarea id="conf-purpose" aria-label="Tujuan Penggunaan Data" rows="2" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-slate-800 dark:text-slate-200 text-xs leading-relaxed"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -1948,11 +2117,11 @@
                             </h4>
                             <div class="flex items-center space-x-4 pt-1">
                                 <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
-                                    <input type="radio" name="conf-granularity" value="detail" checked class="text-blue-600 focus:ring-blue-500">
+                                    <input type="radio" name="conf-granularity" id="conf-gran-detail" aria-label="Data Baris Detail (Row-Level)" value="detail" checked class="text-blue-600 focus:ring-blue-500">
                                     <span>Data Baris Detail (Row-Level)</span>
                                 </label>
                                 <label class="flex items-center space-x-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
-                                    <input type="radio" name="conf-granularity" value="summary" class="text-blue-600 focus:ring-blue-500">
+                                    <input type="radio" name="conf-granularity" id="conf-gran-summary" aria-label="Data Agregat (Summary atau Grouped)" value="summary" class="text-blue-600 focus:ring-blue-500">
                                     <span>Data Agregat (Summary / Grouped)</span>
                                 </label>
                             </div>
@@ -1968,7 +2137,7 @@
                                     <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-500"></i>
                                     <span>3. Kolom yang Diminta & Proteksi PII</span>
                                 </h4>
-                                <span class="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Pilih kolom (Data Minimization)</span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Pilih kolom (Data Minimization)</span>
                             </div>
 
                             <!-- PII Masking Policy Selector -->
@@ -1977,7 +2146,7 @@
                                     <i data-lucide="lock" class="w-3.5 h-3.5 text-rose-600 dark:text-rose-400"></i>
                                     <span>Kebijakan Masking PII:</span>
                                 </div>
-                                <select id="conf-masking-policy" class="text-[11px] font-semibold bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/80 text-rose-900 dark:text-rose-200 rounded-lg px-2.5 py-1 outline-none focus:ring-2 focus:ring-rose-500 shadow-2xs">
+                                <select id="conf-masking-policy" aria-label="Kebijakan Masking PII" class="text-[11px] font-semibold bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/80 text-rose-900 dark:text-rose-200 rounded-lg px-2.5 py-1 outline-none focus:ring-2 focus:ring-rose-500 shadow-2xs">
                                     <option value="PARTIAL">Masking Parsial (Ahm***zi & 3201******)</option>
                                     <option value="HASH">Pseudonimisasi Hash Kriptografis</option>
                                     <option value="FULL_REDACT">Redaksi Total [TERLINDUNGI_UU_PDP]</option>
@@ -2076,7 +2245,7 @@
 
                 <div class="flex items-center space-x-2">
                     <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Tier:</span>
-                    <select id="select-catalog-tier-filter" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500 text-slate-700 dark:text-slate-200">
+                    <select id="select-catalog-tier-filter" aria-label="Filter Tingkat atau Tier Katalog" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-500 text-slate-700 dark:text-slate-200">
                         <option value="all">Semua Tingkat</option>
                         <option value="tier1">Tier 1 (Mission Critical)</option>
                         <option value="tier2">Tier 2</option>
@@ -2160,6 +2329,543 @@
             </div>
             <div class="p-3 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Tekan <kbd class="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded font-mono text-[10px]">Esc</kbd> kapan saja untuk kembali ke editor.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal OpenMetadata Automated Data Quality Test Suite (Rekomendasi 14) -->
+    <div id="modal-test-suite" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5" role="dialog" aria-modal="true" aria-labelledby="test-suite-modal-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-850">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="check-check" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h4 id="test-suite-modal-title" class="text-sm font-bold text-slate-900 dark:text-white truncate">OpenMetadata Automated Test Suite</h4>
+                        <p id="test-suite-modal-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">Tabel: dwh_ceisa.ekspor.fct_peb_ekspor</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span id="test-suite-modal-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        <span>100% HEALTH</span>
+                    </span>
+                    <button id="btn-close-test-suite-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition" aria-label="Tutup modal">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="p-5 overflow-y-auto space-y-4">
+                <!-- Summary Metrics Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Test Cases</div>
+                        <div id="ts-metric-total" class="text-lg font-black text-slate-800 dark:text-white mt-1 font-mono">6 Tes</div>
+                        <div class="text-[10px] text-slate-400">Automated Suite</div>
+                    </div>
+                    <div class="bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">Lulus (Passed)</div>
+                        <div id="ts-metric-passed" class="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1 font-mono">6 Tes</div>
+                        <div class="text-[10px] text-emerald-600/80">Zero defect anomaly</div>
+                    </div>
+                    <div class="bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">Data Freshness SLA</div>
+                        <div id="ts-metric-freshness" class="text-lg font-black text-blue-600 dark:text-blue-400 mt-1 font-mono">< 6 Jam</div>
+                        <div class="text-[10px] text-blue-600/80">SLA Max: 24 Jam</div>
+                    </div>
+                    <div class="bg-purple-50/60 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl p-3">
+                        <div class="text-[10px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">Health Score</div>
+                        <div id="ts-metric-health" class="text-lg font-black text-purple-600 dark:text-purple-400 mt-1 font-mono">100.0%</div>
+                        <div class="text-[10px] text-purple-600/80">Verified Quality</div>
+                    </div>
+                </div>
+
+                <!-- Test Cases List Table -->
+                <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs">
+                    <table class="w-full text-xs text-left">
+                        <thead class="text-[11px] text-slate-700 dark:text-slate-300 uppercase bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="px-4 py-2.5 font-bold">Nama Test Case</th>
+                                <th class="px-4 py-2.5 font-bold">Definisi Validasi</th>
+                                <th class="px-4 py-2.5 font-bold">Kolom Target</th>
+                                <th class="px-4 py-2.5 font-bold text-center">Status</th>
+                                <th class="px-4 py-2.5 font-bold">Hasil Eksekusi & Metrik</th>
+                            </tr>
+                        </thead>
+                        <tbody id="test-suite-modal-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                <span class="flex items-center space-x-1.5 font-mono text-[11px]">
+                    <i data-lucide="database" class="w-3.5 h-3.5 text-blue-600"></i>
+                    <span>Tersinkronisasi dengan OpenMetadata Data Quality Engine</span>
+                </span>
+                <button id="btn-close-test-suite-footer" class="px-4 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 font-semibold text-slate-700 dark:text-slate-200 transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal In-App PDF Previewer (Prioritas 2) -->
+    <div id="modal-pdf-preview" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5" role="dialog" aria-modal="true" aria-labelledby="pdf-preview-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-5xl h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="p-3.5 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-850">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="pdf-preview-title" class="font-bold text-sm text-slate-900 dark:text-white truncate">Pratinjau Dokumen PDF Resmi</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 flex-wrap">
+                            <span id="pdf-preview-subtitle">Kepatuhan UU No. 27/2022 & PP No. 33/2026</span>
+                            <span class="text-slate-400">•</span>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                                <i data-lucide="shield-check" class="w-3 h-3"></i> Tanda Tangan Sah
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-1.5 flex-shrink-0">
+                    <a id="btn-pdf-preview-tab" href="#" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 inline-flex items-center gap-1.5 transition shadow-2xs" title="Buka di Tab Baru">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        <span class="hidden sm:inline">Tab Baru</span>
+                    </a>
+                    <a id="btn-pdf-preview-download" href="#" download class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-2xs" title="Unduh Berkas PDF">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Unduh</span>
+                    </a>
+                    <button id="btn-close-pdf-preview" aria-label="Tutup pratinjau PDF" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Frame Body -->
+            <div class="flex-1 bg-slate-100 dark:bg-slate-950 p-2 sm:p-3 relative overflow-hidden flex flex-col">
+                <div id="pdf-preview-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-xs z-10 transition">
+                    <div class="w-8 h-8 border-3 border-rose-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <span class="text-xs font-medium text-slate-600 dark:text-slate-300">Memuat berkas PDF resmi...</span>
+                </div>
+                <iframe id="pdf-preview-iframe" class="w-full h-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white" title="Pratinjau PDF Resmi"></iframe>
+            </div>
+
+            <!-- Footer Bar (Hash & Governance) -->
+            <div class="p-2.5 sm:p-3 bg-slate-50 dark:bg-slate-855 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                <div class="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400 text-[11px] font-mono truncate max-w-xl">
+                    <span class="font-bold text-slate-700 dark:text-slate-300">HMAC-SHA256:</span>
+                    <span id="pdf-preview-hash" class="truncate text-slate-600 dark:text-slate-400">SHA256: -</span>
+                </div>
+                <button id="btn-copy-preview-hash" class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center space-x-1 flex-shrink-0">
+                    <i data-lucide="copy" class="w-3 h-3"></i>
+                    <span id="copy-preview-hash-text">Salin Hash Integritas</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Verifikasi Publik QR Code (Prioritas 3) -->
+    <div id="modal-verify-public" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="verify-public-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <!-- Header Banner -->
+            <div class="p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white relative">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 inline-flex items-center gap-1">
+                            <i data-lucide="shield-check" class="w-3 h-3 text-emerald-400"></i>
+                            <span>PORTAL VERIFIKASI KEABSAHAN DOKUMEN</span>
+                        </span>
+                        <h3 id="verify-public-title" class="font-bold text-base text-white tracking-wide">Status Otorisasi & Kepatuhan Tata Kelola PDP</h3>
+                        <p class="text-xs text-slate-300">Direktorat Informasi Kepabeanan dan Cukai — Kementerian Keuangan</p>
+                    </div>
+                    <button id="btn-close-verify-public" aria-label="Tutup verifikasi publik" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="p-6 space-y-4 text-xs">
+                <!-- Badge Status Resmi -->
+                <div id="verify-status-banner" class="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="badge-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-emerald-900 dark:text-emerald-200 text-sm" id="verify-status-heading">Dokumen Asli & Terverifikasi Sah</div>
+                        <p class="text-[11px] text-emerald-700 dark:text-emerald-400" id="verify-status-desc">Dokumen ini terdaftar resmi pada Sistem DataRequest Studio dan memenuhi standar UU No. 27/2022 & PP No. 33/2026.</p>
+                    </div>
+                </div>
+
+                <!-- Grid Detail Permohonan -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">ID Permohonan:</div>
+                        <div id="verify-pub-req-id" class="font-mono font-bold text-slate-900 dark:text-white">REQ-...</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Tipe Proses Bisnis:</div>
+                        <div id="verify-pub-biz-proc" class="font-semibold text-indigo-600 dark:text-indigo-400">Ekspor</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Judul Permohonan:</div>
+                        <div id="verify-pub-title" class="font-semibold text-slate-800 dark:text-slate-200">Permohonan Data Resmi</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Pemohon / PIC:</div>
+                        <div id="verify-pub-requester" class="font-medium text-slate-700 dark:text-slate-300">-</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Unit Kerja:</div>
+                        <div id="verify-pub-dept" class="font-medium text-slate-700 dark:text-slate-300">-</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Status Masa Retensi:</div>
+                        <div id="verify-pub-retention" class="font-semibold text-emerald-600 dark:text-emerald-400">Aktif (Maks 30 Hari)</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">Pengesah Otoritas:</div>
+                        <div id="verify-pub-steward" class="font-medium text-slate-700 dark:text-slate-300">Data Steward & PPDP DIKC</div>
+                    </div>
+                </div>
+
+                <!-- Fingerprint Box -->
+                <div class="space-y-1">
+                    <div class="text-[10px] text-slate-500 uppercase font-semibold">Sidik Jari Kriptografis (HMAC-SHA256 Anti-Tampering):</div>
+                    <div id="verify-pub-hash" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono text-[11px] text-slate-700 dark:text-slate-300 break-all border border-slate-200 dark:border-slate-700">SHA256: -</div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end space-x-2">
+                <button id="btn-verify-view-cert" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-2xs">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    <span>Pratinjau Dokumen Asli</span>
+                </button>
+                <button id="btn-verify-dismiss" class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition">
+                    Masuk ke Studio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Eksekusi Pemusnahan Data CoD (Prioritas 1) -->
+    <div id="modal-cod-confirm" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="cod-modal-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="p-4 sm:p-5 border-b border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-900/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="flame" class="w-5 h-5 text-rose-600"></i>
+                    </div>
+                    <div>
+                        <h3 id="cod-modal-title" class="font-bold text-sm text-slate-900 dark:text-white">Eksekusi Pemusnahan Data & Terbitkan CoD</h3>
+                        <p class="text-[11px] text-rose-700 dark:text-rose-400 font-medium">Pasal 75 Peraturan Pemerintah No. 33 Tahun 2026</p>
+                    </div>
+                </div>
+                <button id="btn-close-cod-modal" aria-label="Tutup dialog pemusnahan" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <div class="p-5 space-y-4 text-xs">
+                <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-900 dark:text-amber-200 space-y-1">
+                    <div class="font-bold flex items-center gap-1.5">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-600"></i>
+                        <span>Peringatan Penghapusan Permanen (Irreversible)</span>
+                    </div>
+                    <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                        Tindakan ini akan mengesahkan bahwa seluruh berkas data aktif, salinan lokal, cache komputasi, dan file Excel/CSV untuk permohonan <b id="cod-target-id" class="font-mono">REQ-...</b> telah dimusnahkan secara permanen (*zero shadow copy*).
+                    </p>
+                </div>
+
+                <div>
+                    <label for="cod-method-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Metode Sanitasi & Pemusnahan:</label>
+                    <select id="cod-method-input" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500">
+                        <option value="Cryptographic Erasure & Secure Sanitization (NIST SP 800-88)">Cryptographic Erasure & Secure Sanitization (NIST SP 800-88)</option>
+                        <option value="Overwriting Sanitization 3-Pass (DoD 5220.22-M)">Overwriting Sanitization 3-Pass (DoD 5220.22-M)</option>
+                        <option value="Secure File Wipe & Cache Purge (ISO/IEC 27001 Control)">Secure File Wipe & Cache Purge (ISO/IEC 27001 Control)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="cod-notes-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Pernyataan Pakta Pemusnahan (Catatan CoD):</label>
+                    <textarea id="cod-notes-input" rows="3" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed" placeholder="Pernyataan penghapusan bebas salinan bayangan...">Seluruh salinan data aktif, file Excel/CSV, cache komputasi, dan media temporal telah dihapus secara permanen. Bebas dari salinan bayangan (zero shadow copy).</textarea>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end space-x-2">
+                <button id="btn-cancel-cod" class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition">
+                    Batal
+                </button>
+                <button id="btn-execute-cod" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-2xs">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                    <span>Musnahkan & Terbitkan Berita Acara</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pelaporan Insiden Kegagalan PDP (Prioritas 4 - Ps. 46 UU PDP & Ps. 114-119 PP 33/2026) -->
+    <div id="modal-breach-report" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="breach-modal-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 my-8">
+            <!-- Header Darurat -->
+            <div class="p-5 bg-gradient-to-r from-rose-900 via-rose-950 to-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-rose-600/30 border border-rose-500/50 text-rose-300 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="alert-octagon" class="w-6 h-6 text-rose-400 animate-pulse"></i>
+                    </div>
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/30 text-rose-200 border border-rose-400/40 uppercase tracking-wider mb-1">
+                            <span>MANDAT 3 x 24 JAM — PASAL 46 UU PDP</span>
+                        </div>
+                        <h3 id="breach-modal-title" class="font-bold text-base text-white">Formulir Pelaporan Insiden Kegagalan Pelindungan Data Pribadi</h3>
+                        <p class="text-xs text-rose-200/80">Direktorat Informasi Kepabeanan dan Cukai — Kementerian Keuangan</p>
+                    </div>
+                </div>
+                <button id="btn-close-breach-modal" aria-label="Tutup form insiden" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <div class="p-6 space-y-4 text-xs max-h-[70vh] overflow-y-auto">
+                <!-- Target Metadata Permohonan -->
+                <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/80 grid grid-cols-2 gap-2.5">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">ID Permohonan Terkait:</span>
+                        <div id="breach-target-req-id" class="font-mono font-bold text-rose-600 dark:text-rose-400 text-sm">REQ-...</div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Pemohon / Unit:</span>
+                        <div id="breach-target-requester" class="font-semibold text-slate-800 dark:text-slate-200 truncate">-</div>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Judul Dokumen:</span>
+                        <div id="breach-target-title" class="font-medium text-slate-700 dark:text-slate-300 truncate">-</div>
+                    </div>
+                </div>
+
+                <!-- Input Waktu & Severitas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label for="breach-discovery-time" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Waktu Penemuan / Deteksi Insiden:</label>
+                        <input type="text" id="breach-discovery-time" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="Contoh: 13 Oktober 2026 08:45 WIB">
+                    </div>
+                    <div>
+                        <label for="breach-severity-select" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tingkat Keparahan (Severity Level):</label>
+                        <select id="breach-severity-select" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 font-semibold">
+                            <option value="KRITIS" selected>KRITIS (Data Finansial / NIK / Masif Terdampak)</option>
+                            <option value="TINGGI">TINGGI (Data Identitas Perusahaan & Transaksi)</option>
+                            <option value="SEDANG">SEDANG (Paparan Internal Terbatas)</option>
+                            <option value="RENDAH">RENDAH (Anomali Ringan / Terisolasi)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Checkbox Kategori Data Terdampak -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kategori Data Pribadi yang Terdampak (Pasal 116 PP 33/2026):</label>
+                    <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Data Pribadi Spesifik (NPWP & Rekening Keuangan)" checked>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">NPWP / Data Finansial</span>
+                        </label>
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Data Identitas Pribadi (NIK, Nama Lengkap, Telepon)" checked>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">NIK / Identitas Direktur</span>
+                        </label>
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Data Rahasia Transaksi Pabean (FOB, CIF, HS Code)" checked>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">Data Transaksi Kepabeanan</span>
+                        </label>
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Salinan Berkas Ekspor/Impor (Invoice/Packing List)">
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">Dokumen Pelengkap Pabean</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Kronologi Singkat -->
+                <div>
+                    <label for="breach-chronology-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Uraian Kronologis Kejadian & Penyebab Insiden:</label>
+                    <textarea id="breach-chronology-input" rows="3" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed" placeholder="Jelaskan kronologi kejadian dan bagaimana insiden pertama kali terdeteksi...">Terdeteksi akses unduhan berkas data pemenuhan dari alamat IP tidak dikenal di luar jaringan privat VPN kantor dan kegagalan proteksi kredensial temporal.</textarea>
+                </div>
+
+                <!-- Dampak & Mitigasi -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label for="breach-impact-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Potensi Dampak & Risiko:</label>
+                        <textarea id="breach-impact-input" rows="3" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed">Potensi penyalahgunaan identitas subjek data dan paparan informasi rahasia komersial eksportir/importir.</textarea>
+                    </div>
+                    <div>
+                        <label for="breach-containment-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tindakan Mitigasi yang Telah Diambil:</label>
+                        <textarea id="breach-containment-input" rows="3" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed">Pencabutan token sesi secara instan, reset paksa kredensial, isolasi jaringan firewall, dan ekstraksi log forensik CSIRT.</textarea>
+                    </div>
+                </div>
+
+                <!-- Pernyataan Hukum Kemenkeu -->
+                <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-[11px] text-rose-900 dark:text-rose-200 flex items-start gap-2.5">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <b>Kewajiban Hukum Notifikasi:</b> Sesuai Pasal 114 PP No. 33/2026, pemberitahuan ini wajib disampaikan secara tertulis paling lambat <b>3 × 24 jam</b> kepada Lembaga PDP dan Subjek Data Pribadi, serta dicatatkan dalam Buku Catatan Pemrosesan (ROPA).
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end space-x-2">
+                <button id="btn-cancel-breach" class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition">
+                    Batal
+                </button>
+                <button id="btn-submit-breach" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-2xs">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    <span>Kirim Laporan & Terbitkan Surat Notifikasi Resmi (PDF)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Command Palette Modal (Ctrl + K / Cmd + K) - UI/UX Pro Max -->
+    <div id="modal-command-palette" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="palette-search-input">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <!-- Search Input Header -->
+            <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-slate-850">
+                <i data-lucide="search" class="w-5 h-5 text-slate-400 flex-shrink-0"></i>
+                <input type="text" id="palette-search-input" class="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none font-medium" placeholder="Ketik perintah atau cari permohonan... (cth: 'REQ', 'SQL', 'Katalog', 'ROPA', 'DSR', 'Role')">
+                <kbd class="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded font-mono">ESC</kbd>
+            </div>
+            <!-- Results List -->
+            <div id="palette-results" class="max-h-80 overflow-y-auto p-2 space-y-1 text-xs">
+                <!-- Populated dynamically via JavaScript -->
+            </div>
+            <!-- Footer Hints -->
+            <div class="p-2.5 bg-slate-100/70 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-4">
+                <div class="flex items-center space-x-3">
+                    <span><kbd class="font-mono bg-white dark:bg-slate-700 px-1 py-0.5 rounded border border-slate-300 dark:border-slate-600">↑</kbd> <kbd class="font-mono bg-white dark:bg-slate-700 px-1 py-0.5 rounded border border-slate-300 dark:border-slate-600">↓</kbd> Navigasi</span>
+                    <span><kbd class="font-mono bg-white dark:bg-slate-700 px-1 py-0.5 rounded border border-slate-300 dark:border-slate-600">↵</kbd> Pilih</span>
+                </div>
+                <span>DataRequestStudio Command Bar</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Portal Pemenuhan Hak Subjek Data / DSR Registry (UU PDP Ps. 5-15 & PP 33/2026) -->
+    <div id="modal-dsr-portal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="dsr-portal-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-6">
+            <!-- Header -->
+            <div class="p-5 bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="user-check" class="w-6 h-6 text-indigo-400"></i>
+                    </div>
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 uppercase tracking-wider mb-1">
+                            <span>MANDAT PASAL 5–15 UU NO. 27/2022 & PASAL 32–40 PP 33/2026</span>
+                        </div>
+                        <h3 id="dsr-portal-title" class="font-bold text-base text-white">Portal Pemenuhan Hak Subjek Data Pribadi (DSR Portal)</h3>
+                        <p class="text-xs text-indigo-200/80">Penanganan Hak Akses, Koreksi, Penarikan Persetujuan & Pemusnahan Data Perseorangan/Wajib Pajak</p>
+                    </div>
+                </div>
+                <button id="btn-close-dsr-modal" aria-label="Tutup Portal DSR" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Toolbar & Form Permohonan Baru -->
+            <div class="p-5 space-y-4 max-h-[72vh] overflow-y-auto text-xs">
+                <!-- Collapsible Form Tambah Permohonan DSR Baru -->
+                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                            <span>Catat Permohonan Hak Subjek Baru</span>
+                        </span>
+                        <span class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">Batas Waktu Respon: Maks 3 x 24 Jam (Ps. 33 PP 33/2026)</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="dsr-input-name" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Subjek Data / Penanggung Jawab:</label>
+                            <input type="text" id="dsr-input-name" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Budi Santoso (Direktur CV Nusantara)">
+                        </div>
+                        <div>
+                            <label for="dsr-input-identifier" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Identitas Pengenal (NIK / NPWP / Kontak):</label>
+                            <input type="text" id="dsr-input-identifier" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="Contoh: 3171051204850001 / NPWP 01.234.567.8">
+                        </div>
+                        <div>
+                            <label for="dsr-select-type" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jenis Hak Subjek Data yang Diminta:</label>
+                            <select id="dsr-select-type" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-semibold">
+                                <option value="HAK_KOREKSI">Pasal 6 UU PDP — Hak Melengkapi / Memperbarui (Koreksi Data)</option>
+                                <option value="HAK_AKSES_SALINAN">Pasal 7 UU PDP — Hak Mengakses & Memperoleh Salinan Data</option>
+                                <option value="HAK_HAPUS_MUSNAH">Pasal 8 UU PDP — Hak Mengakhiri Pemrosesan / Menghapus / Pemusnahan</option>
+                                <option value="HAK_TARIK_PERSETUJUAN">Pasal 9 UU PDP — Hak Menarik Kembali Persetujuan</option>
+                                <option value="HAK_KEBERATAN_OTOMASI">Pasal 10 UU PDP — Hak Keberatan Keputusan Otomatis</option>
+                                <option value="HAK_BATASI_PROSES">Pasal 11 UU PDP — Hak Menunda / Membatasi Pemrosesan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="dsr-input-req-ref" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">ID Permohonan Data Terkait (Opsional):</label>
+                            <input type="text" id="dsr-input-req-ref" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="Contoh: REQ-2026-BC-089">
+                        </div>
+                        <div class="col-span-1 sm:col-span-2">
+                            <label for="dsr-input-desc" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Uraian Alasan / Permintaan Subjek Data:</label>
+                            <textarea id="dsr-input-desc" rows="2" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed" placeholder="Jelaskan kebutuhan pemenuhan hak..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button id="btn-submit-dsr" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-2xs">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Catat ke Register Hak Subjek Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabel Register DSR Aktif -->
+                <div class="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-xs">
+                    <div class="p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 text-xs">Daftar Permohonan Hak Subjek Data (DSR Register)</span>
+                        <span id="dsr-total-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Memuat...</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-800/80 text-[10px] uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="p-3">ID Register</th>
+                                    <th class="p-3">Subjek Data</th>
+                                    <th class="p-3">Jenis Hak (UU PDP)</th>
+                                    <th class="p-3">Batas Waktu (3x24 Jam)</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Aksi Tindak Lanjut</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dsr-table-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated dynamically via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Semua aktivitas DSR terintegrasi otomatis ke dalam Buku Catatan Pemrosesan (ROPA Pasal 138).</span>
+                <button id="btn-close-dsr-modal-footer" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition">
+                    Tutup
+                </button>
             </div>
         </div>
     </div>

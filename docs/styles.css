@@ -90,19 +90,67 @@ button:active:not(:disabled),
 }
 
 
+/* ================= WORKFLOW STEPPER TIMELINE (UI/UX PRO MAX) ================= */
+.step-card {
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+}
+
+.step-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+}
+
 .step-card.active {
-    border-color: #3b82f6;
-    background-color: #eff6ff;
+    border-color: #3b82f6 !important;
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.6)) !important;
+    box-shadow: 0 0 0 1px #3b82f6, 0 8px 16px -4px rgba(59, 130, 246, 0.2) !important;
+}
+
+html.dark .step-card.active {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.4), rgba(15, 23, 42, 0.8)) !important;
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 1px #60a5fa, 0 8px 16px -4px rgba(59, 130, 246, 0.3) !important;
 }
 
 .step-card.done {
-    border-color: #10b981;
-    background-color: #ecfdf5;
+    border-color: #10b981 !important;
+    background: linear-gradient(135deg, rgba(236, 253, 245, 0.8), rgba(209, 250, 229, 0.4)) !important;
 }
 
-.step-card.done > div:first-child {
-    background-color: #10b981;
-    color: white;
+html.dark .step-card.done {
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.3), rgba(15, 23, 42, 0.8)) !important;
+    border-color: #059669 !important;
+}
+
+.step-num-badge {
+    width: 2rem !important;
+    height: 2rem !important;
+    min-width: 2rem !important;
+    min-height: 2rem !important;
+    border-radius: 9999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.step-card.done .step-num-badge {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+}
+
+.step-card.active .step-num-badge {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    animation: pulse 1.8s infinite;
 }
 
 .tab-btn.active {
@@ -732,6 +780,13 @@ html.dark ::-webkit-scrollbar-thumb:hover {
     to {
         opacity: 0;
         transform: translateY(12px) scale(0.96);
+    }
+}
+
+/* ================= MOBILE TOUCH TARGETS & ACCESSIBILITY POLISH (UI/UX PRO MAX) ================= */
+@media (max-width: 640px) {
+    button, [role="button"], select, .tab-btn {
+        min-height: 38px;
     }
 }
 
