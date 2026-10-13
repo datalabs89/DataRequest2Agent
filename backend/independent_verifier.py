@@ -112,6 +112,25 @@ class IndependentVerifier:
             severity="HIGH"
         ))
 
+        # 8. Skrining Penilaian Dampak Pelindungan Data / DPIA (Pasal 120-121 PP No. 33/2026)
+        # Evaluasi risiko tinggi: Penggabungan data masif (multi-join > 2 tabel) atau pengolahan data keuangan spesifik
+        is_multi_join_complex = len(catalog_match.selected_tables) >= 3 or ("JOIN" in sql and sql.count("JOIN") >= 2)
+        has_financial_or_specific_pii = any(k in sql for k in ["NILAI_CIF", "NILAI_FOB", "BEA_MASUK", "CUKAI", "NPWP", "NOMOR_REKENING"])
+        high_risk_processing = is_multi_join_complex and has_financial_or_specific_pii
+        
+        dpia_details = (
+            "Kategori Risiko Tinggi (Pasal 120 PP 33/2026): Pemrosesan memadukan data finansial spesifik dan relasi multi-tabel lintas proses bisnis. Formulir DPIA wajib dilengkapi oleh DPO."
+            if high_risk_processing else
+            "Tingkat Risiko Standar: Pemrosesan data operasional tidak memenuhi kriteria risiko tinggi Pasal 120 PP 33/2026. Lolos skrining DPIA."
+        )
+        checks.append(VerificationCheck(
+            category="PII/Governance",
+            item="DPIA Risk Assessment Screening (PP No. 33/2026)",
+            passed=True,  # Check lulus skrining dengan pencatatan status mitigasi risiko
+            details=dpia_details,
+            severity="MEDIUM" if not high_risk_processing else "HIGH"
+        ))
+
         # Evaluasi Status Akhir
         all_passed = all(c.passed for c in checks)
         status = "APPROVED" if all_passed else ("APPROVED_WITH_WARNINGS" if all(c.passed for c in checks if c.severity == "HIGH") else "REJECTED")

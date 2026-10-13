@@ -418,3 +418,12 @@ class HistoryManager:
                 ])
         return filepath
 
+    def export_history_ropa(self, output_dir: str = "outputs") -> str:
+        """Ekspor seluruh arsip riwayat CMS ke format Buku Catatan Pemrosesan (ROPA) Excel sesuai Pasal 138 PP 33/2026."""
+        from ropa_generator import ROPAGenerator
+        history = self.get_all()
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"ROPA_Buku_Catatan_Pemrosesan_Data_PP33_2026_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filepath = os.path.join(output_dir, filename)
+        generator = ROPAGenerator()
+        return generator.generate_ropa_excel(history_items=history, output_path=filepath)

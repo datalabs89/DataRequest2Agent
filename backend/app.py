@@ -340,6 +340,71 @@ def export_history():
     filename = os.path.basename(csv_path)
     return FileResponse(csv_path, media_type="text/csv", filename=filename)
 
+@app.get("/api/history/export-ropa")
+def export_history_ropa():
+    """Mengunduh Buku Catatan Pemrosesan (ROPA) Excel sesuai Pasal 138 PP 33/2026."""
+    ropa_path = coordinator.history_mgr.export_history_ropa(output_dir=OUTPUTS_DIR)
+    filename = os.path.basename(ropa_path)
+    return FileResponse(
+        ropa_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename=filename
+    )
+
+# =========================================================================
+# Modul Pemenuhan Hak Subjek Data / DSR Registry (UU PDP Ps. 5-15 & PP 33/2026)
+# =========================================================================
+from dsr_manager import DSRManager
+dsr_manager = DSRManager(data_file=os.path.join(OUTPUTS_DIR, "dsr_registry.json"))
+
+class DSRSubmissionRequest(BaseModel):
+    subject_name: str
+    subject_identifier: str
+    right_type: str
+    description: str
+    related_req_id: Optional[str] = "-"
+    handler_name: Optional[str] = "Tim PPDP / DPO DIKC DJBC"
+
+@app.get("/api/dsr/list")
+def list_dsr_requests():
+    """Daftar permohonan pemenuhan hak subjek data pribadi (DSR Portal)."""
+    return {"requests": dsr_manager.get_all()}
+
+@app.post("/api/dsr/submit")
+def submit_dsr_request(payload: DSRSubmissionRequest):
+    """Pencatatan permohonan pemenuhan hak subjek data (Hak Akses/Koreksi/Pemusnahan/Penarikan Persetujuan)."""
+    item = dsr_manager.record_request(
+        subject_name=payload.subject_name,
+        subject_identifier=payload.subject_identifier,
+        right_type=payload.right_type,
+        description=payload.description,
+        related_req_id=payload.related_req_id or "-",
+        handler_name=payload.handler_name or "Tim PPDP / DPO DIKC DJBC"
+    )
+    return {
+        "status": "success",
+        "message": "Permohonan Hak Subjek Data berhasil dicatatkan dalam Register Resmi DSR.",
+        "item": item
+    }
+
+class DSRStatusUpdateRequest(BaseModel):
+    dsr_id: str
+    status: str
+    action_taken: str
+
+@app.post("/api/dsr/update")
+def update_dsr_status(payload: DSRStatusUpdateRequest, x_user_role: Optional[str] = Header(None, alias="X-User-Role")):
+    """Pembaruan status tindak lanjut hak subjek data oleh DPO / Data Steward."""
+    check_role_permission(["steward", "admin"], x_user_role)
+    updated = dsr_manager.update_status(
+        dsr_id=payload.dsr_id,
+        status=payload.status,
+        action_taken=payload.action_taken
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="ID Permohonan DSR tidak ditemukan")
+    return {"status": "success", "item": updated}
+
 from models import VerifierFeedback, SQLGenerationResult, VerificationReport
 
 class FeedbackSubmissionRequest(BaseModel):

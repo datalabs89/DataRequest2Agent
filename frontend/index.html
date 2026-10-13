@@ -106,6 +106,13 @@
                         <i data-lucide="keyboard" class="w-4 h-4"></i>
                     </button>
 
+                    <!-- Global Command Palette Button (Ctrl+K) -->
+                    <button id="btn-open-command-palette" aria-label="Buka Command Palette (Ctrl+K)" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0 text-xs font-medium" title="Command Palette (Ctrl + K)">
+                        <i data-lucide="command" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"></i>
+                        <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Cari Cepat</span>
+                        <kbd class="ml-1 text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 font-mono">Ctrl+K</kbd>
+                    </button>
+
                     <!-- OpenMetadata Settings Button -->
                     <button id="btn-open-om-settings" aria-label="Buka pengaturan OpenMetadata" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition shadow-2xs hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0" title="Pengaturan Koneksi OpenMetadata">
                         <i data-lucide="settings" class="w-4 h-4"></i>
@@ -139,42 +146,57 @@
             </div>
         </div>
 
-        <!-- Workflow Visual Stepper -->
+        <!-- Workflow Visual Stepper (Interactive Micro-Interaction Timeline) -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-3 transition" id="step-ind-1">
-                <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 font-bold text-xs">1</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Ekstraksi PDF</p>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Spec & Filter</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-blue-400 group" id="step-ind-1" title="Tahap 1: Ekstraksi Dokumen PDF Permohonan">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge">1</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Ekstraksi PDF</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Spec & Filter</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">0ms</span>
             </div>
-            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-3 transition" id="step-ind-2">
-                <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 font-bold text-xs">2</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">OpenMetadata</p>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Schema Match</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-indigo-400 group" id="step-ind-2" title="Tahap 2: OpenMetadata Catalog Grounding & Lineage">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge">2</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">OpenMetadata</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Schema Match</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700">0ms</span>
             </div>
-            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-3 transition" id="step-ind-3">
-                <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0 font-bold text-xs">3</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Sintesis SQL</p>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">PII Masking</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-purple-400 group" id="step-ind-3" title="Tahap 3: Sintesis SQL Analitik & Proteksi PII">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge">3</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Sintesis SQL</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">PII Masking</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700">0ms</span>
             </div>
-            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-3 transition" id="step-ind-4">
-                <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 font-bold text-xs">4</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Audit & Verifikasi</p>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Fidelity & Guard</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-emerald-400 group" id="step-ind-4" title="Tahap 4: Audit Independen, Skrining DPIA & Verifikasi">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge">4</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Audit & Verifikasi</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Fidelity & Guard</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">0ms</span>
             </div>
-            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center space-x-3 transition col-span-2 md:col-span-1" id="step-ind-5">
-                <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 font-bold text-xs">5</div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Delivery Data</p>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Excel, CSV & ZIP</p>
+            <div class="step-card bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between transition cursor-pointer hover:border-amber-400 group col-span-2 md:col-span-1" id="step-ind-5" title="Tahap 5: Delivery Data Excel 4-Sheet, CSV & ZIP">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 font-bold text-xs step-num-badge">5</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">Delivery Data</p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Excel, CSV & ZIP</p>
+                    </div>
                 </div>
+                <span class="step-latency-badge hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">0ms</span>
             </div>
         </div>
 
@@ -338,6 +360,23 @@
                         <span>Tujuan Penggunaan Data:</span>
                     </div>
                     <p class="text-sm text-slate-100 leading-relaxed font-medium pl-8" id="spec-purpose">-</p>
+                </div>
+
+                <!-- DPIA Screening Risk Banner (Pasal 120-121 PP No. 33/2026) -->
+                <div id="spec-dpia-banner" class="hidden p-4 rounded-2xl border transition-all duration-300">
+                    <div class="flex items-start space-x-3.5">
+                        <div id="dpia-banner-icon-box" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i id="dpia-banner-icon" data-lucide="shield-alert" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2.5 flex-wrap gap-y-1">
+                                <span id="dpia-banner-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">SKRINING DPIA PP 33/2026</span>
+                                <h4 id="dpia-banner-title" class="text-xs font-bold text-slate-900 dark:text-white">Hasil Penilaian Dampak Pelindungan Data</h4>
+                            </div>
+                            <p id="dpia-banner-desc" class="text-xs mt-1 leading-relaxed text-slate-600 dark:text-slate-300">-</p>
+                            <div id="dpia-banner-mitigation" class="mt-2 text-[11px] font-mono px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1265,6 +1304,14 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <button id="btn-open-dsr-modal" class="text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-xs" title="Modul Pemenuhan Hak Subjek Data (UU PDP Ps. 5-15)">
+                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                        <span>Portal Hak Subjek (DSR)</span>
+                    </button>
+                    <a id="btn-export-history-ropa" href="/api/history/export-ropa" download class="text-xs font-semibold bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-xs" title="Ekspor Buku Catatan Pemrosesan Sesuai Mandat Pasal 138 PP No. 33/2026">
+                        <i data-lucide="book-marked" class="w-3.5 h-3.5"></i>
+                        <span>Ekspor ROPA (PP 33/2026)</span>
+                    </a>
                     <a id="btn-export-history-csv" href="/api/history/export" download class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition shadow-xs">
                         <i data-lucide="download" class="w-3.5 h-3.5"></i>
                         <span>Ekspor CSV</span>
@@ -2517,6 +2564,138 @@
                 <button id="btn-submit-breach" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-2xs">
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
                     <span>Kirim Laporan & Terbitkan Surat Notifikasi Resmi (PDF)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Command Palette Modal (Ctrl + K / Cmd + K) - UI/UX Pro Max -->
+    <div id="modal-command-palette" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="palette-search-input">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <!-- Search Input Header -->
+            <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-slate-850">
+                <i data-lucide="search" class="w-5 h-5 text-slate-400 flex-shrink-0"></i>
+                <input type="text" id="palette-search-input" class="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none font-medium" placeholder="Ketik perintah atau cari permohonan... (cth: 'REQ', 'SQL', 'Katalog', 'ROPA', 'DSR', 'Role')">
+                <kbd class="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded font-mono">ESC</kbd>
+            </div>
+            <!-- Results List -->
+            <div id="palette-results" class="max-h-80 overflow-y-auto p-2 space-y-1 text-xs">
+                <!-- Populated dynamically via JavaScript -->
+            </div>
+            <!-- Footer Hints -->
+            <div class="p-2.5 bg-slate-100/70 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-4">
+                <div class="flex items-center space-x-3">
+                    <span><kbd class="font-mono bg-white dark:bg-slate-700 px-1 py-0.5 rounded border border-slate-300 dark:border-slate-600">↑</kbd> <kbd class="font-mono bg-white dark:bg-slate-700 px-1 py-0.5 rounded border border-slate-300 dark:border-slate-600">↓</kbd> Navigasi</span>
+                    <span><kbd class="font-mono bg-white dark:bg-slate-700 px-1 py-0.5 rounded border border-slate-300 dark:border-slate-600">↵</kbd> Pilih</span>
+                </div>
+                <span>DataRequestStudio Command Bar</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Portal Pemenuhan Hak Subjek Data / DSR Registry (UU PDP Ps. 5-15 & PP 33/2026) -->
+    <div id="modal-dsr-portal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="dsr-portal-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-6">
+            <!-- Header -->
+            <div class="p-5 bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="user-check" class="w-6 h-6 text-indigo-400"></i>
+                    </div>
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 uppercase tracking-wider mb-1">
+                            <span>MANDAT PASAL 5–15 UU NO. 27/2022 & PASAL 32–40 PP 33/2026</span>
+                        </div>
+                        <h3 id="dsr-portal-title" class="font-bold text-base text-white">Portal Pemenuhan Hak Subjek Data Pribadi (DSR Portal)</h3>
+                        <p class="text-xs text-indigo-200/80">Penanganan Hak Akses, Koreksi, Penarikan Persetujuan & Pemusnahan Data Perseorangan/Wajib Pajak</p>
+                    </div>
+                </div>
+                <button id="btn-close-dsr-modal" aria-label="Tutup Portal DSR" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Toolbar & Form Permohonan Baru -->
+            <div class="p-5 space-y-4 max-h-[72vh] overflow-y-auto text-xs">
+                <!-- Collapsible Form Tambah Permohonan DSR Baru -->
+                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                            <span>Catat Permohonan Hak Subjek Baru</span>
+                        </span>
+                        <span class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">Batas Waktu Respon: Maks 3 x 24 Jam (Ps. 33 PP 33/2026)</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="dsr-input-name" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Subjek Data / Penanggung Jawab:</label>
+                            <input type="text" id="dsr-input-name" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Budi Santoso (Direktur CV Nusantara)">
+                        </div>
+                        <div>
+                            <label for="dsr-input-identifier" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Identitas Pengenal (NIK / NPWP / Kontak):</label>
+                            <input type="text" id="dsr-input-identifier" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="Contoh: 3171051204850001 / NPWP 01.234.567.8">
+                        </div>
+                        <div>
+                            <label for="dsr-select-type" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jenis Hak Subjek Data yang Diminta:</label>
+                            <select id="dsr-select-type" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-semibold">
+                                <option value="HAK_KOREKSI">Pasal 6 UU PDP — Hak Melengkapi / Memperbarui (Koreksi Data)</option>
+                                <option value="HAK_AKSES_SALINAN">Pasal 7 UU PDP — Hak Mengakses & Memperoleh Salinan Data</option>
+                                <option value="HAK_HAPUS_MUSNAH">Pasal 8 UU PDP — Hak Mengakhiri Pemrosesan / Menghapus / Pemusnahan</option>
+                                <option value="HAK_TARIK_PERSETUJUAN">Pasal 9 UU PDP — Hak Menarik Kembali Persetujuan</option>
+                                <option value="HAK_KEBERATAN_OTOMASI">Pasal 10 UU PDP — Hak Keberatan Keputusan Otomatis</option>
+                                <option value="HAK_BATASI_PROSES">Pasal 11 UU PDP — Hak Menunda / Membatasi Pemrosesan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="dsr-input-req-ref" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">ID Permohonan Data Terkait (Opsional):</label>
+                            <input type="text" id="dsr-input-req-ref" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="Contoh: REQ-2026-BC-089">
+                        </div>
+                        <div class="col-span-1 sm:col-span-2">
+                            <label for="dsr-input-desc" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Uraian Alasan / Permintaan Subjek Data:</label>
+                            <textarea id="dsr-input-desc" rows="2" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed" placeholder="Jelaskan kebutuhan pemenuhan hak..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button id="btn-submit-dsr" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-2xs">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Catat ke Register Hak Subjek Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabel Register DSR Aktif -->
+                <div class="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shadow-xs">
+                    <div class="p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                        <span class="font-bold text-slate-800 dark:text-slate-200 text-xs">Daftar Permohonan Hak Subjek Data (DSR Register)</span>
+                        <span id="dsr-total-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Memuat...</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-800/80 text-[10px] uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="p-3">ID Register</th>
+                                    <th class="p-3">Subjek Data</th>
+                                    <th class="p-3">Jenis Hak (UU PDP)</th>
+                                    <th class="p-3">Batas Waktu (3x24 Jam)</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Aksi Tindak Lanjut</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dsr-table-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated dynamically via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Semua aktivitas DSR terintegrasi otomatis ke dalam Buku Catatan Pemrosesan (ROPA Pasal 138).</span>
+                <button id="btn-close-dsr-modal-footer" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition">
+                    Tutup
                 </button>
             </div>
         </div>
