@@ -124,6 +124,24 @@ html.dark .step-card.done {
     border-color: #059669 !important;
 }
 
+.step-num-badge {
+    width: 2rem !important;
+    height: 2rem !important;
+    min-width: 2rem !important;
+    min-height: 2rem !important;
+    border-radius: 9999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
 .step-card.done .step-num-badge {
     background-color: #10b981 !important;
     color: #ffffff !important;
