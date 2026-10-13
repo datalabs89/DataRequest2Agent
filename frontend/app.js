@@ -74,8 +74,7 @@ async function simulateClientStreamingPipeline(sampleName, customSpec, dialect, 
     }
 
     for (let i = 1; i <= 5; i++) {
-        const el = document.getElementById('step-ind-' + i);
-        if (el) el.className = 'step-card done p-3.5 rounded-xl border shadow-sm flex items-center space-x-3 transition';
+        setStepState(6); // marks all 1-5 as done with proper styling and latencies
     }
     const statusElem = document.getElementById('console-agent-status');
     if (statusElem) statusElem.innerText = 'Status: Selesai 100% (GitHub Pages Interactive Demo)';
@@ -787,7 +786,7 @@ async function processSSEStreamResponse(response) {
     }
 
     for (let i = 1; i <= 5; i++) {
-        document.getElementById(`step-ind-${i}`).className = "step-card done p-3.5 rounded-xl border shadow-sm flex items-center space-x-3 transition";
+        setStepState(6);
     }
     document.getElementById("console-agent-status").innerText = "Status: Selesai 100% (Tersimpan di CMS)";
 }
