@@ -336,8 +336,11 @@ class EnterpriseDatabaseEngine:
             status = "SUCCESS" if random.random() > 0.08 else "FAILED"
 
             cursor.execute("""
-            INSERT INTO fct_transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-            """, (t_id, c_id, s_id, t_datetime_str, random.choice(channels), amount, discount, tax,
+            INSERT INTO fct_transactions (
+                transaction_id, customer_id, store_id, transaction_date, channel, total_amount,
+                payment_method, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """, (t_id, c_id, s_id, t_datetime_str, random.choice(channels), amount,
                   random.choice(payment_methods), status, t_datetime_str))
 
         self._seed_djbc_mock_data(cursor)
@@ -374,9 +377,13 @@ class EnterpriseDatabaseEngine:
             fob_usd = random.choice([25000, 48000, 85000, 140000, 290000, 520000, 950000])
             devisa_idr = round(fob_usd * 16200, 2)
             status = "NPE" if random.random() > 0.08 else "PERIKSA_FISIK"
-            cursor.execute("INSERT OR REPLACE INTO fct_peb_ekspor VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                           (f"PEB-{t_date.strftime('%Y%m%d')}-{nopen}", t_str, comp[0], comp[1], comp[2],
-                            random.choice(kantor_list), random.choice(negara_ekspor), fob_usd, devisa_idr, status, t_str))
+            cursor.execute("""
+            INSERT OR REPLACE INTO fct_peb_ekspor (
+                nomor_aju, tanggal_daftar, npwp_eksportir, nama_eksportir, alamat_eksportir,
+                kantor_ekspor, negara_tujuan, nilai_fob_usd, nilai_devisa_idr, status_pabean, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (f"PEB-{t_date.strftime('%Y%m%d')}-{nopen}", t_str, comp[0], comp[1], comp[2],
+                  random.choice(kantor_list), random.choice(negara_ekspor), fob_usd, devisa_idr, status, t_str))
 
         # Seed 50 PIB Impor
         for i in range(1, 51):

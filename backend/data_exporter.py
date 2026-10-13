@@ -162,14 +162,16 @@ class DataExporter:
             # Tambahkan Laporan Verifikasi Audit
             zf.writestr("audit_verification_report.json", json.dumps(verification.model_dump(), indent=2, ensure_ascii=False))
 
-            # Tambahkan README Manifest
             reviewer_info = ""
             if verification.verifier_feedback:
+                dpo_txt = f"\nPejabat PDP (DPO)  : {getattr(verification.verifier_feedback, 'dpo_name', 'Tim PPDP DIKC DJBC')} ({getattr(verification.verifier_feedback, 'dpo_role', 'Pejabat Fungsi PDP')})"
+                ret_days = getattr(verification.verifier_feedback, 'retention_days', 30)
                 reviewer_info = f"""
 REVIEW & PERSETUJUAN VERIFIKATOR:
-Reviewer           : {verification.verifier_feedback.reviewer_name} ({verification.verifier_feedback.reviewer_role})
+Reviewer           : {verification.verifier_feedback.reviewer_name} ({verification.verifier_feedback.reviewer_role}){dpo_txt}
 Keputusan          : {verification.verifier_feedback.action}
 Catatan Kepatuhan  : {verification.verifier_feedback.comments}
+Masa Retensi Wajib : {ret_days} Hari Kalender (Wajib Pemusnahan / CoD pasca-retensi - Ps. 75 PP 33/2026)
 Waktu Sign-Off     : {verification.verifier_feedback.signature_timestamp or verification.verifier_timestamp}
 """
 
@@ -181,6 +183,7 @@ Waktu Sign-Off     : {verification.verifier_feedback.signature_timestamp or veri
             readme_text = f"""================================================================================
 PAKET PEMENUHAN PERMOHONAN DATA RESMI (DATA FULFILLMENT PACKAGE)
 DataRequest Studio — Enterprise Data Requisition & Governance Platform
+Direktorat Informasi Kepabeanan dan Cukai (DIKC) - DJBC
 ================================================================================
 ID Permohonan      : {spec.request_id}
 Dokumen            : {spec.document_title}
@@ -190,13 +193,16 @@ Periode Data       : {spec.time_range_start} s/d {spec.time_range_end}
 Status Verifikasi  : {verification.status}
 Auditor            : {verification.verifier_id} ({verification.verifier_timestamp})
 Digital Fingerprint: SHA256:{dig_hash_manifest}
-Proteksi PII       : Aktif (Masking NIK, Nama, dan No HP)
+Dasar Kepatuhan    : UU No. 27/2022 (UU PDP) & PP No. 33/2026 (Peraturan Pelaksanaan PDP)
+Proteksi PII       : Aktif (Masking Dinamis NIK, NPWP, Nama, dan No HP - Ps. 123 PP 33/2026)
+Retensi & Sanitasi : Wajib dimusnahkan dalam 30 hari kalender & menyampaikan Berita Acara / CoD
+Insiden PDP        : Wajib lapor < 24 jam ke PPDP DIKC & maks 3x24 jam ke Lembaga PDP (Ps. 114 PP 33/2026)
 {reviewer_info}
 BERKAS DALAM PAKET INI:
-1. {os.path.basename(excel_path)}  - Workbook Excel (Data Hasil, Audit, Kamus Data)
+1. {os.path.basename(excel_path)}  - Workbook Excel (Data Hasil, Audit Provenance, Kamus Data)
 2. {os.path.basename(csv_path)}    - Raw Data CSV (UTF-8)
 3. {os.path.basename(json_path)}   - Raw Data JSON (Machine-Readable Records)
-4. {os.path.basename(cert_path)}   - Sertifikat Otorisasi & Tata Kelola Data (PDF)
+4. {os.path.basename(cert_path)}   - Sertifikat Otorisasi & Tata Kelola Data (PDF - UU PDP & PP 33/2026)
 5. query_audit.sql                  - Query SQL yang dieksekusi
 6. request_specification.json       - Struktur spesifikasi kebutuhan hasil ekstraksi PDF
 7. audit_verification_report.json   - Checklist kepatuhan dan jaminan keamanan
@@ -471,8 +477,10 @@ BERKAS DALAM PAKET INI:
             ("Katalog Sumber", "OpenMetadata Enterprise Catalog (Verified)"),
             ("Status Verifikasi", f"{verification.status} ({verification.verifier_id})"),
             ("Waktu Verifikasi", verification.verifier_timestamp),
-            ("Jumlah Baris Diekstrak", len(df)),
-            ("Proteksi PII / PDP", "Aktif (Masking Dinamis NPWP, NIK, Nama, dan No HP sesuai UU PDP No. 27/2022)")
+            ("Dasar Regulasi PDP", "UU No. 27/2022 jo. PP No. 33/2026 (LNRI 2026 No. 88)"),
+            ("Proteksi PII / PDP", "Aktif (Masking Dinamis NPWP, NIK, Nama, dan No HP - Ps. 123 PP 33/2026)"),
+            ("Masa Retensi Wajib", "Maksimal 30 hari kalender sejak penyerahan (Ps. 75 PP 33/2026)"),
+            ("Kewajiban Sanitasi / CoD", "Wajib cryptographic wipe & menerbitkan Certificate of Destruction ke DIKC DJBC")
         ]
 
         # Tambahkan Digital Signature Hash Anti-Tampering
@@ -484,8 +492,11 @@ BERKAS DALAM PAKET INI:
         audit_items.append(("Cryptographic Digital Fingerprint", f"SHA256:{sig_hash_val}"))
 
         if verification.verifier_feedback:
+            dpo_name = getattr(verification.verifier_feedback, 'dpo_name', 'Tim PPDP / DPO DIKC DJBC')
+            dpo_role = getattr(verification.verifier_feedback, 'dpo_role', 'Pejabat Pelaksana Fungsi Pelindungan Data Pribadi')
             audit_items.extend([
-                ("Sign-off Verifikator", f"{verification.verifier_feedback.reviewer_name} ({verification.verifier_feedback.reviewer_role})"),
+                ("Sign-off Data Steward", f"{verification.verifier_feedback.reviewer_name} ({verification.verifier_feedback.reviewer_role})"),
+                ("Pengesahan PPDP / DPO", f"{dpo_name} ({dpo_role}) - Ps. 142-147 PP 33/2026"),
                 ("Keputusan Verifikator", verification.verifier_feedback.action),
                 ("Catatan & Feedback Kepatuhan", verification.verifier_feedback.comments)
             ])

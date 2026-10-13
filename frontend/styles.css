@@ -735,6 +735,13 @@ html.dark ::-webkit-scrollbar-thumb:hover {
     }
 }
 
+/* ================= MOBILE TOUCH TARGETS & ACCESSIBILITY POLISH (UI/UX PRO MAX) ================= */
+@media (max-width: 640px) {
+    button, [role="button"], select, .tab-btn {
+        min-height: 38px;
+    }
+}
+
 
 
 

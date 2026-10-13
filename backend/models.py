@@ -115,10 +115,13 @@ class VerificationCheck(BaseModel):
     severity: str = "HIGH"  # "HIGH", "MEDIUM", "LOW"
 
 class VerifierFeedback(BaseModel):
-    reviewer_name: str = "Hendra Gunawan"
+    reviewer_name: str = "Hendra Gunawan, S.Kom"
     reviewer_role: str = "Kepala Seksi Analisa dan Layanan Data"
+    dpo_name: Optional[str] = "Tim PPDP / DPO DIKC DJBC"
+    dpo_role: Optional[str] = "Pejabat Pelaksana Fungsi Pelindungan Data Pribadi"
+    retention_days: Optional[int] = 30
     action: str = "APPROVE"  # "APPROVE", "REVISION_REQUESTED", "REJECT"
-    comments: str = "Data disetujui untuk analisis internal. Akses terbatas sesuai ketentuan PDP."
+    comments: str = "Data disetujui untuk analisis kedinasan. Wajib patuh UU No. 27/2022 & PP No. 33/2026: Kolom identitas (NIK/NPWP/Kontak) dimasking, retensi data maksimal 30 hari, wajib pemusnahan (CoD) pasca-analisis, dan dilarang transfer ke pihak ketiga."
     signature_timestamp: Optional[str] = None
     digital_signature_hash: Optional[str] = None
 

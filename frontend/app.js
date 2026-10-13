@@ -899,18 +899,20 @@ function renderResults(data) {
                 item.innerHTML = `
                     <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold text-[11px] border border-indigo-200">${j.join_type}</span>
                     <span class="font-bold text-slate-900">${j.left_table}</span>
-                    <span class="text-slate-400">🔗</span>
+                    <i data-lucide="link" class="w-3.5 h-3.5 text-slate-400"></i>
                     <span class="font-bold text-indigo-700">${j.right_table}</span>
                     <span class="text-slate-500 font-sans">Kunci Relasi:</span>
                     <code class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-[11px] font-mono border border-slate-200 font-semibold">${j.on_condition}</code>
                 `;
                 joinStrategyContent.appendChild(item);
             });
+            if (window.lucide) lucide.createIcons();
         } else {
             const item = document.createElement("div");
             item.className = "p-2 rounded-lg bg-white border border-indigo-100 text-xs text-slate-600";
-            item.innerHTML = `<span class="text-emerald-700 font-bold">✓ Query Tabel Tunggal Terisolasi:</span> Seluruh atribut terpenuhi dari tabel fakta utama tanpa perlu operasi JOIN antar-tabel.`;
+            item.innerHTML = `<span class="text-emerald-700 font-bold inline-flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> Query Tabel Tunggal Terisolasi:</span> Seluruh atribut terpenuhi dari tabel fakta utama tanpa perlu operasi JOIN antar-tabel.`;
             joinStrategyContent.appendChild(item);
+            if (window.lucide) lucide.createIcons();
         }
     }
 
@@ -1792,7 +1794,7 @@ function setupDeliveryInteractions() {
 
             navigator.clipboard.writeText(tsvContent).then(() => {
                 showToast("Data hasil pemenuhan berhasil disalin ke format TSV!", "success");
-                if (copyText) copyText.innerText = "✓ Tersalin!";
+                if (copyText) copyText.innerText = "Tersalin!";
                 btnCopy.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-300");
                 setTimeout(() => {
                     if (copyText) copyText.innerText = "Salin TSV";
@@ -2356,11 +2358,11 @@ function renderCategorizedVerificationChecks() {
             severityBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">INFO</span>`;
         }
 
-        // Domain icon
-        let domainIcon = "🛡️";
-        if (c.category === "Fidelity") domainIcon = "🎯";
-        else if (c.category === "PII/Governance") domainIcon = "🔒";
-        else if (c.category === "Syntax/Schema") domainIcon = "🏛️";
+        // Domain icon (Lucide SVG)
+        let domainLucide = "shield-check";
+        if (c.category === "Fidelity") domainLucide = "target";
+        else if (c.category === "PII/Governance") domainLucide = "lock";
+        else if (c.category === "Syntax/Schema") domainLucide = "database";
 
         cItem.className = `p-3.5 rounded-xl border text-xs flex items-start space-x-3.5 transition shadow-2xs ${borderBg}`;
         cItem.innerHTML = `
@@ -2374,8 +2376,9 @@ function renderCategorizedVerificationChecks() {
                         ${severityBadge}
                     </div>
                     <div class="flex items-center space-x-1.5">
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                            ${domainIcon} ${c.category}
+                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center gap-1">
+                            <i data-lucide="${domainLucide}" class="w-3 h-3 text-slate-500"></i>
+                            <span>${c.category}</span>
                         </span>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
                             ${isPassed ? 'Lolos Audit' : 'Pelanggaran'}
@@ -2432,7 +2435,7 @@ function setupVerifierFeedback() {
 
     if (presetPdp && commentsInput) {
         presetPdp.addEventListener("click", () => {
-            commentsInput.value = "Disetujui bersyarat sesuai UU No. 27/2022 (PDP). Kolom identitas (NIK & Kontak) wajib tersamarkan secara permanen dan dilarang diserahkan ke pihak luar tanpa izin DPO.";
+            commentsInput.value = "Disetujui bersyarat sesuai UU No. 27/2022 & PP No. 33/2026. Masking dinamis NIK/NPWP/Kontak aktif, masa retensi data maksimal 30 hari kalender, pemusnahan wajib (Certificate of Destruction) pasca-analisis, dan dilarang transfer ke pihak ketiga.";
             commentsInput.focus();
         });
     }
@@ -4077,13 +4080,14 @@ function setupOmSettingsModal() {
             const res = await fetch("/api/config/openmetadata");
             const data = await res.json();
             if (data.status && data.status.connected) {
-                testResult.innerHTML = `<span class="text-emerald-600 font-semibold">✅ Sukses: Server Aktif (${data.status.version})</span>`;
+                testResult.innerHTML = `<span class="text-emerald-600 font-semibold inline-flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Sukses: Server Aktif (${data.status.version})</span>`;
             } else {
-                testResult.innerHTML = `<span class="text-amber-600 font-semibold">ℹ️ Live server tidak merespons, Katalog DWH internal aktif (${data.status.tables_available} tabel).</span>`;
+                testResult.innerHTML = `<span class="text-amber-600 font-semibold inline-flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-amber-600"></i> Live server tidak merespons, Katalog DWH internal aktif (${data.status.tables_available} tabel).</span>`;
             }
         } catch (err) {
-            testResult.innerHTML = `<span class="text-red-500 font-semibold">❌ Koneksi gagal: ${err.message}</span>`;
+            testResult.innerHTML = `<span class="text-red-500 font-semibold inline-flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Koneksi gagal: ${err.message}</span>`;
         }
+        if (window.lucide) lucide.createIcons();
     });
 
     saveBtn.addEventListener("click", async () => {
