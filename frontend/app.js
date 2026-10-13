@@ -426,6 +426,7 @@ async function initApp() {
     setupAiCopilot();
     setupPdfPreviewModal();
     setupCodModal();
+    setupBreachModal();
     setupPublicVerification();
     setupGlobalKeyHandlers();
 
@@ -2954,6 +2955,17 @@ function setupCmsModal() {
                     `}
                     ${item.excel_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.excel_filename}` : `/api/download/outputs/${item.excel_filename}`}" download class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.excel_filename}', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', this); }">Excel</a>` : ''}
                     ${item.zip_filename ? `<a href="${isGitHubPagesOrOffline() ? `outputs/${item.zip_filename}` : `/api/download/outputs/${item.zip_filename}`}" download class="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded inline-flex items-center transition shadow-2xs" onclick="event.stopPropagation(); if (isGitHubPagesOrOffline()) { event.preventDefault(); triggerArtifactDownload('${item.zip_filename}', 'application/zip', this); }">ZIP</a>` : ''}
+                    ${item.is_breached && item.breach_notice_filename ? `
+                    <button type="button" class="btn-cms-preview-breach text-[11px] font-semibold text-rose-800 hover:text-rose-950 bg-rose-100 hover:bg-rose-200 border border-rose-300 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Pratinjau Surat Pemberitahuan Kegagalan PDP (3x24 Jam)">
+                        <i data-lucide="file-warning" class="w-3 h-3 text-rose-700"></i>
+                        <span>Surat Insiden</span>
+                    </button>
+                    ` : `
+                    <button type="button" class="btn-cms-row-breach text-[11px] font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 rounded inline-flex items-center space-x-1 transition shadow-2xs" title="Laporkan Dugaan Insiden Kegagalan PDP (Pasal 46 UU PDP)">
+                        <i data-lucide="alert-octagon" class="w-3 h-3 text-rose-600"></i>
+                        <span>Lapor Insiden</span>
+                    </button>
+                    `}
                 </td>
             `;
 
@@ -2996,6 +3008,28 @@ function setupCmsModal() {
                     e.stopPropagation();
                     if (typeof openCodConfirmModal === "function") {
                         openCodConfirmModal(item);
+                    }
+                });
+            }
+
+            // Pratinjau Surat Notifikasi Insiden PDP
+            const btnBreachPreview = tr.querySelector(".btn-cms-preview-breach");
+            if (btnBreachPreview) {
+                btnBreachPreview.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openPdfPreviewModal === "function") {
+                        openPdfPreviewModal(item.breach_notice_filename, "Surat Pemberitahuan Kegagalan PDP Resmi (3x24 Jam)", "Pasal 46 UU No. 27/2022 jo. Pasal 114-119 PP No. 33/2026", "");
+                    }
+                });
+            }
+
+            // Dialog Lapor Insiden Kegagalan PDP
+            const btnRowBreach = tr.querySelector(".btn-cms-row-breach");
+            if (btnRowBreach) {
+                btnRowBreach.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof openBreachReportModal === "function") {
+                        openBreachReportModal(item);
                     }
                 });
             }
@@ -5283,5 +5317,151 @@ async function setupPublicVerification() {
         showToast(`Dokumen dengan ID "${verifyId}" tidak ditemukan dalam arsip resmi DJBC.`, "error");
     }
 }
+
+// ==================== PRIORITAS 4: PELAPORAN INSIDEN KEGAGALAN PDP (3x24 JAM) ====================
+let currentBreachTargetItem = null;
+
+function openBreachReportModal(item) {
+    const modal = document.getElementById("modal-breach-report");
+    if (!modal) return;
+
+    currentBreachTargetItem = item;
+    const reqIdEl = document.getElementById("breach-target-req-id");
+    const reqTitleEl = document.getElementById("breach-target-title");
+    const requesterEl = document.getElementById("breach-target-requester");
+    const discTimeInput = document.getElementById("breach-discovery-time");
+
+    if (reqIdEl) reqIdEl.innerText = item.request_id || item.id;
+    if (reqTitleEl) reqTitleEl.innerText = item.document_title || "Dokumen Permohonan";
+    if (requesterEl) requesterEl.innerText = `${item.requester_name || 'Pemohon'} (${item.department || 'DJBC'})`;
+
+    // Otomatis isi waktu penemuan saat ini
+    if (discTimeInput) {
+        const now = new Date();
+        const dStr = now.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+        const tStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+        discTimeInput.value = `${dStr} ${tStr} WIB`;
+    }
+
+    modal.classList.remove("hidden");
+    if (window.lucide) lucide.createIcons();
+}
+
+function setupBreachModal() {
+    const modal = document.getElementById("modal-breach-report");
+    const btnClose = document.getElementById("btn-close-breach-modal");
+    const btnCancel = document.getElementById("btn-cancel-breach");
+    const btnSubmit = document.getElementById("btn-submit-breach");
+
+    if (!modal) return;
+
+    const closeModal = () => modal.classList.add("hidden");
+    if (btnClose) btnClose.addEventListener("click", closeModal);
+    if (btnCancel) btnCancel.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    if (btnSubmit) {
+        btnSubmit.addEventListener("click", async () => {
+            if (!currentBreachTargetItem) return;
+
+            const reqId = currentBreachTargetItem.request_id || currentBreachTargetItem.id;
+            const discTime = document.getElementById("breach-discovery-time")?.value || "";
+            const severityVal = document.getElementById("breach-severity-select")?.value || "TINGGI";
+            const chronologyVal = document.getElementById("breach-chronology-input")?.value || "";
+            const impactVal = document.getElementById("breach-impact-input")?.value || "";
+            const containmentVal = document.getElementById("breach-containment-input")?.value || "";
+
+            const catCheckboxes = document.querySelectorAll(".breach-cat-cb:checked");
+            const categories = Array.from(catCheckboxes).map(cb => cb.value);
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menerbitkan Surat Pemberitahuan Resmi...</span>`;
+            if (window.lucide) lucide.createIcons();
+
+            appendConsoleLog("CSIRT / Data Protection Officer", `Melaporkan dugaan insiden PDP untuk ${reqId} (Severitas: ${severityVal}). Menjalankan notifikasi darurat 3x24 jam...`);
+
+            try {
+                let reportResult = null;
+                if (!isGitHubPagesOrOffline()) {
+                    const res = await fetch("/api/breach/report", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            request_id: reqId,
+                            discovery_date: discTime,
+                            severity_level: severityVal,
+                            impacted_categories: categories,
+                            chronology: chronologyVal,
+                            potential_impact: impactVal,
+                            containment_steps: containmentVal,
+                            reporter_name: "Hendra Gunawan, S.Kom.",
+                            reporter_nip: "198304122006021001"
+                        })
+                    });
+                    if (res.ok) {
+                        reportResult = await res.json();
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.detail || "Gagal menerbitkan surat notifikasi insiden.");
+                    }
+                } else {
+                    // Fallback offline / GitHub Pages
+                    reportResult = {
+                        success: true,
+                        notice_filename: `Surat_Notifikasi_Kegagalan_PDP_${reqId.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`
+                    };
+                }
+
+                if (reportResult) {
+                    const itemData = reportResult.item || reportResult;
+                    const noticeFile = reportResult.notice_filename || itemData.breach_notice_filename;
+
+                    currentBreachTargetItem.is_breached = true;
+                    currentBreachTargetItem.breach_notice_filename = noticeFile;
+                    currentBreachTargetItem.breach_severity = severityVal;
+                    currentBreachTargetItem.status = "DATA_BREACH_REPORTED";
+
+                    if (Array.isArray(allCmsHistoryItems)) {
+                        const found = allCmsHistoryItems.find(x => (x.request_id || x.id) === reqId);
+                        if (found) {
+                            found.is_breached = true;
+                            found.breach_notice_filename = noticeFile;
+                            found.breach_severity = severityVal;
+                            found.status = "DATA_BREACH_REPORTED";
+                        }
+                    }
+
+                    showToast(`Insiden Berhasil Dilaporkan! Surat Pemberitahuan Resmi (3x24 Jam) telah diterbitkan sesuai Pasal 46 UU No. 27/2022.`, "success");
+                    appendConsoleLog("Compliance Mandate", `Surat Notifikasi Resmi ${noticeFile} diterbitkan untuk Badan PDP & Subjek Data.`);
+
+                    closeModal();
+
+                    // Re-render tabel CMS
+                    if (typeof window.applyCmsFilterAndSearch === "function") {
+                        window.applyCmsFilterAndSearch();
+                    }
+
+                    // Buka pratinjau Surat Notifikasi PDF
+                    openPdfPreviewModal(
+                        noticeFile,
+                        "Surat Pemberitahuan Tertulis Kegagalan Pelindungan Data Pribadi",
+                        `Mandat 3 x 24 Jam — Pasal 46 UU No. 27/2022 jo. Pasal 114-119 PP No. 33/2026`,
+                        ""
+                    );
+                }
+            } catch (err) {
+                showToast("Error pelaporan insiden: " + err.message, "error");
+                appendConsoleLog("Error", `Gagal memproses notifikasi insiden: ${err.message}`);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i><span>Kirim Laporan & Terbitkan Surat Notifikasi Resmi (PDF)</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        });
+    }
+}
+
 
 

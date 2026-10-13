@@ -439,6 +439,76 @@ def generate_certificate_of_destruction(
         "item": updated_item
     }
 
+class BreachReportRequest(BaseModel):
+    request_id: str
+    discovery_date: Optional[str] = None
+    severity_level: Optional[str] = "TINGGI"
+    impacted_categories: Optional[List[str]] = None
+    chronology: Optional[str] = "Terdeteksi anomali pada akses data pemenuhan atau dugaan paparan di luar lingkungan resmi."
+    potential_impact: Optional[str] = "Potensi penyalahgunaan identitas subjek data dan kebocoran rahasia kepabeanan."
+    containment_steps: Optional[str] = "Akses dicabut seketika, kredensial di-reset, dan investigasi forensik diaktifkan."
+    reporter_name: Optional[str] = "Hendra Gunawan, S.Kom."
+    reporter_nip: Optional[str] = "198304122006021001"
+
+@app.post("/api/breach/report")
+def report_data_breach(
+    payload: BreachReportRequest,
+    x_user_role: Optional[str] = Header(None, alias="X-User-Role")
+):
+    """Menerbitkan Surat Pemberitahuan Resmi Kegagalan Pelindungan Data Pribadi (3x24 Jam - Pasal 46 UU PDP)."""
+    from breach_notification_generator import BreachNotificationGenerator
+    import datetime
+
+    item = coordinator.history_mgr.get_by_id(payload.request_id)
+    if not item:
+        raise HTTPException(status_code=404, detail=f"Permohonan '{payload.request_id}' tidak ditemukan.")
+
+    timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_id = payload.request_id.replace("/", "_").replace("-", "_")
+    notice_filename = f"Surat_Notifikasi_Kegagalan_PDP_{safe_id}_{timestamp_str}.pdf"
+    notice_path = os.path.join(OUTPUTS_DIR, notice_filename)
+
+    now_disc = payload.discovery_date or datetime.datetime.now().strftime("%d %B %Y %H:%M WIB")
+    categories = payload.impacted_categories or ["Data Pribadi Spesifik / Keuangan", "Identitas Pengguna Jasa", "Data Transaksi Ekspor/Impor"]
+
+    gen = BreachNotificationGenerator()
+    gen.generate_notification(
+        output_path=notice_path,
+        request_id=item.get("request_id", payload.request_id),
+        document_title=item.get("document_title", "Dokumen Permohonan"),
+        requester_name=item.get("requester_name", "Analis Data"),
+        requester_department=item.get("department", "Direktorat Jenderal Bea dan Cukai"),
+        discovery_date=now_disc,
+        severity_level=payload.severity_level or "TINGGI",
+        impacted_categories=categories,
+        chronology=payload.chronology,
+        potential_impact=payload.potential_impact,
+        containment_steps=payload.containment_steps,
+        reporter_name=payload.reporter_name or "Hendra Gunawan, S.Kom.",
+        reporter_nip=payload.reporter_nip or "198304122006021001"
+    )
+
+    # Sinkronisasi ke frontend/outputs jika ada
+    if os.path.exists(FRONTEND_DIR):
+        f_out = os.path.join(FRONTEND_DIR, "outputs")
+        os.makedirs(f_out, exist_ok=True)
+        import shutil
+        shutil.copy(notice_path, os.path.join(f_out, notice_filename))
+
+    updated_item = coordinator.history_mgr.report_breach(
+        request_id=payload.request_id,
+        breach_details=payload.model_dump(),
+        notice_filename=notice_filename
+    )
+
+    return {
+        "status": "success",
+        "success": True,
+        "message": "Surat Pemberitahuan Tertulis Kegagalan PDP berhasil diterbitkan sesuai Pasal 46 UU No. 27/2022 & Pasal 114-119 PP No. 33/2026.",
+        "notice_filename": notice_filename,
+        "item": updated_item
+    }
+
 @app.get("/api/preview/{folder_type}/{filename}")
 def preview_file_inline(folder_type: str, filename: str):
     """Menyajikan dokumen PDF secara inline untuk In-App PDF Preview Modal tanpa memicu paksa download."""

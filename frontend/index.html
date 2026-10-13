@@ -2402,6 +2402,126 @@
         </div>
     </div>
 
+    <!-- Modal Pelaporan Insiden Kegagalan PDP (Prioritas 4 - Ps. 46 UU PDP & Ps. 114-119 PP 33/2026) -->
+    <div id="modal-breach-report" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="breach-modal-title">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 my-8">
+            <!-- Header Darurat -->
+            <div class="p-5 bg-gradient-to-r from-rose-900 via-rose-950 to-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-rose-600/30 border border-rose-500/50 text-rose-300 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="alert-octagon" class="w-6 h-6 text-rose-400 animate-pulse"></i>
+                    </div>
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/30 text-rose-200 border border-rose-400/40 uppercase tracking-wider mb-1">
+                            <span>MANDAT 3 x 24 JAM — PASAL 46 UU PDP</span>
+                        </div>
+                        <h3 id="breach-modal-title" class="font-bold text-base text-white">Formulir Pelaporan Insiden Kegagalan Pelindungan Data Pribadi</h3>
+                        <p class="text-xs text-rose-200/80">Direktorat Informasi Kepabeanan dan Cukai — Kementerian Keuangan</p>
+                    </div>
+                </div>
+                <button id="btn-close-breach-modal" aria-label="Tutup form insiden" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <div class="p-6 space-y-4 text-xs max-h-[70vh] overflow-y-auto">
+                <!-- Target Metadata Permohonan -->
+                <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/80 grid grid-cols-2 gap-2.5">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">ID Permohonan Terkait:</span>
+                        <div id="breach-target-req-id" class="font-mono font-bold text-rose-600 dark:text-rose-400 text-sm">REQ-...</div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Pemohon / Unit:</span>
+                        <div id="breach-target-requester" class="font-semibold text-slate-800 dark:text-slate-200 truncate">-</div>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-[10px] text-slate-400 uppercase font-semibold">Judul Dokumen:</span>
+                        <div id="breach-target-title" class="font-medium text-slate-700 dark:text-slate-300 truncate">-</div>
+                    </div>
+                </div>
+
+                <!-- Input Waktu & Severitas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label for="breach-discovery-time" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Waktu Penemuan / Deteksi Insiden:</label>
+                        <input type="text" id="breach-discovery-time" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 font-mono" placeholder="Contoh: 13 Oktober 2026 08:45 WIB">
+                    </div>
+                    <div>
+                        <label for="breach-severity-select" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tingkat Keparahan (Severity Level):</label>
+                        <select id="breach-severity-select" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 font-semibold">
+                            <option value="KRITIS" selected>KRITIS (Data Finansial / NIK / Masif Terdampak)</option>
+                            <option value="TINGGI">TINGGI (Data Identitas Perusahaan & Transaksi)</option>
+                            <option value="SEDANG">SEDANG (Paparan Internal Terbatas)</option>
+                            <option value="RENDAH">RENDAH (Anomali Ringan / Terisolasi)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Checkbox Kategori Data Terdampak -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kategori Data Pribadi yang Terdampak (Pasal 116 PP 33/2026):</label>
+                    <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Data Pribadi Spesifik (NPWP & Rekening Keuangan)" checked>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">NPWP / Data Finansial</span>
+                        </label>
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Data Identitas Pribadi (NIK, Nama Lengkap, Telepon)" checked>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">NIK / Identitas Direktur</span>
+                        </label>
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Data Rahasia Transaksi Pabean (FOB, CIF, HS Code)" checked>
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">Data Transaksi Kepabeanan</span>
+                        </label>
+                        <label class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 cursor-pointer">
+                            <input type="checkbox" class="breach-cat-cb text-rose-600 rounded" value="Salinan Berkas Ekspor/Impor (Invoice/Packing List)">
+                            <span class="text-slate-800 dark:text-slate-200 font-medium">Dokumen Pelengkap Pabean</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Kronologi Singkat -->
+                <div>
+                    <label for="breach-chronology-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Uraian Kronologis Kejadian & Penyebab Insiden:</label>
+                    <textarea id="breach-chronology-input" rows="3" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed" placeholder="Jelaskan kronologi kejadian dan bagaimana insiden pertama kali terdeteksi...">Terdeteksi akses unduhan berkas data pemenuhan dari alamat IP tidak dikenal di luar jaringan privat VPN kantor dan kegagalan proteksi kredensial temporal.</textarea>
+                </div>
+
+                <!-- Dampak & Mitigasi -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label for="breach-impact-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Potensi Dampak & Risiko:</label>
+                        <textarea id="breach-impact-input" rows="3" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed">Potensi penyalahgunaan identitas subjek data dan paparan informasi rahasia komersial eksportir/importir.</textarea>
+                    </div>
+                    <div>
+                        <label for="breach-containment-input" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tindakan Mitigasi yang Telah Diambil:</label>
+                        <textarea id="breach-containment-input" rows="3" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed">Pencabutan token sesi secara instan, reset paksa kredensial, isolasi jaringan firewall, dan ekstraksi log forensik CSIRT.</textarea>
+                    </div>
+                </div>
+
+                <!-- Pernyataan Hukum Kemenkeu -->
+                <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-[11px] text-rose-900 dark:text-rose-200 flex items-start gap-2.5">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <b>Kewajiban Hukum Notifikasi:</b> Sesuai Pasal 114 PP No. 33/2026, pemberitahuan ini wajib disampaikan secara tertulis paling lambat <b>3 × 24 jam</b> kepada Lembaga PDP dan Subjek Data Pribadi, serta dicatatkan dalam Buku Catatan Pemrosesan (ROPA).
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end space-x-2">
+                <button id="btn-cancel-breach" class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold text-xs transition">
+                    Batal
+                </button>
+                <button id="btn-submit-breach" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-2xs">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    <span>Kirim Laporan & Terbitkan Surat Notifikasi Resmi (PDF)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Floating Toast Notification System (WCAG 4.1.3 aria-live) -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2.5 pointer-events-none max-w-sm w-full sm:w-auto" role="status" aria-live="polite"></div>
 

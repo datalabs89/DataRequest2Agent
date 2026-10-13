@@ -199,7 +199,7 @@ Retensi & Sanitasi : Wajib dimusnahkan dalam 30 hari kalender & menyampaikan Ber
 Insiden PDP        : Wajib lapor < 24 jam ke PPDP DIKC & maks 3x24 jam ke Lembaga PDP (Ps. 114 PP 33/2026)
 {reviewer_info}
 BERKAS DALAM PAKET INI:
-1. {os.path.basename(excel_path)}  - Workbook Excel (Data Hasil, Audit Provenance, Kamus Data)
+1. {os.path.basename(excel_path)}  - Workbook Excel 4 Sheet (Data Hasil + Subtotal Dinamis, Audit Provenance, Kamus Data OpenMetadata, Profiling Kualitas Data)
 2. {os.path.basename(csv_path)}    - Raw Data CSV (UTF-8)
 3. {os.path.basename(json_path)}   - Raw Data JSON (Machine-Readable Records)
 4. {os.path.basename(cert_path)}   - Sertifikat Otorisasi & Tata Kelola Data (PDF - UU PDP & PP 33/2026)
@@ -448,12 +448,58 @@ BERKAS DALAM PAKET INI:
                 elif "date" in col_name_lower or "tanggal" in col_name_lower:
                     cell.alignment = Alignment(horizontal="center")
 
+        # Baris Ringkasan Subtotal Dinamis Excel (Native Formula =SUBTOTAL)
+        last_data_row = len(df) + 1
+        summary_row = last_data_row + 1
+
+        summary_fill = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")  # Blue 50
+        summary_border = Border(
+            top=Side(style='thin', color='1E3A8A'),
+            bottom=Side(style='double', color='1E3A8A'),
+            left=Side(style='thin', color='CBD5E1'),
+            right=Side(style='thin', color='CBD5E1')
+        )
+
+        for col_idx, col_name in enumerate(headers, 1):
+            col_letter = get_column_letter(col_idx)
+            cell = ws_data.cell(row=summary_row, column=col_idx)
+            cell.fill = summary_fill
+            cell.border = summary_border
+            cell.font = Font(name="Calibri", size=10, bold=True, color="1E3A8A")
+
+            col_name_lower = col_name.lower()
+            is_numeric = pd.api.types.is_numeric_dtype(df[col_name])
+
+            if col_idx == 1:
+                cell.value = "TOTAL / SUB-TOTAL"
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            elif is_numeric:
+                # Formula native Excel dinamis mengabaikan baris terfilter
+                if "tarif" in col_name_lower:
+                    cell.value = f"=SUBTOTAL(101, {col_letter}2:{col_letter}{last_data_row})"  # 101 = AVERAGE
+                    cell.number_format = '0.00%'
+                else:
+                    cell.value = f"=SUBTOTAL(109, {col_letter}2:{col_letter}{last_data_row})"  # 109 = SUM
+                    if any(x in col_name_lower for x in ["total_amount", "discount_amount", "tax_amount", "bea_keluar", "bea_masuk", "ppn_idr", "pph_idr", "pph_ekspor", "total_tagihan_cukai_idr"]):
+                        cell.number_format = 'Rp #,##0'
+                    elif any(x in col_name_lower for x in ["usd", "devisa", "cif", "fob"]):
+                        cell.number_format = '$#,##0.00'
+                    else:
+                        cell.number_format = '#,##0'
+                cell.alignment = Alignment(horizontal="right")
+            elif col_idx == 2 or any(x in col_name_lower for x in ["nomor", "aju", "id"]):
+                cell.value = f"=SUBTOTAL(103, {col_letter}2:{col_letter}{last_data_row})"  # 103 = COUNTA
+                cell.alignment = Alignment(horizontal="center")
+                cell.number_format = '#,##0 "transaksi"'
+
         # Auto-adjust Column Width
         for col in ws_data.columns:
             max_len = max(len(str(cell.value or '')) for cell in col)
             col_letter = get_column_letter(col[0].column)
             ws_data.column_dimensions[col_letter].width = max(max_len + 4, 14)
 
+        # Pasang Auto-Filter pada tabel data
+        ws_data.auto_filter.ref = f"A1:{get_column_letter(len(headers))}{last_data_row}"
         ws_data.freeze_panes = "A2"
 
         # -------------------------------------------------------------
@@ -542,5 +588,104 @@ BERKAS DALAM PAKET INI:
             max_len = max(len(str(cell.value or '')) for cell in col)
             col_letter = get_column_letter(col[0].column)
             ws_dict.column_dimensions[col_letter].width = max(max_len + 4, 15)
+
+        # -------------------------------------------------------------
+        # SHEET 4: PROFILING KUALITAS DATA & KEPATUHAN PDP
+        # -------------------------------------------------------------
+        ws_profile = wb.create_sheet(title="PROFILING_KUALITAS_DATA")
+        ws_profile.column_dimensions['A'].width = 6
+        ws_profile.column_dimensions['B'].width = 28
+        ws_profile.column_dimensions['C'].width = 20
+        ws_profile.column_dimensions['D'].width = 14
+        ws_profile.column_dimensions['E'].width = 16
+        ws_profile.column_dimensions['F'].width = 14
+        ws_profile.column_dimensions['G'].width = 18
+        ws_profile.column_dimensions['H'].width = 16
+        ws_profile.column_dimensions['I'].width = 30
+        ws_profile.column_dimensions['J'].width = 12
+        ws_profile.column_dimensions['K'].width = 26
+
+        prof_title = ws_profile.cell(row=1, column=1, value="PROFILING & METRIK KUALITAS DATA KEPABEANAN (DATA QUALITY SCORECARD)")
+        prof_title.font = Font(name="Calibri", size=13, bold=True, color="1E3A8A")
+
+        prof_subtitle = ws_profile.cell(row=2, column=1, value=f"Permohonan: {spec.request_id} | Tanggal Analisis: {datetime.date.today().strftime('%d %B %Y')} | Total Baris: {len(df):,} baris")
+        prof_subtitle.font = Font(name="Calibri", size=10, italic=True, color="475569")
+
+        prof_headers = [
+            "No", "Nama Atribut / Kolom", "Tipe Data Terdeteksi", "Total Baris", 
+            "Terisi (Non-Null)", "Kosong (Null)", "Rasio Kelengkapan", 
+            "Nilai Unik (Kardinalitas)", "Nilai Modus / Terbanyak", "Frekuensi", "Status Kepatuhan PDP"
+        ]
+
+        for c_idx, h_text in enumerate(prof_headers, 1):
+            cell = ws_profile.cell(row=4, column=c_idx, value=h_text)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+        for p_idx, col_name in enumerate(headers, 1):
+            row_num = 4 + p_idx
+            series = df[col_name]
+            total_cnt = len(series)
+            non_null = int(series.notna().sum())
+            null_cnt = int(series.isna().sum())
+            comp_ratio = (non_null / total_cnt) if total_cnt > 0 else 1.0
+            nunique_cnt = int(series.nunique())
+
+            mode_vals = series.mode()
+            top_val = str(mode_vals.iloc[0]) if not mode_vals.empty else "-"
+            val_counts = series.value_counts()
+            top_freq = int(val_counts.iloc[0]) if not val_counts.empty else 0
+
+            # Deteksi tipe data ramah pembaca
+            if pd.api.types.is_numeric_dtype(series):
+                dtype_label = "Numerik (Integer/Float)"
+            elif pd.api.types.is_datetime64_any_dtype(series) or "date" in col_name.lower() or "tanggal" in col_name.lower():
+                dtype_label = "Tanggal / Temporal"
+            elif pd.api.types.is_bool_dtype(series):
+                dtype_label = "Boolean (True/False)"
+            else:
+                dtype_label = "String / Teks Kategoris"
+
+            # Klasifikasi Kepatuhan PDP
+            cl_lower = col_name.lower()
+            if "_masked" in cl_lower or "[TERLINDUNGI" in top_val or "***" in top_val:
+                pdp_status = "Dimaskir Dinamis (Aman)"
+            elif any(k in cl_lower for k in ["nik", "npwp", "nama_eksportir", "nama_importir", "customer", "phone", "alamat"]):
+                pdp_status = "Sensitif (Perlu Proteksi)"
+            else:
+                pdp_status = "Data Transaksional Standar"
+
+            zebra_fill = PatternFill(start_color="F8FAFC" if p_idx % 2 == 0 else "FFFFFF", fill_type="solid")
+
+            row_vals = [
+                p_idx, col_name, dtype_label, total_cnt, 
+                non_null, null_cnt, comp_ratio, 
+                nunique_cnt, top_val, top_freq, pdp_status
+            ]
+
+            for c_idx, val in enumerate(row_vals, 1):
+                cell = ws_profile.cell(row=row_num, column=c_idx, value=val)
+                cell.fill = zebra_fill
+                cell.border = border_thin
+                cell.font = Font(name="Calibri", size=9)
+
+                if c_idx in [1, 4, 5, 6, 8, 10]:
+                    cell.alignment = Alignment(horizontal="center")
+                    if c_idx in [4, 5, 6, 8, 10]:
+                        cell.number_format = '#,##0'
+                elif c_idx == 7:
+                    cell.alignment = Alignment(horizontal="center")
+                    cell.number_format = '0.0%'
+                    if comp_ratio == 1.0:
+                        cell.font = Font(name="Calibri", size=9, bold=True, color="15803D")
+                    else:
+                        cell.font = Font(name="Calibri", size=9, bold=True, color="B45309")
+                elif c_idx == 11:
+                    cell.alignment = Alignment(horizontal="center")
+                    if "Dimaskir" in pdp_status:
+                        cell.font = Font(name="Calibri", size=9, bold=True, color="2563EB")
+                    elif "Sensitif" in pdp_status:
+                        cell.font = Font(name="Calibri", size=9, bold=True, color="DC2626")
 
         wb.save(excel_path)

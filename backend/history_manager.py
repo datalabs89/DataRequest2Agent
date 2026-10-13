@@ -279,6 +279,29 @@ class HistoryManager:
 
         return found
 
+    def report_breach(self, request_id: str, breach_details: dict, notice_filename: str) -> Optional[dict]:
+        """Mencatat pelaporan insiden kegagalan pelindungan data pribadi (Pasal 46 UU PDP)."""
+        history = self.get_all()
+        found = None
+        now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        clean_id = request_id.strip().upper()
+        for item in history:
+            if item.get("request_id", "").strip().upper() == clean_id or item.get("id", "").strip().upper() == clean_id:
+                item["is_breached"] = True
+                item["breach_reported_at"] = now_str
+                item["breach_notice_filename"] = notice_filename
+                item["breach_severity"] = breach_details.get("severity_level", "TINGGI")
+                item["breach_details"] = breach_details
+                item["status"] = "DATA_BREACH_REPORTED"
+                found = item
+                break
+
+        if found:
+            with open(self.history_file, "w", encoding="utf-8") as f:
+                json.dump(history, f, indent=2, ensure_ascii=False)
+
+        return found
+
     def update_feedback(self, request_id: str, feedback: VerifierFeedback) -> Optional[dict]:
         history = self.get_all()
         found = None
