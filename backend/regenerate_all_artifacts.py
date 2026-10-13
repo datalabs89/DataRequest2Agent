@@ -3,45 +3,70 @@ import sys
 import base64
 import json
 import re
+import shutil
 
 # Tambahkan backend ke sys.path
 sys.path.insert(0, os.path.dirname(__file__))
 
 from coordinator import PipelineCoordinator
 from cod_generator import CertificateOfDestructionGenerator
-from breach_notification_generator import BreachNotificationGenerator
 
 def run():
-    print("=== REGENERATING ALL PIPELINE ARTIFACTS WITH NO UNDERLINE ===")
+    print("=== REGENERATING ALL PIPELINE ARTIFACTS (EXCEL 4-SHEETS + SUBTOTAL + NO UNDERLINE) ===")
     coordinator = PipelineCoordinator()
     
     samples = [
-        ("samples/Permohonan_Data_Internal_Bea_dan_Cukai.pdf", "REQ-2026-BC-089", "Sertifikat_Otorisasi_REQ_2026_BC_089_20261011_221106.pdf"),
-        ("samples/Permohonan_Data_Internal_Kemenkeu.pdf", "REQ-2026-KMK-114", "Sertifikat_Otorisasi_REQ_2026_KMK_114_20261011_221106.pdf"),
-        ("samples/Permohonan_Data_Eksternal_Kemenkeu.pdf", "REQ-2026-EKS-042", "Sertifikat_Otorisasi_REQ_2026_EKS_042_20261011_221106.pdf"),
+        ("samples/Permohonan_Data_Internal_Bea_dan_Cukai.pdf", "REQ-2026-BC-089", "20261011_221106"),
+        ("samples/Permohonan_Data_Internal_Kemenkeu.pdf", "REQ-2026-KMK-114", "20261011_221106"),
+        ("samples/Permohonan_Data_Eksternal_Kemenkeu.pdf", "REQ-2026-EKS-042", "20261011_221106"),
     ]
     
     generated_certs = {}
     
-    for sample_path, req_id, mock_cert_filename in samples:
+    for sample_path, req_id, ts in samples:
+        safe_id = req_id.replace("-", "_")
+        mock_cert_filename = f"Sertifikat_Otorisasi_{safe_id}_{ts}.pdf"
+        mock_excel_filename = f"DataExport_{safe_id}_{ts}.xlsx"
+        mock_csv_filename = f"DataExport_{safe_id}_{ts}.csv"
+        mock_json_filename = f"DataExport_{safe_id}_{ts}.json"
+        mock_zip_filename = f"DataFulfillment_{safe_id}_{ts}.zip"
+        
         print(f"\nProcessing {req_id} ({sample_path})...")
         res = coordinator.process_request(sample_path)
         cert_path = res.execution.certificate_path
-        print(f"Generated cert at: {cert_path}")
+        excel_path = res.execution.excel_path
+        csv_path = res.execution.csv_path
+        json_path = res.execution.json_path
+        zip_path = res.execution.zip_path
         
-        # Baca bytes dari cert_path
-        with open(cert_path, "rb") as f:
+        print(f"  Generated cert at : {cert_path}")
+        print(f"  Generated excel at: {excel_path}")
+        
+        # Salin ke frontend/outputs/
+        frontend_out_dir = os.path.join("frontend", "outputs")
+        os.makedirs(frontend_out_dir, exist_ok=True)
+        
+        # 1. Sertifikat PDF
+        target_cert = os.path.join(frontend_out_dir, mock_cert_filename)
+        shutil.copyfile(cert_path, target_cert)
+        with open(target_cert, "rb") as f:
             pdf_bytes = f.read()
-            
-        # Simpan juga ke frontend/outputs/mock_cert_filename
-        frontend_out_path = os.path.join("frontend", "outputs", mock_cert_filename)
-        with open(frontend_out_path, "wb") as f:
-            f.write(pdf_bytes)
-        print(f"Saved to {frontend_out_path} ({len(pdf_bytes)} bytes)")
+        generated_certs[mock_cert_filename] = base64.b64encode(pdf_bytes).decode("ascii")
         
-        # Simpan base64
-        b64_str = base64.b64encode(pdf_bytes).decode("ascii")
-        generated_certs[mock_cert_filename] = b64_str
+        # 2. Excel Multi-Sheet (dengan Sheet 4 Profiling & Subtotal)
+        target_excel = os.path.join(frontend_out_dir, mock_excel_filename)
+        shutil.copyfile(excel_path, target_excel)
+        print(f"  Saved Excel to {target_excel}")
+        
+        # 3. CSV & JSON
+        target_csv = os.path.join(frontend_out_dir, mock_csv_filename)
+        shutil.copyfile(csv_path, target_csv)
+        target_json = os.path.join(frontend_out_dir, mock_json_filename)
+        shutil.copyfile(json_path, target_json)
+        
+        # 4. ZIP
+        target_zip = os.path.join(frontend_out_dir, mock_zip_filename)
+        shutil.copyfile(zip_path, target_zip)
         
     # Generate Berita Acara Pemusnahan (CoD) sampel
     print("\nGenerating Certificate of Destruction (CoD) Sample...")
@@ -70,14 +95,10 @@ def run():
         mock_text = f.read()
         
     for fname, b64 in generated_certs.items():
-        # Pola: "fname": "..."
-        # Replace base64 string
         pattern = rf'("{re.escape(fname)}":\s*")[^"]+(")'
         if re.search(pattern, mock_text):
             mock_text = re.sub(pattern, rf'\g<1>{b64}\g<2>', mock_text)
             print(f"Updated base64 for {fname} in mock_data.js")
-        else:
-            print(f"Pattern for {fname} not found in mock_data.js!")
             
     with open(mock_data_path, "w", encoding="utf-8") as f:
         f.write(mock_text)

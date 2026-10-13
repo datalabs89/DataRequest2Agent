@@ -1252,6 +1252,7 @@ function renderResults(data) {
         renderDeliveryDataPreview("");
         renderDeliveryAuditSheet(data);
         renderDeliveryDictSheet(data);
+        renderDeliveryProfilingSheet(data);
         const selChartType = document.getElementById("select-delivery-chart-type");
         renderDeliveryCharts(selChartType ? selChartType.value : "bar");
     }
@@ -1347,6 +1348,59 @@ function renderDeliveryDataPreview(query = "") {
         });
         tbody.appendChild(tr);
     });
+
+    // Baris Ringkasan Subtotal Dinamis Native UI (Replikasi Formula Excel =SUBTOTAL(109, ...))
+    const oldTfoot = document.getElementById("preview-tfoot");
+    if (oldTfoot) oldTfoot.remove();
+
+    if (filteredRows.length > 0) {
+        const tfoot = document.createElement("tfoot");
+        tfoot.id = "preview-tfoot";
+        tfoot.className = "bg-blue-50/90 dark:bg-blue-950/60 font-bold border-t-2 border-indigo-300 dark:border-indigo-700 border-b-2 border-indigo-400 dark:border-indigo-600 sticky bottom-0 z-10 shadow-xs";
+        
+        const trFoot = document.createElement("tr");
+        
+        currentDeliveryColumns.forEach((col, idx) => {
+            const td = document.createElement("td");
+            td.className = "px-3.5 py-2.5 whitespace-nowrap font-mono text-[11px] text-indigo-950 dark:text-indigo-200";
+            const colLower = col.toLowerCase();
+            
+            // Kolom pertama: label
+            if (idx === 0) {
+                td.innerHTML = `<span class="inline-flex items-center space-x-1.5 text-indigo-800 dark:text-indigo-300 font-bold uppercase tracking-wider text-[10.5px]"><i data-lucide="calculator" class="w-3.5 h-3.5 text-indigo-600"></i><span>SUBTOTAL DINAMIS:</span></span>`;
+            } else if (idx === 1 || colLower.includes("id") || colLower.includes("nomor") || colLower.includes("aju")) {
+                td.innerText = `${filteredRows.length} baris`;
+                td.className += " text-center font-bold text-indigo-700 dark:text-indigo-300";
+            } else {
+                // Cek apakah numerik
+                const isNumericCol = filteredRows.some(r => typeof r[col] === "number");
+                if (isNumericCol) {
+                    if (colLower.includes("tarif")) {
+                        const sumTarif = filteredRows.reduce((acc, r) => acc + (typeof r[col] === "number" ? r[col] : 0), 0);
+                        const avgTarif = sumTarif / (filteredRows.length || 1);
+                        td.innerText = `Rata-rata: ${avgTarif < 1 ? (avgTarif * 100).toFixed(1) + "%" : "Rp " + Math.round(avgTarif).toLocaleString("id-ID")}`;
+                        td.className += " text-right font-bold text-indigo-900 dark:text-indigo-200";
+                    } else {
+                        const sumVal = filteredRows.reduce((acc, r) => acc + (typeof r[col] === "number" ? r[col] : 0), 0);
+                        if (colLower.includes("usd") || colLower.includes("devisa") || colLower.includes("cif") || colLower.includes("fob")) {
+                            td.innerText = "$" + sumVal.toLocaleString("en-US");
+                        } else {
+                            td.innerText = "Rp " + sumVal.toLocaleString("id-ID");
+                        }
+                        td.className += " text-right font-black text-indigo-950 dark:text-indigo-100";
+                    }
+                } else {
+                    td.innerText = "-";
+                    td.className += " text-center text-slate-400";
+                }
+            }
+            trFoot.appendChild(td);
+        });
+        tfoot.appendChild(trFoot);
+        const tbl = document.getElementById("preview-table");
+        if (tbl) tbl.appendChild(tfoot);
+        if (window.lucide) lucide.createIcons();
+    }
 }
 
 function renderDeliveryAuditSheet(data) {
@@ -1440,6 +1494,107 @@ function renderDeliveryDictSheet(data) {
     if (rowIdx === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400 italic">Tidak ada metadata kolom catalog.</td></tr>`;
     }
+}
+
+function renderDeliveryProfilingSheet(data) {
+    const tbody = document.getElementById("delivery-profile-sheet-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const rows = currentDeliveryRows || [];
+    const cols = currentDeliveryColumns || [];
+    if (cols.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 italic">Belum ada dataset untuk dianalisis kualitasnya. Jalankan pipeline atau pilih contoh permohonan.</td></tr>`;
+        return;
+    }
+
+    let totalCells = rows.length * cols.length;
+    let nonNullCells = 0;
+    let maskedColsCount = 0;
+
+    cols.forEach((col, idx) => {
+        const values = rows.map(r => r[col]).filter(v => v !== undefined && v !== null && v !== "");
+        const nonNullCount = values.length;
+        nonNullCells += nonNullCount;
+        const compRate = rows.length > 0 ? (nonNullCount / rows.length) : 1;
+        const uniqueValues = new Set(values);
+        const uniqueCount = uniqueValues.size;
+
+        // Modus (nilai paling sering muncul)
+        const counts = {};
+        values.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+        let topVal = "-";
+        let topFreq = 0;
+        for (const [k, c] of Object.entries(counts)) {
+            if (c > topFreq) { topVal = k; topFreq = c; }
+        }
+
+        // Deteksi tipe data & statistik sebaran
+        const colLower = col.toLowerCase();
+        let dtype = "String / Teks";
+        let statDesc = `Kardinalitas: ${uniqueCount} ragam nilai`;
+        const numericValues = values.filter(v => typeof v === "number");
+        
+        if (numericValues.length > 0) {
+            dtype = "Numerik (Angka)";
+            const minV = Math.min(...numericValues);
+            const maxV = Math.max(...numericValues);
+            const sumV = numericValues.reduce((a, b) => a + b, 0);
+            const avgV = sumV / numericValues.length;
+            if (colLower.includes("tarif")) {
+                statDesc = `Min: ${(minV*100).toFixed(1)}%, Max: ${(maxV*100).toFixed(1)}%, Rata-rata: ${(avgV*100).toFixed(1)}%`;
+            } else if (colLower.includes("usd") || colLower.includes("devisa") || colLower.includes("cif") || colLower.includes("fob")) {
+                statDesc = `Min: $${minV.toLocaleString("en-US")}, Max: $${maxV.toLocaleString("en-US")}, Rata-rata: $${Math.round(avgV).toLocaleString("en-US")}`;
+            } else {
+                statDesc = `Min: Rp ${minV.toLocaleString("id-ID")}, Max: Rp ${maxV.toLocaleString("id-ID")}, Rata-rata: Rp ${Math.round(avgV).toLocaleString("id-ID")}`;
+            }
+        } else if (colLower.includes("tanggal") || colLower.includes("date")) {
+            dtype = "Tanggal / Temporal";
+            statDesc = `${values[values.length - 1] || '-'} s/d ${values[0] || '-'}`;
+        }
+
+        // Status PDP
+        let pdpBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">Standar</span>`;
+        if (colLower.includes("masked") || String(topVal).includes("***") || String(topVal).includes("[TERLINDUNGI")) {
+            maskedColsCount++;
+            pdpBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">Masked (Aman)</span>`;
+        } else if (colLower.includes("nik") || colLower.includes("npwp") || colLower.includes("nama") || colLower.includes("phone")) {
+            pdpBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Sensitif</span>`;
+        }
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 text-xs";
+        tr.innerHTML = `
+            <td class="px-3.5 py-2.5 font-bold text-slate-500 text-center">${idx + 1}</td>
+            <td class="px-3.5 py-2.5 font-mono font-bold text-slate-900 dark:text-slate-100">${col}</td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-400">${dtype}</td>
+            <td class="px-3.5 py-2.5 text-center">
+                <div class="flex items-center justify-center space-x-1.5">
+                    <div class="w-14 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${(compRate * 100).toFixed(0)}%"></div>
+                    </div>
+                    <span class="font-mono text-[11px] font-bold text-emerald-700 dark:text-emerald-400">${(compRate * 100).toFixed(1)}%</span>
+                </div>
+            </td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-center font-semibold text-slate-800 dark:text-slate-200">${uniqueCount}</td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-slate-700 dark:text-slate-300 truncate max-w-[140px]" title="${topVal}">${topVal} <span class="text-slate-400 font-normal">(${topFreq}x)</span></td>
+            <td class="px-3.5 py-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-400">${statDesc}</td>
+            <td class="px-3.5 py-2.5 text-center">${pdpBadge}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Update KPI Scorecards
+    const overallRate = totalCells > 0 ? ((nonNullCells / totalCells) * 100).toFixed(1) : "100.0";
+    const kpiComp = document.getElementById("prof-kpi-completeness");
+    const kpiCols = document.getElementById("prof-kpi-columns");
+    const kpiMask = document.getElementById("prof-kpi-masked");
+    const kpiRecs = document.getElementById("prof-kpi-records");
+
+    if (kpiComp) kpiComp.innerText = `${overallRate}%`;
+    if (kpiCols) kpiCols.innerText = `${cols.length} Kolom`;
+    if (kpiMask) kpiMask.innerText = `${maskedColsCount} Atribut`;
+    if (kpiRecs) kpiRecs.innerText = `${rows.length} Baris`;
 }
 
 function exportChartToImage(chartInstance, defaultFilename = "visualisasi_tren.png") {
@@ -1781,6 +1936,7 @@ function setupDeliveryInteractions() {
     const containerData = document.getElementById("container-sheet-data");
     const containerAudit = document.getElementById("container-sheet-audit");
     const containerDict = document.getElementById("container-sheet-dict");
+    const containerProfile = document.getElementById("container-sheet-profile");
     const containerChart = document.getElementById("container-sheet-chart");
 
     sheetBtns.forEach(btn => {
@@ -1796,6 +1952,12 @@ function setupDeliveryInteractions() {
             if (containerData) containerData.classList.toggle("hidden", sheet !== "data");
             if (containerAudit) containerAudit.classList.toggle("hidden", sheet !== "audit");
             if (containerDict) containerDict.classList.toggle("hidden", sheet !== "dict");
+            if (containerProfile) {
+                containerProfile.classList.toggle("hidden", sheet !== "profile");
+                if (sheet === "profile") {
+                    renderDeliveryProfilingSheet(currentPipelineData);
+                }
+            }
             if (containerChart) {
                 containerChart.classList.toggle("hidden", sheet !== "chart");
                 if (sheet === "chart") {

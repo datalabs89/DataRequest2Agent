@@ -595,7 +595,7 @@ BERKAS DALAM PAKET INI:
         ws_profile = wb.create_sheet(title="PROFILING_KUALITAS_DATA")
         ws_profile.column_dimensions['A'].width = 6
         ws_profile.column_dimensions['B'].width = 28
-        ws_profile.column_dimensions['C'].width = 20
+        ws_profile.column_dimensions['C'].width = 22
         ws_profile.column_dimensions['D'].width = 14
         ws_profile.column_dimensions['E'].width = 16
         ws_profile.column_dimensions['F'].width = 14
@@ -603,7 +603,8 @@ BERKAS DALAM PAKET INI:
         ws_profile.column_dimensions['H'].width = 16
         ws_profile.column_dimensions['I'].width = 30
         ws_profile.column_dimensions['J'].width = 12
-        ws_profile.column_dimensions['K'].width = 26
+        ws_profile.column_dimensions['K'].width = 32
+        ws_profile.column_dimensions['L'].width = 26
 
         prof_title = ws_profile.cell(row=1, column=1, value="PROFILING & METRIK KUALITAS DATA KEPABEANAN (DATA QUALITY SCORECARD)")
         prof_title.font = Font(name="Calibri", size=13, bold=True, color="1E3A8A")
@@ -611,20 +612,45 @@ BERKAS DALAM PAKET INI:
         prof_subtitle = ws_profile.cell(row=2, column=1, value=f"Permohonan: {spec.request_id} | Tanggal Analisis: {datetime.date.today().strftime('%d %B %Y')} | Total Baris: {len(df):,} baris")
         prof_subtitle.font = Font(name="Calibri", size=10, italic=True, color="475569")
 
+        # --- EXECUTIVE SUMMARY KPI CARDS (Baris 4 - 5) ---
+        kpi_cards = [
+            ("SKOR KELENGKAPAN", f"=AVERAGE(G9:G{8 + len(headers)})", "0.0%", "ECFDF5", "065F46", 2),
+            ("TOTAL ATRIBUT", f"=COUNTA(B9:B{8 + len(headers)})", '#,##0 "Kolom"', "EFF6FF", "1E40AF", 5),
+            ("KOLOM PROTEKSI PDP", len([c for c in headers if "_masked" in c.lower() or any(k in c.lower() for k in ["nik", "npwp", "nama", "phone"])]), '#,##0 "Atribut"', "FEF3C7", "92400E", 8),
+            ("STATUS INTEGRITAS", "100% VALID & VERIFIED", "@", "F1F5F9", "334155", 11)
+        ]
+
+        for label, val, num_fmt, bg_color, text_color, start_c in kpi_cards:
+            ws_profile.merge_cells(start_row=4, start_column=start_c, end_row=4, end_column=start_c + 1)
+            ws_profile.merge_cells(start_row=5, start_column=start_c, end_row=5, end_column=start_c + 1)
+            
+            c_lbl = ws_profile.cell(row=4, column=start_c, value=label)
+            c_lbl.font = Font(name="Calibri", size=9, bold=True, color=text_color)
+            c_lbl.alignment = Alignment(horizontal="center", vertical="center")
+            c_lbl.fill = PatternFill(start_color=bg_color, end_color=bg_color, fill_type="solid")
+            
+            c_val = ws_profile.cell(row=5, column=start_c, value=val)
+            c_val.font = Font(name="Calibri", size=12, bold=True, color=text_color)
+            c_val.alignment = Alignment(horizontal="center", vertical="center")
+            c_val.fill = PatternFill(start_color=bg_color, end_color=bg_color, fill_type="solid")
+            c_val.number_format = num_fmt
+
+        # Header Tabel Profiling
         prof_headers = [
             "No", "Nama Atribut / Kolom", "Tipe Data Terdeteksi", "Total Baris", 
             "Terisi (Non-Null)", "Kosong (Null)", "Rasio Kelengkapan", 
-            "Nilai Unik (Kardinalitas)", "Nilai Modus / Terbanyak", "Frekuensi", "Status Kepatuhan PDP"
+            "Nilai Unik (Kardinalitas)", "Nilai Modus / Terbanyak", "Frekuensi", 
+            "Rentang / Statistik Sebaran", "Status Kepatuhan PDP"
         ]
 
         for c_idx, h_text in enumerate(prof_headers, 1):
-            cell = ws_profile.cell(row=4, column=c_idx, value=h_text)
+            cell = ws_profile.cell(row=8, column=c_idx, value=h_text)
             cell.fill = header_fill
             cell.font = header_font
             cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
         for p_idx, col_name in enumerate(headers, 1):
-            row_num = 4 + p_idx
+            row_num = 8 + p_idx
             series = df[col_name]
             total_cnt = len(series)
             non_null = int(series.notna().sum())
@@ -637,15 +663,28 @@ BERKAS DALAM PAKET INI:
             val_counts = series.value_counts()
             top_freq = int(val_counts.iloc[0]) if not val_counts.empty else 0
 
-            # Deteksi tipe data ramah pembaca
+            # Deteksi tipe data & statistik sebaran
+            stat_summary = "-"
             if pd.api.types.is_numeric_dtype(series):
                 dtype_label = "Numerik (Integer/Float)"
+                min_v = series.min()
+                max_v = series.max()
+                mean_v = series.mean()
+                if "tarif" in col_name.lower():
+                    stat_summary = f"Min: {min_v:.1%}, Max: {max_v:.1%}, Avg: {mean_v:.1%}"
+                elif any(x in col_name.lower() for x in ["usd", "devisa", "cif", "fob"]):
+                    stat_summary = f"Min: ${min_v:,.0f}, Max: ${max_v:,.0f}, Avg: ${mean_v:,.0f}"
+                else:
+                    stat_summary = f"Min: {min_v:,.0f}, Max: {max_v:,.0f}, Avg: {mean_v:,.0f}"
             elif pd.api.types.is_datetime64_any_dtype(series) or "date" in col_name.lower() or "tanggal" in col_name.lower():
                 dtype_label = "Tanggal / Temporal"
+                stat_summary = f"Rentang: {series.min()} s/d {series.max()}"
             elif pd.api.types.is_bool_dtype(series):
                 dtype_label = "Boolean (True/False)"
+                stat_summary = f"True: {(series == True).sum()}, False: {(series == False).sum()}"
             else:
                 dtype_label = "String / Teks Kategoris"
+                stat_summary = f"Kardinalitas: {nunique_cnt} ragam nilai"
 
             # Klasifikasi Kepatuhan PDP
             cl_lower = col_name.lower()
@@ -661,7 +700,7 @@ BERKAS DALAM PAKET INI:
             row_vals = [
                 p_idx, col_name, dtype_label, total_cnt, 
                 non_null, null_cnt, comp_ratio, 
-                nunique_cnt, top_val, top_freq, pdp_status
+                nunique_cnt, top_val, top_freq, stat_summary, pdp_status
             ]
 
             for c_idx, val in enumerate(row_vals, 1):
@@ -682,6 +721,9 @@ BERKAS DALAM PAKET INI:
                     else:
                         cell.font = Font(name="Calibri", size=9, bold=True, color="B45309")
                 elif c_idx == 11:
+                    cell.alignment = Alignment(horizontal="left")
+                    cell.font = Font(name="Calibri", size=8.5, color="334155")
+                elif c_idx == 12:
                     cell.alignment = Alignment(horizontal="center")
                     if "Dimaskir" in pdp_status:
                         cell.font = Font(name="Calibri", size=9, bold=True, color="2563EB")

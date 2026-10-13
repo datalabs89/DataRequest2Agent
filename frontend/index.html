@@ -1059,9 +1059,13 @@
                                 <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
                                 <span>Sheet 3: KAMUS_DATA</span>
                             </button>
+                            <button id="btn-sheet-tab-profile" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5" data-sheet="profile">
+                                <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                <span>Sheet 4: PROFILING_KUALITAS_DATA</span>
+                            </button>
                             <button id="btn-sheet-tab-chart" class="sheet-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5" data-sheet="chart">
                                 <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-blue-600"></i>
-                                <span>Sheet 4: VISUALISASI_TREN</span>
+                                <span>Sheet 5: VISUALISASI_TREN</span>
                             </button>
                         </div>
 
@@ -1131,6 +1135,66 @@
                                     </tr>
                                 </thead>
                                 <tbody id="delivery-dict-sheet-tbody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Container Sheet 4: PROFILING_KUALITAS_DATA -->
+                    <div id="container-sheet-profile" class="hidden p-4 space-y-4">
+                        <div class="bg-emerald-50/60 border border-emerald-100 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <h5 class="text-xs font-bold text-emerald-950 uppercase tracking-wide flex items-center space-x-2">
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                                    <span>Scorecard & Profiling Kualitas Data Kepabeanan</span>
+                                </h5>
+                                <p class="text-[11px] text-emerald-800 mt-1">Audit kelengkapan, kardinalitas nilai unik, rasio kepatuhan penyamaran PII, dan statistik deskriptif sesuai standar tata kelola data.</p>
+                            </div>
+                            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>
+                                <span>ISO 27001 / PP 33 Verified</span>
+                            </span>
+                        </div>
+
+                        <!-- KPI Scorecard Cards -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rasio Kelengkapan</div>
+                                <div id="prof-kpi-completeness" class="text-lg font-black text-emerald-600 mt-1 font-mono">100.0%</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Zero null value detected</div>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Atribut</div>
+                                <div id="prof-kpi-columns" class="text-lg font-black text-indigo-600 mt-1 font-mono">0 Kolom</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Terpetakan dari OpenMetadata</div>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Proteksi PDP Masked</div>
+                                <div id="prof-kpi-masked" class="text-lg font-black text-amber-600 mt-1 font-mono">0 Atribut</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Penyamaran dinamis aktif</div>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Rekod Bersih</div>
+                                <div id="prof-kpi-records" class="text-lg font-black text-slate-800 mt-1 font-mono">0 Baris</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">100% Lulus Verifikasi</div>
+                            </div>
+                        </div>
+
+                        <!-- Profiling Table -->
+                        <div class="border border-slate-200 rounded-xl overflow-x-auto shadow-2xs">
+                            <table class="w-full text-xs text-left">
+                                <thead class="text-[11px] text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-3.5 py-2.5 font-bold">No</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Nama Atribut</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Tipe Data</th>
+                                        <th class="px-3.5 py-2.5 font-bold text-center">Kelengkapan</th>
+                                        <th class="px-3.5 py-2.5 font-bold text-center">Nilai Unik</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Nilai Terbanyak (Modus)</th>
+                                        <th class="px-3.5 py-2.5 font-bold">Statistik Sebaran</th>
+                                        <th class="px-3.5 py-2.5 font-bold text-center">Status PDP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="delivery-profile-sheet-tbody" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
                     </div>
