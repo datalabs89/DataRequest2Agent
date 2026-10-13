@@ -404,15 +404,15 @@ class CertificateGenerator:
         t_sig.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
+            ('LINEBEFORE', (1,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
             ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F8FAFC')),
             ('PADDING', (0,0), (-1,-1), 3),
         ]))
         story.append(t_sig)
-        story.append(Spacer(1, 4))
+        story.append(Spacer(1, 6))
 
         # 11. Kotak Integritas Kriptografis Anti-Tampering (SHA-256)
-        story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#94A3B8'), spaceAfter=2))
         story.append(Paragraph(
             "<b>KODE INTEGRITAS DIGITAL & ANTI-TAMPERING (HMAC-SHA256):</b>",
             ParagraphStyle('SecNote', fontName='Helvetica-Bold', fontSize=6.5, leading=8, textColor=colors.HexColor('#475569'), alignment=1)
